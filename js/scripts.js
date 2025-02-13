@@ -47,13 +47,30 @@ const genTypeCounts = {
 };
 
 // effectiveness.js
-const loadGenerationData = (gen) => {
+const loadGenerationData = async(gen) => {
   // Load JSON data for the specified generation
   // (e.g., fetch from a file or use a preloaded object)
+  const genData = {
+    "1": "/json/gen1.json",
+    "2-5": "/json/gen2-5.json",
+    "6+": "/json/gen6+.json",
+  };
+
+  try {
+    const response = await fetch(genData[gen]);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data for generation ${gen}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error loading generation data:", error);
+    return {}; // empty object to prevent errors elsewhere
+  }
 };
 
-const getEffectiveness = (types, mode = "offense", gen = "6+") => {
-  const data = loadGenerationData(gen);
+const getEffectiveness = async (types, mode = "offense", gen = "6+") => {
+  const data = await loadGenerationData(gen);
   const typeKeys = types.map(getTypeKey);
   const defTypes = genTypeCounts[gen];
 
@@ -99,6 +116,25 @@ const getEffectiveness = (types, mode = "offense", gen = "6+") => {
 
   return effectivenessGroups;
 };
+
+// test
+const testEffectiveness = async () => {
+  const types = ["fire", "water"]; // Example types
+  const mode = "offense"; // Example mode
+  const gen = "1"; // Example generation
+
+  try {
+    const result = await getEffectiveness(types, mode, gen);
+    console.log("Effectiveness Test Result:", result);
+  } catch (error) {
+    console.error("Error in effectiveness test:", error);
+  }
+};
+
+// Run the test function after DOM is fully loaded
+document.addEventListener("DOMContentLoaded", () => {
+  testEffectiveness();
+});
 
 // Export for modular use (if needed)
 export { getEffectiveness, updateCache, typeMap, getTypeKey, getTypeName };
