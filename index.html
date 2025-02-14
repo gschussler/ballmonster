@@ -12,20 +12,22 @@
   <header>
     <h1>PokeCalcGG</h1>
     <nav>
-      <a href="#" hx-get="/offense" hx-target="#content" hx-swap="innerHTML" aria-label="Offense">Offense</a>
-      <a href="#" hx-get="/defense" hx-target="#content" hx-swap="innerHTML" aria-label="Defense">Defense</a>
-      <a href="#" hx-get="/settings" hx-target="#content" hx-swap="innerHTML" aria-label="More">More</a>
+      <a href="#" hx-get="/pages/offense.html" hx-target="#content" hx-swap="innerHTML" aria-label="Offense">Offense</a>
+      <a href="#" hx-get="/pages/defense.html" hx-target="#content" hx-swap="innerHTML" aria-label="Defense">Defense</a>
+      <a href="#" hx-get="/pages/more.html" hx-target="#content" hx-swap="innerHTML" aria-label="More">More</a>
     </nav>
   </header>
 
   <main id="content">
     <!-- Content will be dynamically loaded here -->
     <!-- Initial content (e.g., Offense page) -->
-    <div hx-get="/offense" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></div>
+    <div hx-get="/pages/offense.html" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></div>
   </main>
 
   <footer>
     <p>© 2025 PokeCalcGG</p>
   </footer>
+
+  <script src="/js/scripts.js" defer></script>
 </body>
 </html>

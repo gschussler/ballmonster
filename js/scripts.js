@@ -1,27 +1,51 @@
+// Initialize type buttons on page load
+document.addEventListener("htmx:load", () => {
+  initTypeButtons();
+});
+
+const initTypeButtons = () => {
+  const selectedTypes = new Set(["normal"]); // Track selected types
+  const container = document.querySelector(".type-buttons")
+  if(!container) return; // ".type-buttons" doesn't exist in index.html on initial page load, so the first try for initializing always fails. skip it.
+  // console.log("Initializing type buttons...");
+
+  const normal = container.querySelector("[data-type='normal']");
+  if(normal) normal.classList.add("selected");
+
+  // event delegation to handle button clicks
+  container.addEventListener("click", (e) => {
+    if(e.target.tagName.toLowerCase() === 'button') {
+      const button = e.target;
+      const type = button.dataset.type;
+      console.log(`Clicked ${type}`)
+
+      if(selectedTypes.size === 1 && selectedTypes.has(type)) return; // prevent deselecting only active type
+
+      // toggle type select
+      if(selectedTypes.has(type)) {
+        selectedTypes.delete(type);
+        button.classList.remove("selected");
+      } else {
+        selectedTypes.add(type);
+        button.classList.add("selected");
+      };
+
+      console.log(`Checking effectiveness of ${[...selectedTypes]}`)
+      getEffectiveness([...selectedTypes]);
+    }
+  })
+};
+
 // typeMap.js
-const typeMap = [
-  "normal", // 0
-  "fire", // 1
-  "water", // 2
-  "electric", // 3
-  "grass", // 4
-  "ice", // 5
-  "fighting", // 6
-  "poison", // 7
-  "ground", // 8
-  "flying", // 9
-  "psychic", // 10
-  "bug", // 11
-  "rock", // 12
-  "ghost", // 13
-  "dragon", // 14
-  "dark", // 15
-  "steel", // 16
-  "fairy", // 17
+const typeNames = [
+  "normal", "fire", "water", "electric",
+  "grass", "ice", "fighting", "poison",
+  "ground", "flying", "psychic", "bug",
+  "rock", "ghost", "dragon", "dark",
+  "steel", "fairy"
 ];
 
-const getTypeKey = (typeName) => typeMap.indexOf(typeName);
-const getTypeName = (typeKey) => typeMap[typeKey];
+const typeMap = Object.fromEntries(typeNames.map((name, index) => [name, index]));
 
 // cache.js
 const caches = {
@@ -69,72 +93,62 @@ const loadGenerationData = async(gen) => {
   }
 };
 
-const getEffectiveness = async (types, mode = "offense", gen = "6+") => {
-  const data = await loadGenerationData(gen);
-  const typeKeys = types.map(getTypeKey);
-  const defTypes = genTypeCounts[gen];
+const getEffectiveness = async (inTypes, mode = "offense", gen = "6+") => {
+  // console.log(`effectiveness of ${[...inTypes]}`)
+  const data = await loadGenerationData(gen); // Generation data to traverse
+  const outKeys = genTypeCounts[gen]; // Limit looping through types based on generation
 
-  const effectivenessGroups = {
+  // effectiveness multiplier lists
+    //to be populated with all single Pokemon types that exist in current generation
+  const effectMults = {
     "4x": [],
     "2x": [],
     "1x": [],
     "0.5x": [],
+    "0.25x": [],
     "0x": [],
   };
 
-  for (let defType = 0; defType < defTypes; defType++) {
+  // Loop through all Pokemon types in the current generation to output their effectiveness relationships
+  for (let outKey = 0; outKey < outKeys; outKey++) {
     let totalMult = 1;
 
-    for (const atkType of typeKeys) {
-      const effectiveness = mode === "offense"
-        ? data.s[atkType][defType] // Offense: atkType –> defType
-        : data.s[defType][atkType]; // Defense: defType –> atkType
-      totalMult *= effectiveness;
+    // Process input types to get their effectiveness relationship with output types
+    for (const type of inTypes) {
+      const inKey = typeMap[type];
+      // if(inKey === undefined) continue; // ignore invalid types
+
+      const effectMult = mode === "offense"
+        ? data.s[inKey][outKey] // Offense: `Deals ${n}x to`; inKey –> outKey
+        : data.s[outKey][inKey]; // Defense: `Takes ${n}x from`; outKey –> inKey 
+      totalMult *= effectMult;
     }
 
-    const typeName = getTypeName(defType);
+    const typeName = typeNames[outKey]; // need type string for targeted types
     switch(totalMult) {
       case 4:
-        effectivenessGroups["4x"].push(typeName);
+        effectMults["4x"].push(typeName);
         break;
       case 2:
-        effectivenessGroups["2x"].push(typeName);
+        effectMults["2x"].push(typeName);
         break;
       case 1:
-        effectivenessGroups["1x"].push(typeName);
+        effectMults["1x"].push(typeName);
         break;
       case 0.5:
-        effectivenessGroups["0.5x"].push(typeName);
+        effectMults["0.5x"].push(typeName);
+        break;
+      case 0.25:
+        effectMults["0.25x"].push(typeName);
         break;
       case 0:
-        effectivenessGroups["0x"].push(typeName);
+        effectMults["0x"].push(typeName);
         break;
       default:
         throw new Error(`Invalid effectiveness multiplier: ${totalMult}`);
     }
   }
 
-  return effectivenessGroups;
+  console.log(effectMults);
+  return effectMults;
 };
-
-// test
-const testEffectiveness = async () => {
-  const types = ["fire", "water"]; // Example types
-  const mode = "offense"; // Example mode
-  const gen = "1"; // Example generation
-
-  try {
-    const result = await getEffectiveness(types, mode, gen);
-    console.log("Effectiveness Test Result:", result);
-  } catch (error) {
-    console.error("Error in effectiveness test:", error);
-  }
-};
-
-// Run the test function after DOM is fully loaded
-document.addEventListener("DOMContentLoaded", () => {
-  testEffectiveness();
-});
-
-// Export for modular use (if needed)
-export { getEffectiveness, updateCache, typeMap, getTypeKey, getTypeName };
