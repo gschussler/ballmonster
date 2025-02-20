@@ -12,13 +12,13 @@
   <header>
     <h1>PokeCalcGG</h1>
     <nav>
-      <a href="#" hx-get="/pages/offense.html" hx-target="#content" hx-swap="innerHTML" aria-label="Offense">Offense</a>
-      <a href="#" hx-get="/pages/defense.html" hx-target="#content" hx-swap="innerHTML" aria-label="Defense">Defense</a>
-      <a href="#" hx-get="/pages/more.html" hx-target="#content" hx-swap="innerHTML" aria-label="More">More</a>
+      <a href="#" hx-get="/pages/offense.html" hx-target="#content" hx-swap="innerHTML" class="page-link" data-mode="offense" aria-label="Offense">Offense</a>
+      <a href="#" hx-get="/pages/defense.html" hx-target="#content" hx-swap="innerHTML" class="page-link" data-mode="defense" aria-label="Defense">Defense</a>
+      <a href="#" hx-get="/pages/more.html" hx-target="#content" hx-swap="innerHTML" class="page-link" data-mode="more" aria-label="More">More</a>
     </nav>
   </header>
 
-  <main id="content">
+  <main id="content" data-mode="offense">
     <!-- Content will be dynamically loaded here -->
     <!-- Initial content (e.g., Offense page) -->
     <div hx-get="/pages/offense.html" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></div>
