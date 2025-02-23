@@ -1,86 +1,207 @@
 let mode = document.getElementById('content').getAttribute("data-mode") || "offense";
+let gen = localStorage.getItem("selectedGen") || "6+";
 
-// Initialize type buttons on page load
-document.addEventListener("htmx:afterSwap", (e) => {
-  initTypeButtons(); // Reinitialize buttons when mode changes
+// Initialize type buttons on page load and between relevant pages
+document.addEventListener("htmx:afterSwap", async (e) => {
+    mode === "more" ? initGenButtons() : initTypeButtons(); // Reinitialize buttons when mode changes
+});
+
+// Intercept htmx requests if the page is already selected
+document.addEventListener("htmx:beforeRequest", (e) => {
+  const requestedMode = e.detail.elt?.id;
+  
+  // Prevent htmx request if clicking the active page
+  if (requestedMode === mode) {
+    console.log(`Already on ${requestedMode} page or navigated to "More". Preventing unnecessary request.`);
+    e.preventDefault();
+  }
 });
 
 // Listen for clicks on navigation links to update the mode
 document.querySelector("nav").addEventListener("click", (e) => {
   const link = e.target.closest("a");
-  if (link && link.hasAttribute("data-mode")) {
-    const newMode = link.getAttribute("data-mode");
+  if (link && link.id) {
+    const newMode = link.id;
+
+    // Skip if same mode to prevent reset
+    if(newMode === mode) {
+      console.log(`Already on ${newMode} page. Skipping mode update.`);
+      return;
+    }
+
+    // Remove current active link
+    document.querySelector(`nav a[id=${mode}]`)?.classList.remove("active");
+
+    // Update `mode` parameter to new mode
     document.getElementById('content').setAttribute("data-mode", newMode);
-    console.log(`Mode updating to: ${newMode}`);
+    link.classList.add("active");
+
+    console.log(`Mode updating from ${mode} to: ${newMode}`);
     mode = newMode;
   }
 });
 
+const initGenButtons = () => {
+  const genContainer = document.querySelector(".generation-selection");
+  if(!genContainer) {
+    console.log("Gen Selection container not found.");
+    return;
+  }
+
+  console.log("Gen buttons found, attaching event listener.");
+
+  genContainer.querySelectorAll("button").forEach(button => {
+    button.classList.toggle("selected", button.dataset.gen === gen);
+  });
+
+  // One event listener for the container
+  genContainer.addEventListener("click", (e) => {
+    const button = e.target.closest("button");
+    if(!button || !button.dataset.gen) return;
+
+    const newGen = button.dataset.gen;
+    if(newGen === gen) return;
+
+    genContainer.querySelector(".selected")?.classList.remove("selected");
+
+    gen = newGen;
+    localStorage.setItem("selectedGen", gen);
+    button.classList.add("selected");
+
+    console.log(`Gen changed to ${gen}.`);
+  });
+  // Set initial selected button
+  genContainer.querySelector(`button[data-gen="${gen}"]`)?.classList.add("selected");
+};
+
 const initTypeButtons = async () => {
-  console.log(`Mode: ${mode}`)
+  console.log(`Mode: ${mode}`);
+  console.log(`Gen: ${gen}`);
+
   const selectedTypes = new Set(["normal"]); // Track selected types, default to 'normal' type
-  const container = document.querySelector(".type-buttons")
-  if(!container) return; // ".type-buttons" doesn't exist in index.html on initial page load, so the first try for initializing always fails. skip it.
+  const primaryContainer = document.querySelector(".primary-type-buttons");
+  if(!primaryContainer) return; // ".type-buttons" doesn't exist in index.html on initial page load, so the first try for initializing always fails. skip it.
+  const secondaryContainer = document.querySelector(".secondary-type-buttons");
+
   // console.log("Initializing type buttons...");
 
   // Clear previous event listeners to prevent duplicates
-  container.replaceWith(container.cloneNode(true));
-  const newContainer = document.querySelector(".type-buttons");
+  primaryContainer.replaceWith(primaryContainer.cloneNode(true));
+  const newPrimaryContainer = document.querySelector(".primary-type-buttons");
 
   // Event Delegation: button clicks add/remove types to/from calculations
-  newContainer.addEventListener("click", async (e) => {
-    if(e.target.tagName.toLowerCase() === 'button') {
-      const button = e.target;
+  newPrimaryContainer.addEventListener("click", async (e) => {
+      const button = e.target.closest("button");
+      if(!button || !button.dataset.type) return;
+
       const type = button.dataset.type;
       // console.log(`Clicked ${type}`);
 
-      if(mode === "offense") {
-        // Offense mode: one type at a time
-        if(selectedTypes.has(type)) {
-          return;
-        }
-        selectedTypes.clear();
-        selectedTypes.add(type);
-        document.querySelectorAll(".type-buttons button").forEach(btn => btn.classList.remove("selected"));
-        button.classList.add("selected");
-      } else {
-        // Defense mode: multiple types allowed
-        if(selectedTypes.has(type) && selectedTypes.size > 1) {
-          selectedTypes.delete(type);
-          button.classList.remove("selected");
-        } else {
+      // Container only allows one type selection at a time
+      // `selectedTypes` may have more than 1 type, but not duplicates
+      // Must check for secondary type grid
+      if(selectedTypes.has(type)) {
+        if(secondaryContainer && document.querySelector(`.secondary-type-buttons button[data-type="${type}"].selected`)) {
+          // Secondary Container exists and the type is selected in it
+          // clear the Set and add the selected type
+          selectedTypes.clear();
           selectedTypes.add(type);
+          
+          // remove all selections from both containers
+          document.querySelector(".primary-type-buttons button.selected")?.classList.remove("selected");
+          document.querySelector(".secondary-type-buttons button.selected")?.classList.remove("selected");
+          // update type selection in Primary Container
           button.classList.add("selected");
+        } else return;
+      } else {
+        // Selecting a new type in Primary Container
+        if(secondaryContainer) {
+          // Remove the existing primary type from `selectedTypes`
+          selectedTypes.forEach((existingType) => {
+            if(newPrimaryContainer.querySelector(`button[data-type="${existingType}"].selected`)) {
+              console.log(`Removing ${existingType}`);
+              selectedTypes.delete(existingType);
+            }
+          });
+        } else {
+          // No secondary container, clear is faster
+          selectedTypes.clear();
         }
+        // Remove selection from other primary type buttons
+        document.querySelector(".primary-type-buttons button.selected").classList.remove("selected");
+        selectedTypes.add(type);
+        button.classList.add("selected");
       }
-
-      // if(selectedTypes.size === 1 && selectedTypes.has(type)) return; // prevent deselecting the only active type
-
-      // // inform html of add/delete methods for type calculations
-      // if(selectedTypes.has(type)) {
-      //   selectedTypes.delete(type);
-      //   button.classList.remove("selected");
-      // } else {
-      //   selectedTypes.add(type);
-      //   button.classList.add("selected");
-      // };
-
-      // Run type relationship calculations,
-      // update effectiveness sublists with the results
-      console.log(`Checking effectiveness of ${[...selectedTypes]}`);
-      const newEffectMults = await getEffectiveness([...selectedTypes], mode);
-      updateEffectiveness(newEffectMults);
-    }
+    return await getTypeRelationship(selectedTypes, mode);
   });
 
+  if(mode === "defense") {
+    if(secondaryContainer) {
+      // Clear previous event listeners to prevent duplicates
+      secondaryContainer.replaceWith(secondaryContainer.cloneNode(true));
+      const newSecondaryContainer = document.querySelector(".secondary-type-buttons");
+
+      newSecondaryContainer.addEventListener("click", async (e) => {
+          const button = e.target.closest("button");
+          if(!button || !button.dataset.type) return;
+
+          const type = button.dataset.type;
+
+          // If type is selected in primary container, we don't want to allow selecting it in secondary container
+          // Shouldn't be selectable, further logic needed.
+          if (document.querySelector(`.primary-type-buttons button[data-type="${type}"].selected`)) {
+            console.log(`${type} is primary.`);
+            document.querySelectorAll(".secondary-type-buttons button.selected").forEach(btn => {
+              const existingType = btn.dataset.type;
+              if(selectedTypes.has(existingType)) {
+                selectedTypes.delete(existingType);
+                btn.classList.remove("selected");
+              }
+            });
+            console.log(`Skipping secondary ${type} addition.`)
+            return await getTypeRelationship(selectedTypes, mode);
+          }
+
+          // Container only allows one type selection at a time
+          // `selectedTypes` may have more than 1 type, but not duplicates
+          if(selectedTypes.has(type) && button.classList.contains("selected")) {
+            selectedTypes.delete(type);
+            button.classList.remove("selected");
+            // console.log(`Secondary ${type} deleted.`)
+          } else {
+            // Doesn't match current primary or secondary type
+            // Delete the type that is "selected" in Secondary Container from `selectedTypes` if it exists
+            document.querySelectorAll(".secondary-type-buttons button.selected").forEach(btn => {
+              const existingType = btn.dataset.type;
+              if(selectedTypes.has(existingType)) {
+                selectedTypes.delete(existingType);
+                btn.classList.remove("selected");
+              }
+            });
+            // console.log(`Secondary ${type} added.`);
+            selectedTypes.add(type);
+            button.classList.add("selected");
+          }
+        return await getTypeRelationship(selectedTypes, mode);
+      });
+    }
+  }
   // ensure 'normal' type is pre-selected on load
-  document.querySelector(`.type-buttons button[data-type="normal"]`)?.classList.add("selected");
-  
+  document.querySelector(`.primary-type-buttons button[data-type="normal"]`)?.classList.add("selected");
+
   // 'normal' type should be selected upon initialization, with results displayed
-  console.log(`Getting initial "Normal" type relationships...`);
-  const newEffectMults = await getEffectiveness(['normal'], mode);
+  console.log(`Getting initial "Normal" type relationships for gen ${gen}...`);
+  const newEffectMults = await getEffectiveness(['normal'], mode, gen);
   updateEffectiveness(newEffectMults);
 };
+
+const getTypeRelationship = async (types, mode) => {
+  let res = mode === "offense" ? "effectiveness" : "resistances" 
+  // Update effectiveness sublists with the results
+  console.log(`Checking ${res} of ${[...types]}`);
+  const newEffectMults = await getEffectiveness([...types], mode, gen);
+  updateEffectiveness(newEffectMults);
+}
 
 // typeMap.js
 const typeNames = [
@@ -150,7 +271,7 @@ const effectMults = new Map([
   ["0x", new Set()],
 ]);
 
-const getEffectiveness = async (inTypes, mode = "offense", gen = "6+") => {
+const getEffectiveness = async (inTypes, mode, gen) => {
   // Clear the Map before processing new data
   effectMults.forEach(set => set.clear());
 
@@ -226,6 +347,12 @@ const updateDOM = (mult, typeSet) => {
     listItem.textContent = type;
     listEl.appendChild(listItem);
   });
+
+  // Get the parent `.result-group` div and toggle its visibility
+  const resultGroup = listEl.closest(".result-group");
+  if(resultGroup) {
+    resultGroup.style.display = typeSet.size > 0 ? "block" : "none";
+  }
 }
 
 const effectivenessCache = new Map([

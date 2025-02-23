@@ -12,6 +12,11 @@ h1 {
   color: #ff3e00;
 }
 
+nav a.active {
+  font-weight: bold;
+  color: #f00; /* Or any color of your choice */
+}
+
 /* offense styles */
 .offense {
   display: flex;
@@ -40,10 +45,12 @@ h1 {
   &:hover {
     background-color: #ddd;
   }
-
-  &[data-selected="true"] {
-    background-color: #ff3e00;
+  
+  &.selected {
+    background-color: #4CAF50;
     color: white;
+    border-color: #388E3C;
+    font-weight: bold;
   }
 }
 
@@ -58,6 +65,7 @@ h1 {
 }
 
 .result-group {
+  display: none;
   background-color: #f9f9f9;
   padding: 1rem;
   border-radius: 4px;
