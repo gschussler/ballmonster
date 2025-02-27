@@ -45,7 +45,7 @@ document.querySelector("nav").addEventListener("click", (e) => {
 });
 
 const initGenButtons = () => {
-  const genContainer = document.querySelector(".generation-selection");
+  const genContainer = document.querySelector(".gen-selection");
   if(!genContainer) {
     console.log("Gen Selection container not found.");
     return;
@@ -82,26 +82,15 @@ const initTypeButtons = async () => {
   console.log(`Gen: ${gen}`);
 
   const selectedTypes = new Set(["normal"]); // Track selected types, default to 'normal' type
-  const primaryContainer = document.querySelector(".primary-type-buttons");
+  const primaryContainer = document.querySelector(".primary-types");
   typeVisibility(primaryContainer);
-
-  if(!primaryContainer) return; // ".type-buttons" doesn't exist in index.html on initial page load, so the first try for initializing always fails. skip it.
-  const secondaryContainer = document.querySelector(".secondary-type-buttons");
+  // if(!primaryContainer) return; // ".type-buttons" doesn't exist in index.html on initial page load, so the first try for initializing always fails. skip it.
+  const secondaryContainer = document.querySelector(".secondary-types");
 
   // console.log("Initializing type buttons...");
-
   // // Clear previous event listeners to prevent duplicates -- htmx swap results in this already
   // primaryContainer.replaceChildren(...primaryContainer.cloneNode(true).childNodes);
   // secondaryContainer?.replaceChildren(...secondaryContainer.cloneNode(true).childNodes);
-
-  // ensure 'normal' type is pre-selected on load
-  primaryContainer.querySelector(`button[data-type="normal"]`).classList.add("selected");
-
-  // Prep currently selected button types for replacement if they exist
-  // No secondary on initial page load, but reference still necessary since cached selections will be implemented
-  let lastPrimarySelected = primaryContainer.querySelector("button.selected");
-  let lastSecondarySelected = secondaryContainer?.querySelector("button.selected");
-  let lastSecondaryDisabled = secondaryContainer?.querySelector("button").disabled;
 
   // Event Delegation: button clicks add/remove types to/from calculations
   primaryContainer.addEventListener("click", async (e) => {
@@ -197,9 +186,20 @@ const initTypeButtons = async () => {
         }
       return await getTypeRelationship(selectedTypes, mode);
     });
-  }
+  };
 
-  // 'normal' type should be selected upon initialization, with results displayed
+  // "normal" type is default selection on initial load (will need to be generalized for caching type selections)
+  primaryContainer.querySelector(`button[data-type="normal"]`).classList.add("selected");
+  // disable corresponding secondary type if on defense page
+  let lastSecondaryDisabled = secondaryContainer?.querySelector(`button[data-type="normal"]`);
+  if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
+
+  // Prep currently selected button types for replacement if they exist
+  // No secondary on initial page load (but caching type selections will be implemented)
+  let lastPrimarySelected = primaryContainer.querySelector("button.selected");
+  let lastSecondarySelected = secondaryContainer?.querySelector("button.selected");
+
+  // Currently 'normal' type is selected upon initialization, display relevant results
   console.log(`Getting initial "Normal" type relationships for gen ${gen}...`);
   const newEffectMults = await getEffectiveness(['normal'], mode, gen);
   updateEffectiveness(newEffectMults);
