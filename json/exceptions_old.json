@@ -1,0 +1,25 @@
+{
+  "e": [
+    {
+      "type": "fighting",
+      "target": "flying",
+      "mult": 1,
+      "gen": 6,
+      "mode": "offense"
+    },
+    {
+      "type": "ice",
+      "target": "water",
+      "mult": 2,
+      "gen": 6,
+      "mode": "offense"
+    },
+    {
+      "type": "ground",
+      "target": "flying",
+      "mult": 1,
+      "gen": 6,
+      "mode": "offense"
+    }
+  ]
+}

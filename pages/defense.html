@@ -1,6 +1,7 @@
 <div class="defense">
-  <div class="type-buttons">
-    <!-- Left Side: Type Buttons -->
+  <!-- Left Side -->
+  <div class="selectable">
+    <!-- Primary Type Buttons -->
     <div class="primary-types">
       <h2>Choose type</h2>
       <div class="button-grid">
@@ -24,7 +25,7 @@
         <button data-type="fairy">Fairy</button>
       </div>
     </div>
-
+    <!-- Secondary Type Buttons -->
     <div class="secondary-types">
       <h2>Choose second type</h2>
       <div class="button-grid">
@@ -46,6 +47,30 @@
         <button data-type="dark">Dark</button>
         <button data-type="steel">Steel</button>
         <button data-type="fairy">Fairy</button>
+      </div>
+    </div>
+    <!-- Exceptions to Type Effectivity -->
+    <div class="exceptions">
+      <!-- Special Effects -->
+      <div class="special-effects">
+        <h3>Choose ability or active effect</h3>
+        <select id="effect-dropdown">
+          <option value="">None</option>
+          <option value="scrappy">Scrappy</option>
+          <option value="tinted-lens">Tinted Lens</option>
+          <option value="flash-fire">Flash Fire</option>
+          <option value="water-bubble">Water Bubble</option>
+          <option value="foresight">Foresight</option>
+          <option value="odor-sleuth">Odor Sleuth</option>
+          <option value="gravity">Gravity</option>
+        </select>
+      </div>
+      <div class="tera-types">
+        <h3>Choose tera type</h3>
+        <select id="tera-dropdown">
+          <option value="">None</option>
+          
+        </select>
       </div>
     </div>
   </div>

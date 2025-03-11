@@ -1,6 +1,7 @@
 <div class="offense">
-  <div class="type-buttons">
-    <!-- Left Side: Type Buttons -->
+  <!-- Left Side -->
+  <div class="selectable">
+    <!-- Type Buttons -->
     <div class="primary-types">
       <h2>Choose type</h2>
       <div class="button-grid">
@@ -22,6 +23,32 @@
         <button data-type="dark">Dark</button>
         <button data-type="steel">Steel</button>
         <button data-type="fairy">Fairy</button>
+        <button data-type="stellar">Stellar</button>
+      </div>
+    </div>
+    <!-- Exceptions to Type Effectivity -->
+    <div class="exceptions">
+      <!-- Special Moves -->
+      <div class="special-moves">
+        <h3>Choose special move</h3>
+        <div class="button-grid">
+          <button class="move-button" data-move="flying_press">Flying Press</button>
+          <button class="move-button" data-move="freeze-dry">Freeze-Dry</button>
+          <button class="move-button" data-move="thousand_arrows">Thousand Arrows</button>
+        </div>
+      </div>
+      <!-- Special Effects -->
+      <div class="special-effects">
+        <h3>Choose ability or active effect</h3>
+        <div class="effect-list">
+          <label><input type="checkbox" class="effect-checkbox" value="foresight"> Foresight (Gen 2 only)</label>
+          <label><input type="checkbox" class="effect-checkbox" value="flash_fire_atk"> Flash Fire</label>
+          <label><input type="checkbox" class="effect-checkbox" value="odor_sleuth"> Odor Sleuth (Gen 3 only)</label>
+          <label><input type="checkbox" class="effect-checkbox" value="gravity_atk"> Gravity</label>
+          <label><input type="checkbox" class="effect-checkbox" value="scrappy"> Scrappy</label>
+          <label><input type="checkbox" class="effect-checkbox" value="tinted_lens"> Tinted Lens</label>
+          <label><input type="checkbox" class="effect-checkbox" value="water_bubble_atk"> Water Bubble</label>
+        </div>
       </div>
     </div>
   </div>
@@ -34,12 +61,24 @@
         <ul id="4x"></ul>
       </div>
       <div class="result-group">
+        <h3>Deals 3x to</h3>
+        <ul id="3x"></ul>
+      </div>
+      <div class="result-group">
         <h3>Deals 2x to</h3>
         <ul id="2x"></ul>
       </div>
       <div class="result-group">
+        <h3>Deals 1.5x to</h3>
+        <ul id="1.5x"></ul>
+      </div>
+      <div class="result-group">
         <h3>Deals 1x to</h3>
         <ul id="1x"></ul>
+      </div>
+      <div class="result-group">
+        <h3>Deals 0.75x to</h3>
+        <ul id="0.75x"></ul>
       </div>
       <div class="result-group">
         <h3>Deals 0.5x to</h3>

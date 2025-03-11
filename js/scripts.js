@@ -1,22 +1,27 @@
-let mode = document.getElementById('content').getAttribute("data-mode") || "offense";
-let gen = localStorage.getItem("selectedGen") || "6+";
-
 // Initialize type buttons on page load and between relevant pages
 document.addEventListener("htmx:afterSwap", async (e) => {
-    if(mode === "more") {
-      initGenButtons();
-      // initSelectableTypes();
-    } else initTypeButtons(); // Reinitialize buttons when mode changes
+  if(mode !== "more") {
+    await initTypeButtons(); // Reinitialize buttons when mode changes
+  } else {
+    await initGenButtons();
+  }
 });
 
 // Intercept htmx requests if the page is already selected
 document.addEventListener("htmx:beforeRequest", (e) => {
   const requestedMode = e.detail.elt?.id;
-  
+
   // Prevent htmx request if clicking the active page
   if (requestedMode === mode) {
     console.log(`Already on ${requestedMode} page or navigated to "More". Preventing unnecessary request.`);
     e.preventDefault();
+  } else if (mode !== "more") {
+    if(!clearCache) {
+      console.log("clearing effectivenessCache")
+      effectivenessCache.forEach(set => set.clear());
+    } else {
+      clearCache = false;
+    }
   }
 });
 
@@ -44,48 +49,288 @@ document.querySelector("nav").addEventListener("click", (e) => {
   }
 });
 
-const initGenButtons = () => {
-  const genContainer = document.querySelector(".gen-selection");
-  if(!genContainer) {
-    console.log("Gen Selection container not found.");
-    return;
+let mode = document.getElementById('content').getAttribute("data-mode") || "offense";
+let gen = localStorage.getItem("selectedGen") || "6+";
+let genJSON, exceptJSON;
+let clearCache = false;
+
+const selectedTypes = new Set(["normal"]); // Track selected types, default to 'normal' type
+const exceptions = new Set([]); // Track selected exceptions, default to none
+
+// typeMap.js
+const typeNames = [
+  "normal", "fire", "water", "electric",
+  "grass", "ice", "fighting", "poison",
+  "ground", "flying", "psychic", "bug",
+  "rock", "ghost", "dragon", "dark",
+  "steel", "fairy", "stellar"
+];
+
+const typeMap = Object.fromEntries(typeNames.map((name, index) => [name, index]));
+
+const exceptNames = [
+  // Offense exceptions (Gen-ascending)
+  "foresight", "flash_fire_atk", "odor_sleuth", "gravity_atk", "scrappy", "tinted_lens", "flying_press", "freeze-dry", "thousand_arrows", "water_bubble_atk",
+  // Defense exceptions (Gen-ascending)
+  "flash_fire_def", "levitate", "lightning_rod", "thick_fat", "volt_absorb", "water_absorb", "wonder_guard", "dry_skin", "filter", "gravity_def", "heatproof", "motor_drive", "storm_drain", "sap_sipper", "delta_stream", "fluffy", "water_bubble_def", "earth_eater", "purifying_salt", "tera_shell", "well-baked_body"
+];
+
+const exceptMap = Object.fromEntries(exceptNames.map((name, index) => [name, index]));
+
+// const selectedExceptions = new Set([]);
+
+// cache.js
+const caches = {
+  "1": { offense: {}, defense: {} },
+  "2-5": { offense: {}, defense: {} },
+  "6+": { offense: {}, defense: {} },
+};
+
+const genTypeCounts = {
+  "1": 15,
+  "2-5": 17,
+  "6+": 18,
+};
+
+// Effectiveness Multiplier lists
+  //to be populated with all single Pokemon types that exist in current generation
+const effectMults = new Map([
+  ["4x", new Set()],
+  ["3x", new Set()],
+  ["2x", new Set()],
+  ["1.5x", new Set()],
+  ["1x", new Set()],
+  ["0.75x", new Set()],
+  ["0.5x", new Set()],
+  ["0.25x", new Set()],
+  ["0x", new Set()],
+]);
+
+const effectivenessCache = new Map([
+  ["4x", new Set()],
+  ["3x", new Set()],
+  ["2x", new Set()],
+  ["1.5x", new Set()],
+  ["1x", new Set()],
+  ["0.75x", new Set()],
+  ["0.5x", new Set()],
+  ["0.25x", new Set()],
+  ["0x", new Set()],
+]);
+
+const typeVisibility = (container) => {
+  const btns = container.querySelector(".button-grid").children;
+  for(let i = 15; i < btns.length; i++) {
+    btns[i].style.display = (genTypeCounts[gen] > i) ? "block" : "none";
+  }
+};
+
+const clearSelections = (container, selectedTypes) => {
+  container.querySelectorAll("button.selected").forEach((button) => {
+    const existingType = button.dataset.type;
+    if(selectedTypes.has(existingType)) {
+      selectedTypes.delete(existingType);
+      button.classList.remove("selected");
+    }
+  })
+};
+
+const getTypeRelationship = (types, mode, generation, exceptions) => {
+  let res = mode === "offense" ? "effectiveness" : "resistances";
+  // Update effectiveness sublists with the results
+  console.log(`Checking ${res} of ${[...types]}`);
+  const newEffectMults = getEffectiveness([...types], mode, generation, exceptions);
+  return updateEffectiveness(newEffectMults);
+};
+
+const updateCache = (cache, typeKey, multiplier, operation = "add") => {
+  for (const type in cache) {
+    if (operation === "add") {
+      cache[type] *= multiplier[typeKey];
+    } else if (operation === "remove") {
+      cache[type] /= multiplier[typeKey];
+    }
+  }
+};
+
+// effectiveness.js
+const loadGenerationData = async (gen) => {
+  // Load JSON data for the specified generation
+  // (e.g., fetch from a file or use a preloaded object)
+  const cachedData = localStorage.getItem(`genData_${gen}`);
+  if (cachedData) {
+    return JSON.parse(cachedData);
   }
 
-  console.log("Gen buttons found, attaching event listener.");
+  const genData = {
+    "1": "/json/gen1.json",
+    "2-5": "/json/gen2-5.json",
+    "6+": "/json/gen6+.json",
+  };
 
-  genContainer.querySelectorAll("button").forEach(button => {
-    button.classList.toggle("selected", button.dataset.gen === gen);
+  try {
+    const res = await fetch(genData[gen]);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch data for generation ${gen}.`);
+    }
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error loading generation data:", error);
+    return {}; // empty object to prevent errors elsewhere
+  }
+};
+
+const loadExceptions = async () => {
+  try {
+    const res = await fetch("/json/exceptions.json");
+    if(!res.ok) {
+      throw new Error("Failed to fetch data for exceptions.");
+    }
+    const data = await res.json();
+    return data; // target the exception array
+  } catch (error) {
+    console.error("Error loading generation data:", error);
+    return {};
+  }
+}
+
+const setsEqual = (setA, setB) => {
+  return setA.size === setB.size && [...setA].every(x => setB.has(x));
+}
+
+const updateEffectiveness = (newEffectMults) => {
+  newEffectMults.forEach((newSet, mult) => {
+    if(!setsEqual(newSet, effectivenessCache.get(mult))) {
+      // Update only when necessary
+      effectivenessCache.set(mult, new Set(newSet));
+      updateDOM(mult, newSet);
+    }
+  });
+}
+
+const updateDOM = (mult, typeSet) => {
+  const listEl = document.getElementById(mult);
+  listEl.innerHTML = "";
+
+  typeSet.forEach(type => {
+    const listItem = document.createElement("li");
+    listItem.textContent = type;
+    listEl.appendChild(listItem);
   });
 
-  // One event listener for the container
-  genContainer.addEventListener("click", (e) => {
-    const button = e.target.closest("button");
-    if(!button || !button.dataset.gen) return;
+  // Get the parent `.result-group` div and toggle its visibility
+  const resultGroup = listEl.closest(".result-group");
+  if(resultGroup) {
+    resultGroup.style.display = typeSet.size > 0 ? "block" : "none";
+  }
+}
 
-    const newGen = button.dataset.gen;
-    if(newGen === gen) return;
+const getEffectiveness = (inTypes, mode, gen, exceptions) => {
+  // Clear the Map before processing new data
+  effectMults.forEach(set => set.clear());
 
-    genContainer.querySelector(".selected")?.classList.remove("selected");
+  // console.log(`Effectiveness of ${[...inTypes]}`)
+  const outKeys = genTypeCounts[gen]; // Limit looping through types based on generation
 
-    gen = newGen;
-    localStorage.setItem("selectedGen", gen);
-    button.classList.add("selected");
+  // If there are exceptions, only check type relationships that the exceptions apply to
+    // some exceptions have unique interactions that require checks during result group placement
+  const exceptionMap = new Map();
+  let tintedLens = 0;
+  if (exceptions.size > 0) {
+    for (const exception of exceptions) {
+      const exceptIndex = exceptMap[exception];
+      if(exceptIndex === 5) tintedLens = 1; 
+      const exceptEntry = exceptJSON.e[exceptIndex];
+      if(exceptEntry !== -1) { // Exceptions that don't modify effectivity have been set to `-1` in JSON
+        for (const [inKey, targets] of Object.entries(exceptEntry.targets)) {
+          for (const outKey of Object.keys(targets)) {
+            // console.log(`${inKey},${outKey}`)
+            exceptionMap.set(`${parseInt(inKey, 10)},${parseInt(outKey, 10)}`, exceptEntry);
+          }
+        }
+      } else break;
+    }
+  };
 
-    console.log(`Gen changed to ${gen}.`);
-  });
-  // Set initial selected button
-  genContainer.querySelector(`button[data-gen="${gen}"]`)?.classList.add("selected");
+  // Loop through all Pokemon types in the current generation to output their effectiveness relationships
+    // mode === "offense" –> selected ATK types are `inKeys`, opposing Pokemon DEF types are `outKeys`
+    // mode === "defense" -> selected DEF types are `inKeys`, opposing Pokemon ATK types are `outKeys`
+  for (let outKey = 0; outKey < outKeys; outKey++) {
+    let totalMult = 1;
+
+    // Process input types to get their effectiveness relationship with output types
+    for (const type of inTypes) {
+      const inKey = typeMap[type];
+      // if(inKey === undefined) continue; // ignore invalid types
+
+      const effectMult = mode === "offense"
+        ? genJSON.s[inKey][outKey] // Offense: `Deals ${n}x to`; inKey –> outKey
+        : genJSON.s[outKey][inKey]; // Defense: `Takes ${n}x from`; outKey –> inKey 
+      totalMult *= effectMult;
+
+      // CURRENT IDEA for applying exception 3/4/2025
+      const exception = exceptionMap.get(`${inKey},${outKey}`);
+      if(exception) {
+        totalMult = exception.replace === 1 ? exception.mult : totalMult * exception.mult;
+      }
+    }
+
+    const typeName = typeNames[outKey]; // need type string for targeted types
+    switch(totalMult) {
+      case 4:
+        effectMults.get("4x").add(typeName);
+        break;
+      case 3:
+        effectMults.get("3x").add(typeName);
+        break;
+      case 2:
+        effectMults.get("2x").add(typeName);
+        break;
+      case 1.5:
+        effectMults.get("1.5x").add(typeName);
+        break;
+      case 1:
+        effectMults.get("1x").add(typeName);
+        break;
+      case 0.75:
+        effectMults.get("0.75x").add(typeName);
+        break;
+      case 0.5:
+        effectMults.get(tintedLens ? "1x" : "0.5x").add(typeName);
+        break;
+      case 0.25:
+        effectMults.get("0.25x").add(typeName);
+        break;
+      case 0:
+        effectMults.get("0x").add(typeName);
+        break;
+      default:
+        throw new Error(`Invalid effectiveness multiplier: ${totalMult}`);
+    }
+  }
+  // console.log(effectMults);
+  return effectMults;
 };
 
 const initTypeButtons = async () => {
   console.log(`Mode: ${mode}`);
   console.log(`Gen: ${gen}`);
+  genJSON = await loadGenerationData(gen);
+  exceptJSON = await loadExceptions();
 
-  const selectedTypes = new Set(["normal"]); // Track selected types, default to 'normal' type
   const primaryContainer = document.querySelector(".primary-types");
   typeVisibility(primaryContainer);
   // if(!primaryContainer) return; // ".type-buttons" doesn't exist in index.html on initial page load, so the first try for initializing always fails. skip it.
   const secondaryContainer = document.querySelector(".secondary-types");
+  const allButtons = [
+    ...primaryContainer.querySelectorAll("button"),
+    ...secondaryContainer?.querySelectorAll("button") || []
+  ];
+  
+  console.log(`Initializing ${mode} exceptions...`);
+  const moveExceptions = document.querySelector(".special-moves");
+  const effects = document.querySelector(".special-effects");
 
   // console.log("Initializing type buttons...");
   // // Clear previous event listeners to prevent duplicates -- htmx swap results in this already
@@ -98,7 +343,6 @@ const initTypeButtons = async () => {
       if(!button || !button.dataset.type) return;
 
       const type = button.dataset.type;
-      // console.log(`Clicked ${type}`);
 
       // Container only allows one type selection at a time
       // `selectedTypes` may have more than 1 type, but not duplicates
@@ -145,7 +389,7 @@ const initTypeButtons = async () => {
         button.classList.add("selected");
         lastPrimarySelected = button;
       }
-    return await getTypeRelationship(selectedTypes, mode);
+    return getTypeRelationship(selectedTypes, mode, gen, exceptions);
   });
 
   // Additional initialization for "defense.html"
@@ -163,7 +407,7 @@ const initTypeButtons = async () => {
           console.log(`${type} is primary.`);
           clearSelections(secondaryContainer, selectedTypes);
           console.log(`Skipping secondary ${type} addition.`)
-          return await getTypeRelationship(selectedTypes, mode);
+          return getTypeRelationship(selectedTypes, mode, gen, exceptions);
         }
 
         // Container only allows one type selection at a time
@@ -184,209 +428,155 @@ const initTypeButtons = async () => {
           button.classList.add("selected");
           lastSecondarySelected = button;
         }
-      return await getTypeRelationship(selectedTypes, mode);
+      return getTypeRelationship(selectedTypes, mode, gen, exceptions);
     });
   };
 
-  // "normal" type is default selection on initial load (will need to be generalized for caching type selections)
-  primaryContainer.querySelector(`button[data-type="normal"]`).classList.add("selected");
-  // disable corresponding secondary type if on defense page
-  let lastSecondaryDisabled = secondaryContainer?.querySelector(`button[data-type="normal"]`);
-  if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
+  moveExceptions.addEventListener("click", async (e) => {
+    const button = e.target.closest("button");
+    if(!button || !button.dataset.move) return;
+    
+    const move = button.dataset.move;
+    // console.log(move);
 
+    if(exceptions.has(move)) {
+      exceptions.delete(move);
+      button.classList.remove("selected");
+      lastMoveSelected = null;
+      
+      // Only freeze-dry has a second damage type to be deleted
+      if(move !== "freeze-dry") {
+        selectedTypes.delete("flying");
+      }
+
+      // enableAllTypeButtons()
+      allButtons.forEach(button => button.disabled = false);
+
+      // // Clear type selection from primaryContainer
+      // lastPrimarySelected?.classList.remove("selected");
+      // lastPrimarySelected = null;
+    } else {
+      if(lastMoveSelected) {
+        const lastMoveName = lastMoveSelected.dataset.move;
+        exceptions.delete(lastMoveName);
+        lastMoveSelected.classList.remove("selected");
+
+        if(lastMoveName === "flying_press") {
+          selectedTypes.delete("flying");
+        }
+      }
+
+      exceptions.add(move);
+      button.classList.add("selected");
+      lastMoveSelected = button;
+
+      const moveType = {
+        "flying_press": "fighting",
+        "freeze-dry": "ice",
+        "thousand_arrows": "ground"
+      }[move];
+
+      if(moveType) {
+        selectedTypes.clear();
+        selectedTypes.add(moveType);
+
+        // Highlight corresponding type in primaryContainer
+        lastPrimarySelected?.classList.remove("selected");
+        const moveTypeButton = primaryContainer.querySelector(`button[data-type="${moveType}"]`);
+        if(moveTypeButton) {
+          moveTypeButton.classList.add("selected");
+          lastPrimarySelected = moveTypeButton;
+        }
+      }
+
+      // only flying press targets an additional entire type
+      if(move === "flying_press") {
+        selectedTypes.add("flying");
+      }
+
+      //disableAllTypeButtons()
+      allButtons.forEach(button => button.disabled = true);
+    };
+    return getTypeRelationship(selectedTypes, mode, gen, exceptions);
+  });
+
+  effects.addEventListener("change", async (e) => {
+    const checkbox = e.target.closest(".effect-checkbox");
+    if(!checkbox) return;
+    const effect = checkbox.value;
+    // console.log(effect);
+
+    if(checkbox.checked) {
+      exceptions.add(effect);
+    } else {
+      exceptions.delete(effect);
+    };
+    return getTypeRelationship(selectedTypes, mode, gen, exceptions);
+  });
+
+  // Visual selection of current types based on what has persisted
+  const [primaryType, secondaryType] = [...selectedTypes];
+
+  if(primaryType) {
+    primaryContainer.querySelector(`button[data-type="${primaryType}"]`).classList.add("selected");
+  } else { //"normal" type is default selection on initial load
+    primaryContainer.querySelector(`button[data-type="normal"]`).classList.add("selected");
+  }
+
+  // select secondary type and disable secondary type that corresponds with current primary type -- if on defense page
+  if(mode === "defense") {
+    let lastSecondaryDisabled = secondaryContainer?.querySelector(`button[data-type="${primaryType}"]`);
+    if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
+
+    if(secondaryType) {
+      secondaryContainer.querySelector(`button[data-type="${secondaryType}"]`).classList.add("selected");
+    }
+  }
+  
   // Prep currently selected button types for replacement if they exist
   // No secondary on initial page load (but caching type selections will be implemented)
   let lastPrimarySelected = primaryContainer.querySelector("button.selected");
   let lastSecondarySelected = secondaryContainer?.querySelector("button.selected");
+  let lastMoveSelected = moveExceptions.querySelector("button.selected") || null;
 
   // Currently 'normal' type is selected upon initialization, display relevant results
-  console.log(`Getting initial "Normal" type relationships for gen ${gen}...`);
-  const newEffectMults = await getEffectiveness(['normal'], mode, gen);
-  updateEffectiveness(newEffectMults);
+  console.log(`Getting initial type relationships on ${mode} for gen ${gen}...`);
+  return getTypeRelationship(selectedTypes, mode, gen, exceptions);
 };
 
-const typeVisibility = (container) => {
-  const btns = container.querySelector(".button-grid").children;
-  for(let i = 15; i < btns.length; i++) {
-    btns[i].style.display = (genTypeCounts[gen] > i) ? "block" : "none";
+const initGenButtons = async () => {
+  const genContainer = document.querySelector(".gen-selection");
+  if(!genContainer) {
+    console.log("Gen Selection container not found.");
+    return;
   }
-};
 
-const clearSelections = (container, selectedTypes) => {
-  container.querySelectorAll("button.selected").forEach((button) => {
-    const existingType = button.dataset.type;
-    if(selectedTypes.has(existingType)) {
-      selectedTypes.delete(existingType);
-      button.classList.remove("selected");
-    }
-  })
-};
+  console.log("Gen buttons found, attaching event listener.");
 
-const getTypeRelationship = async (types, mode) => {
-  let res = mode === "offense" ? "effectiveness" : "resistances" 
-  // Update effectiveness sublists with the results
-  console.log(`Checking ${res} of ${[...types]}`);
-  const newEffectMults = await getEffectiveness([...types], mode, gen);
-  updateEffectiveness(newEffectMults);
-}
-
-// typeMap.js
-const typeNames = [
-  "normal", "fire", "water", "electric",
-  "grass", "ice", "fighting", "poison",
-  "ground", "flying", "psychic", "bug",
-  "rock", "ghost", "dragon", "dark",
-  "steel", "fairy"
-];
-
-const typeMap = Object.fromEntries(typeNames.map((name, index) => [name, index]));
-
-// cache.js
-const caches = {
-  "1": { offense: {}, defense: {} },
-  "2-5": { offense: {}, defense: {} },
-  "6+": { offense: {}, defense: {} },
-};
-
-const updateCache = (cache, typeKey, multiplier, operation = "add") => {
-  for (const type in cache) {
-    if (operation === "add") {
-      cache[type] *= multiplier[typeKey];
-    } else if (operation === "remove") {
-      cache[type] /= multiplier[typeKey];
-    }
-  }
-};
-
-const genTypeCounts = {
-  "1": 15,
-  "2-5": 17,
-  "6+": 18,
-};
-
-// effectiveness.js
-const loadGenerationData = async (gen) => {
-  // Load JSON data for the specified generation
-  // (e.g., fetch from a file or use a preloaded object)
-  const genData = {
-    "1": "/json/gen1.json",
-    "2-5": "/json/gen2-5.json",
-    "6+": "/json/gen6+.json",
-  };
-
-  try {
-    const response = await fetch(genData[gen]);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch data for generation ${gen}`);
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error loading generation data:", error);
-    return {}; // empty object to prevent errors elsewhere
-  }
-};
-
-// Effectiveness Multiplier lists
-    //to be populated with all single Pokemon types that exist in current generation
-const effectMults = new Map([
-  ["4x", new Set()],
-  ["2x", new Set()],
-  ["1x", new Set()],
-  ["0.5x", new Set()],
-  ["0.25x", new Set()],
-  ["0x", new Set()],
-]);
-
-const getEffectiveness = async (inTypes, mode, gen) => {
-  // Clear the Map before processing new data
-  effectMults.forEach(set => set.clear());
-
-  // console.log(`effectiveness of ${[...inTypes]}`)
-  const data = await loadGenerationData(gen); // Generation data to traverse
-  const outKeys = genTypeCounts[gen]; // Limit looping through types based on generation
-
-  // Loop through all Pokemon types in the current generation to output their effectiveness relationships
-    // mode === "offense" –> selected ATK types are `inKeys`, opposing Pokemon DEF types are `outKeys`
-    // mode === "defense" -> selected DEF types are `inKeys`, opposing Pokemon ATK types are `outKeys`
-  for (let outKey = 0; outKey < outKeys; outKey++) {
-    let totalMult = 1;
-
-    // Process input types to get their effectiveness relationship with output types
-    for (const type of inTypes) {
-      const inKey = typeMap[type];
-      // if(inKey === undefined) continue; // ignore invalid types
-
-      const effectMult = mode === "offense"
-        ? data.s[inKey][outKey] // Offense: `Deals ${n}x to`; inKey –> outKey
-        : data.s[outKey][inKey]; // Defense: `Takes ${n}x from`; outKey –> inKey 
-      totalMult *= effectMult;
-    }
-
-    const typeName = typeNames[outKey]; // need type string for targeted types
-    switch(totalMult) {
-      case 4:
-        effectMults.get("4x").add(typeName);
-        break;
-      case 2:
-        effectMults.get("2x").add(typeName);
-        break;
-      case 1:
-        effectMults.get("1x").add(typeName);
-        break;
-      case 0.5:
-        effectMults.get("0.5x").add(typeName);
-        break;
-      case 0.25:
-        effectMults.get("0.25x").add(typeName);
-        break;
-      case 0:
-        effectMults.get("0x").add(typeName);
-        break;
-      default:
-        throw new Error(`Invalid effectiveness multiplier: ${totalMult}`);
-    }
-  }
-  // console.log(effectMults);
-  return effectMults;
-};
-
-const setsEqual = (setA, setB) => {
-  return setA.size === setB.size && [...setA].every(x => setB.has(x));
-}
-
-const updateEffectiveness = (newEffectMults) => {
-  newEffectMults.forEach((newSet, mult) => {
-    if(!setsEqual(newSet, effectivenessCache.get(mult))) {
-      // Update only when necessary
-      effectivenessCache.set(mult, new Set(newSet));
-      updateDOM(mult, newSet);
-    }
-  });
-}
-
-const updateDOM = (mult, typeSet) => {
-  const listEl = document.getElementById(mult);
-  listEl.innerHTML = "";
-
-  typeSet.forEach(type => {
-    const listItem = document.createElement("li");
-    listItem.textContent = type;
-    listEl.appendChild(listItem);
+  genContainer.querySelectorAll("button").forEach(button => {
+    button.classList.toggle("selected", button.dataset.gen === gen);
   });
 
-  // Get the parent `.result-group` div and toggle its visibility
-  const resultGroup = listEl.closest(".result-group");
-  if(resultGroup) {
-    resultGroup.style.display = typeSet.size > 0 ? "block" : "none";
-  }
-}
+  // One event listener for the container
+  genContainer.addEventListener("click", async (e) => {
+    const button = e.target.closest("button");
+    if(!button || !button.dataset.gen) return;
 
-const effectivenessCache = new Map([
-  ["4x", new Set()],
-  ["2x", new Set()],
-  ["1x", new Set()],
-  ["0.5x", new Set()],
-  ["0.25x", new Set()],
-  ["0x", new Set()],
-]);
+    const newGen = button.dataset.gen;
+    if(newGen === gen) return;
+    if(!clearCache) {
+      console.log("clearing effectivenessCache")
+      effectivenessCache.forEach(set => set.clear());
+      clearCache = true;
+    }
+    genContainer.querySelector(".selected")?.classList.remove("selected");
+
+    gen = newGen;
+    localStorage.setItem("selectedGen", gen);
+    button.classList.add("selected");
+
+    console.log(`Gen changed to ${gen}.`);
+  });
+  // Set initial selected button
+  genContainer.querySelector(`button[data-gen="${gen}"]`)?.classList.add("selected");
+};
