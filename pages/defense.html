@@ -51,25 +51,63 @@
     </div>
     <!-- Exceptions to Type Effectivity -->
     <div class="exceptions_d">
+      <!-- Special Moves -->
+      <div class="special-moves-d">
+        <h3>Choose special move</h3>
+        <div class="button-grid">
+          <button class="move-button" data-move="forests_curse">Forest's Curse</button>
+          <button class="move-button" data-move="trick-or-treat">Trick-Or-Treat</button>
+        </div>
+      </div>
       <!-- Special Effects -->
       <div class="special-effects">
         <h3>Choose ability or active effect</h3>
-        <select id="effect-dropdown">
-          <option value="">None</option>
-          <option value="scrappy">Scrappy</option>
-          <option value="tinted-lens">Tinted Lens</option>
-          <option value="flash-fire">Flash Fire</option>
-          <option value="water-bubble">Water Bubble</option>
-          <option value="foresight">Foresight</option>
-          <option value="odor-sleuth">Odor Sleuth</option>
-          <option value="gravity">Gravity</option>
-        </select>
+        <div class="effect-list">
+          <label><input type="checkbox" class="effect-checkbox" value="flash_fire_def"> Flash Fire</label>
+          <label><input type="checkbox" class="effect-checkbox" value="levitate"> Levitate</label>
+          <label><input type="checkbox" class="effect-checkbox" value="lightning_rod"> Lightning Rod</label>
+          <label><input type="checkbox" class="effect-checkbox" value="thick_fat"> Thick Fat</label>
+          <label><input type="checkbox" class="effect-checkbox" value="volt_absorb"> Volt Absorb</label>
+          <label><input type="checkbox" class="effect-checkbox" value="water_absorb"> Water Absorb</label>
+          <label><input type="checkbox" class="effect-checkbox" value="wonder_guard"> Wonder Guard</label>
+          <label><input type="checkbox" class="effect-checkbox" value="dry_skin"> Dry Skin</label>
+          <label><input type="checkbox" class="effect-checkbox" value="filter"> Filter</label>
+          <label><input type="checkbox" class="effect-checkbox" value="gravity_def"> Gravity</label>
+          <label><input type="checkbox" class="effect-checkbox" value="heatproof"> Heatproof</label>
+          <label><input type="checkbox" class="effect-checkbox" value="motor_drive"> Motor Drive</label>
+          <label><input type="checkbox" class="effect-checkbox" value="storm_drain"> Storm Drain</label>
+          <label><input type="checkbox" class="effect-checkbox" value="sap_sipper"> Sap Sipper</label>
+          <label><input type="checkbox" class="effect-checkbox" value="delta_stream"> Delta Stream</label>
+          <label><input type="checkbox" class="effect-checkbox" value="fluffy"> Fluffy</label>
+          <label><input type="checkbox" class="effect-checkbox" value="water_bubble_def"> Water Bubble</label>
+          <label><input type="checkbox" class="effect-checkbox" value="earth_eater"> Earth Eater</label>
+          <label><input type="checkbox" class="effect-checkbox" value="purifying_salt"> Purifying Salt</label>
+          <label><input type="checkbox" class="effect-checkbox" value="tera_shell"> Tera Shell</label>
+          <label><input type="checkbox" class="effect-checkbox" value="well-baked_body"> Well-Baked Body</label>
+        </div>
       </div>
       <div class="tera-types">
         <h3>Choose tera type</h3>
         <select id="tera-dropdown">
           <option value="">None</option>
-          
+          <option value="normal">Normal</option>
+          <option value="fire">Fire</option>
+          <option value="water">Water</option>
+          <option value="electric">Electric</option>
+          <option value="grass">Grass</option>
+          <option value="ice">Ice</option>
+          <option value="fighting">Fighting</option>
+          <option value="poison">Poison</option>
+          <option value="ground">Ground</option>
+          <option value="flying">Flying</option>
+          <option value="psychic">Psychic</option>
+          <option value="bug">Bug</option>
+          <option value="rock">Rock</option>
+          <option value="ghost">Ghost</option>
+          <option value="dragon">Dragon</option>
+          <option value="dark">Dark</option>
+          <option value="steel">Steel</option>
+          <option value="fairy">Fairy</option>
         </select>
       </div>
     </div>

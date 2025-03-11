@@ -100,6 +100,8 @@ Notes:
     -1, // Purifying Salt
     -1, // Tera Shell
     -1, // Well-Baked Body
+    -1, // Forest's Curse
+    -1 // Trick-Or-Treat
   ]
 }
 ```

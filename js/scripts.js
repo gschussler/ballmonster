@@ -46,11 +46,14 @@ document.querySelector("nav").addEventListener("click", (e) => {
 
     console.log(`Mode updating from ${mode} to: ${newMode}`);
     mode = newMode;
+
+    modeChange = true;
   }
 });
 
 let mode = document.getElementById('content').getAttribute("data-mode") || "offense";
 let gen = localStorage.getItem("selectedGen") || "6+";
+let modeChange = false;
 let genChange = false;
 let genJSON, exceptJSON;
 let clearCache = false;
@@ -76,7 +79,7 @@ const exceptNames = [
   // Offense exceptions (Gen-ascending)
   "foresight", "flash_fire_atk", "odor_sleuth", "gravity_atk", "scrappy", "tinted_lens", "flying_press", "freeze-dry", "thousand_arrows", "water_bubble_atk",
   // Defense exceptions (Gen-ascending)
-  "flash_fire_def", "levitate", "lightning_rod", "thick_fat", "volt_absorb", "water_absorb", "wonder_guard", "dry_skin", "filter", "gravity_def", "heatproof", "motor_drive", "storm_drain", "sap_sipper", "delta_stream", "fluffy", "water_bubble_def", "earth_eater", "purifying_salt", "tera_shell", "well-baked_body"
+  "flash_fire_def", "levitate", "lightning_rod", "thick_fat", "volt_absorb", "water_absorb", "wonder_guard", "dry_skin", "filter", "gravity_def", "heatproof", "motor_drive", "storm_drain", "sap_sipper", "delta_stream", "fluffy", "water_bubble_def", "earth_eater", "purifying_salt", "tera_shell", "well-baked_body", "forests_curse", "trick-or-treat"
 ];
 
 const exceptMap = Object.fromEntries(exceptNames.map((name, index) => [name, index]));
@@ -439,8 +442,8 @@ const initTypeButtons = async () => {
   };
 
   // Initial selectedTypes and button selection handling
-  if(genChange) {
-    // clear if new generation
+  if(genChange || modeChange) {
+    // clear if new generation or "offense" <--> "defense" nav
     selectedTypes.clear();
     selectedTypes.add("normal");
     primaryContainer.querySelector(`button[data-type="normal"]`).classList.add("selected");
@@ -473,7 +476,9 @@ const initTypeButtons = async () => {
     }
   }
 
+  // Reset state flags
   genChange = false;
+  modeChange = false;
 
   // const [primaryType, secondaryType] = [...selectedTypes];
 
@@ -513,10 +518,10 @@ const initOffenseExceptions = (primaryContainer, secondaryContainer) => {
     ...secondaryContainer?.querySelectorAll("button") || []
   ];
   
-  const moveExceptions = document.querySelector(".special-moves");
+  const moves = document.querySelector(".special-moves-o");
   const effects = document.querySelector(".special-effects");
 
-  moveExceptions.addEventListener("click", async (e) => {
+  moves.addEventListener("click", async (e) => {
     const button = e.target.closest("button");
     if(!button || !button.dataset.move) return;
     
@@ -535,7 +540,7 @@ const initOffenseExceptions = (primaryContainer, secondaryContainer) => {
 
       // enableAllTypeButtons()
       allButtons.forEach(button => button.disabled = false);
-      
+
       // // Clear type selection from primaryContainer
       // lastPrimarySelected?.classList.remove("selected");
       // lastPrimarySelected = null;
@@ -603,11 +608,18 @@ const initOffenseExceptions = (primaryContainer, secondaryContainer) => {
     return updateSelections(primaryContainer, secondaryContainer);
   });
 
-  let lastMoveSelected = moveExceptions.querySelector("button.selected") || null;
+  let lastMoveSelected = moves.querySelector("button.selected") || null;
 };
 
-const initDefenseExceptions = () => {
-
+const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
+  const allButtons = [
+    ...primaryContainer.querySelectorAll("button"),
+    ...secondaryContainer?.querySelectorAll("button") || []
+  ];
+  
+  const moves = document.querySelector(".special-moves-d");
+  const effects = document.querySelector(".special-effects");
+  const teraContainer = document.querySelector(".tera-types");
 };
 
 const initGenButtons = async () => {
