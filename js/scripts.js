@@ -51,11 +51,15 @@ document.querySelector("nav").addEventListener("click", (e) => {
 
 let mode = document.getElementById('content').getAttribute("data-mode") || "offense";
 let gen = localStorage.getItem("selectedGen") || "6+";
+let genChange = false;
 let genJSON, exceptJSON;
 let clearCache = false;
 
 const selectedTypes = new Set(["normal"]); // Track selected types, default to 'normal' type
 const exceptions = new Set([]); // Track selected exceptions, default to none
+let lastPrimarySelected = null;
+let lastSecondarySelected = null;
+let lastSecondaryDisabled; // track secondary button disabled state outside of loop so primaryContainer event listener may access
 
 // typeMap.js
 const typeNames = [
@@ -134,6 +138,11 @@ const clearSelections = (container, selectedTypes) => {
     }
   })
 };
+
+const updateSelections = (primaryContainer, secondaryContainer) => {
+  lastPrimarySelected = primaryContainer.querySelector("button.selected");
+  lastSecondarySelected = secondaryContainer?.querySelector("button.selected");
+}
 
 const getTypeRelationship = (types, mode, generation, exceptions) => {
   let res = mode === "offense" ? "effectiveness" : "resistances";
@@ -323,14 +332,8 @@ const initTypeButtons = async () => {
   typeVisibility(primaryContainer);
   // if(!primaryContainer) return; // ".type-buttons" doesn't exist in index.html on initial page load, so the first try for initializing always fails. skip it.
   const secondaryContainer = document.querySelector(".secondary-types");
-  const allButtons = [
-    ...primaryContainer.querySelectorAll("button"),
-    ...secondaryContainer?.querySelectorAll("button") || []
-  ];
   
   console.log(`Initializing ${mode} exceptions...`);
-  const moveExceptions = document.querySelector(".special-moves");
-  const effects = document.querySelector(".special-effects");
 
   // console.log("Initializing type buttons...");
   // // Clear previous event listeners to prevent duplicates -- htmx swap results in this already
@@ -389,7 +392,8 @@ const initTypeButtons = async () => {
         button.classList.add("selected");
         lastPrimarySelected = button;
       }
-    return getTypeRelationship(selectedTypes, mode, gen, exceptions);
+    getTypeRelationship(selectedTypes, mode, gen, exceptions);
+    return updateSelections(primaryContainer, secondaryContainer);
   });
 
   // Additional initialization for "defense.html"
@@ -407,7 +411,8 @@ const initTypeButtons = async () => {
           console.log(`${type} is primary.`);
           clearSelections(secondaryContainer, selectedTypes);
           console.log(`Skipping secondary ${type} addition.`)
-          return getTypeRelationship(selectedTypes, mode, gen, exceptions);
+          getTypeRelationship(selectedTypes, mode, gen, exceptions);
+          return updateSelections(primaryContainer, secondaryContainer);
         }
 
         // Container only allows one type selection at a time
@@ -428,9 +433,88 @@ const initTypeButtons = async () => {
           button.classList.add("selected");
           lastSecondarySelected = button;
         }
-      return getTypeRelationship(selectedTypes, mode, gen, exceptions);
+      getTypeRelationship(selectedTypes, mode, gen, exceptions);
+      return updateSelections(primaryContainer, secondaryContainer);
     });
   };
+
+  // Initial selectedTypes and button selection handling
+  if(genChange) {
+    // clear if new generation
+    selectedTypes.clear();
+    selectedTypes.add("normal");
+    primaryContainer.querySelector(`button[data-type="normal"]`).classList.add("selected");
+    lastSecondaryDisabled = secondaryContainer?.querySelector(`button[data-type="normal"]`);
+    if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
+  } else {
+    const maxValid = genTypeCounts[gen] - 1;
+    for(const type of selectedTypes) {
+      if(typeMap[type] > maxValid) {
+        selectedTypes.clear();
+        selectedTypes.add("normal");
+        break;
+      }
+    }
+  
+    // Visual selection of current types and exceptions based on what has persisted (currently should only contain two types)
+    let typeIdx = 0;
+    for(const type of selectedTypes) {
+      const button = document.querySelector(`button[data-type="${type}"]`);
+      if(!button) continue;
+  
+      button.classList.add("selected");
+  
+      // disable secondary type that corresponds with current primary type -- if on defense
+      if(mode === "defense" && typeIdx === 0) {
+        lastSecondaryDisabled = secondaryContainer?.querySelector(`button[data-type="${type}"]`);
+        if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
+      }
+      typeIdx++;
+    }
+  }
+
+  genChange = false;
+
+  // const [primaryType, secondaryType] = [...selectedTypes];
+
+  // if(primaryType) {
+  //   primaryContainer.querySelector(`button[data-type="${primaryType}"]`).classList.add("selected");
+  // } else { //"normal" type is default selection on initial load
+  //   primaryContainer.querySelector(`button[data-type="normal"]`).classList.add("selected");
+  // }
+
+  // // select secondary type if on defense mode
+  // if(mode === "defense") {
+  //   if(secondaryType) {
+  //     secondaryContainer.querySelector(`button[data-type="${secondaryType}"]`).classList.add("selected");
+  //   }
+  // }
+  
+  // Prep currently selected button types for replacement if they exist
+  // No secondary on initial page load (but caching type selections will be implemented)
+  lastPrimarySelected = primaryContainer.querySelector("button.selected");
+  lastSecondarySelected = secondaryContainer?.querySelector("button.selected");
+
+  if(mode === "defense") {
+    initDefenseExceptions(primaryContainer, secondaryContainer);
+  } else {
+    initOffenseExceptions(primaryContainer, secondaryContainer);
+  }
+
+  // Currently 'normal' type is selected upon initialization, display relevant results
+  console.log(`Getting initial type relationships on ${mode} for gen ${gen}...`);
+  getTypeRelationship(selectedTypes, mode, gen, exceptions);
+  return updateSelections(primaryContainer, secondaryContainer);
+};
+
+const initOffenseExceptions = (primaryContainer, secondaryContainer) => {
+  const allButtons = [
+    ...primaryContainer.querySelectorAll("button"),
+    ...secondaryContainer?.querySelectorAll("button") || []
+  ];
+  
+  const moveExceptions = document.querySelector(".special-moves");
+  const effects = document.querySelector(".special-effects");
 
   moveExceptions.addEventListener("click", async (e) => {
     const button = e.target.closest("button");
@@ -451,7 +535,7 @@ const initTypeButtons = async () => {
 
       // enableAllTypeButtons()
       allButtons.forEach(button => button.disabled = false);
-
+      
       // // Clear type selection from primaryContainer
       // lastPrimarySelected?.classList.remove("selected");
       // lastPrimarySelected = null;
@@ -477,15 +561,18 @@ const initTypeButtons = async () => {
       }[move];
 
       if(moveType) {
+        console.log('valid move type')
         selectedTypes.clear();
         selectedTypes.add(moveType);
 
         // Highlight corresponding type in primaryContainer
         lastPrimarySelected?.classList.remove("selected");
+        console.log(`lastPrimarySelected before exception is ${lastPrimarySelected.dataset.type}`)
         const moveTypeButton = primaryContainer.querySelector(`button[data-type="${moveType}"]`);
         if(moveTypeButton) {
           moveTypeButton.classList.add("selected");
           lastPrimarySelected = moveTypeButton;
+          console.log(`lastPrimarySelected after exception is ${lastPrimarySelected.dataset.type}`)
         }
       }
 
@@ -497,7 +584,8 @@ const initTypeButtons = async () => {
       //disableAllTypeButtons()
       allButtons.forEach(button => button.disabled = true);
     };
-    return getTypeRelationship(selectedTypes, mode, gen, exceptions);
+    getTypeRelationship(selectedTypes, mode, gen, exceptions);
+    return updateSelections(primaryContainer, secondaryContainer);
   });
 
   effects.addEventListener("change", async (e) => {
@@ -511,37 +599,15 @@ const initTypeButtons = async () => {
     } else {
       exceptions.delete(effect);
     };
-    return getTypeRelationship(selectedTypes, mode, gen, exceptions);
+    getTypeRelationship(selectedTypes, mode, gen, exceptions);
+    return updateSelections(primaryContainer, secondaryContainer);
   });
 
-  // Visual selection of current types based on what has persisted
-  const [primaryType, secondaryType] = [...selectedTypes];
-
-  if(primaryType) {
-    primaryContainer.querySelector(`button[data-type="${primaryType}"]`).classList.add("selected");
-  } else { //"normal" type is default selection on initial load
-    primaryContainer.querySelector(`button[data-type="normal"]`).classList.add("selected");
-  }
-
-  // select secondary type and disable secondary type that corresponds with current primary type -- if on defense page
-  if(mode === "defense") {
-    let lastSecondaryDisabled = secondaryContainer?.querySelector(`button[data-type="${primaryType}"]`);
-    if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
-
-    if(secondaryType) {
-      secondaryContainer.querySelector(`button[data-type="${secondaryType}"]`).classList.add("selected");
-    }
-  }
-  
-  // Prep currently selected button types for replacement if they exist
-  // No secondary on initial page load (but caching type selections will be implemented)
-  let lastPrimarySelected = primaryContainer.querySelector("button.selected");
-  let lastSecondarySelected = secondaryContainer?.querySelector("button.selected");
   let lastMoveSelected = moveExceptions.querySelector("button.selected") || null;
+};
 
-  // Currently 'normal' type is selected upon initialization, display relevant results
-  console.log(`Getting initial type relationships on ${mode} for gen ${gen}...`);
-  return getTypeRelationship(selectedTypes, mode, gen, exceptions);
+const initDefenseExceptions = () => {
+
 };
 
 const initGenButtons = async () => {
@@ -568,6 +634,7 @@ const initGenButtons = async () => {
       console.log("clearing effectivenessCache")
       effectivenessCache.forEach(set => set.clear());
       clearCache = true;
+      genChange = true; // flag used to simplify initial offense/defense page interaction with selectedTypes
     }
     genContainer.querySelector(".selected")?.classList.remove("selected");
 
