@@ -16,11 +16,10 @@ document.addEventListener("htmx:beforeRequest", (e) => {
     console.log(`Already on ${requestedMode} page or navigated to "More". Preventing unnecessary request.`);
     e.preventDefault();
   } else if (mode !== "more") {
+    // If generation hasn't changed, not necessarily clearing...
     if(!clearCache) {
       console.log("clearing effectivenessCache")
       effectivenessCache.forEach(set => set.clear());
-    } else {
-      clearCache = false;
     }
   }
 });
@@ -46,14 +45,12 @@ document.querySelector("nav").addEventListener("click", (e) => {
 
     console.log(`Mode updating from ${mode} to: ${newMode}`);
     mode = newMode;
-
-    modeChange = true;
   }
 });
 
 let mode = document.getElementById('content').getAttribute("data-mode") || "offense";
+let prevMode = null;
 let gen = localStorage.getItem("selectedGen") || "6+";
-let modeChange = false;
 let genChange = false;
 let genJSON, exceptJSON;
 let clearCache = false;
@@ -63,6 +60,8 @@ const exceptions = new Set([]); // Track selected exceptions, default to none
 let lastPrimarySelected = null;
 let lastSecondarySelected = null;
 let lastSecondaryDisabled; // track secondary button disabled state outside of loop so primaryContainer event listener may access
+let lastSpecialDisabled;
+let lastMoveSelected = null;
 
 // typeMap.js
 const typeNames = [
@@ -102,6 +101,7 @@ const genTypeCounts = {
 // Effectiveness Multiplier lists
   //to be populated with all single Pokemon types that exist in current generation
 const effectMults = new Map([
+  ["8x", new Set()],
   ["4x", new Set()],
   ["3x", new Set()],
   ["2x", new Set()],
@@ -110,10 +110,12 @@ const effectMults = new Map([
   ["0.75x", new Set()],
   ["0.5x", new Set()],
   ["0.25x", new Set()],
+  ["0.125x", new Set()],
   ["0x", new Set()],
 ]);
 
 const effectivenessCache = new Map([
+  ["8x", new Set()],
   ["4x", new Set()],
   ["3x", new Set()],
   ["2x", new Set()],
@@ -122,6 +124,7 @@ const effectivenessCache = new Map([
   ["0.75x", new Set()],
   ["0.5x", new Set()],
   ["0.25x", new Set()],
+  ["0.125x", new Set()],
   ["0x", new Set()],
 ]);
 
@@ -145,7 +148,51 @@ const clearSelections = (container, selectedTypes) => {
 const updateSelections = (primaryContainer, secondaryContainer) => {
   lastPrimarySelected = primaryContainer.querySelector("button.selected");
   lastSecondarySelected = secondaryContainer?.querySelector("button.selected");
-}
+};
+
+// const disableSpecialMove = (type) => {
+//   if(type === "grass") {
+//     if(lastMoveSelected) {
+//       lastMoveSelected.disabled = false;  
+//     }
+//     lastMoveSelected = document.querySelector(`button[data-move="forests_curse"]`);
+//     lastMoveSelected.disabled = true;
+//   } else if(type === "ghost") {
+//     if(lastMoveSelected) {
+//       lastMoveSelected.disabled = false;
+//     }
+//     lastMoveSelected = document.querySelector(`button[data-move="trick-or-treat"]`);
+//     lastMoveSelected.disabled = true;
+//   } else {
+//     if(lastMoveSelected) {
+//       lastMoveSelected.disabled = false;
+//     } else return;
+//   };
+// }
+
+const moveTypeDisable = (container1, container2, moveType, special = false) => {
+  container1.querySelector(`button[data-type="${moveType}"]`).disabled = true
+  if(!special) {
+    lastSecondaryDisabled = container2.querySelector(`button[data-type="${moveType}"]`);
+    lastSecondaryDisabled.disabled = true;
+  } else {
+    lastSpecialDisabled = container2.querySelector(`button[data-type="${moveType}"]`);
+    lastSpecialDisabled.disabled = true;
+  }
+};
+
+const moveTypeEnable = (container1, container2, moveType, special = false) => {
+  container1.querySelector(`button[data-type="${moveType}"]`).disabled = false;
+  if(!special) {
+    if(lastSecondaryDisabled.dataset.type !== moveType) {
+      lastSecondaryDisabled.disabled = false;
+    }
+    lastSecondaryDisabled = null;
+  } else {
+    lastSpecialDisabled.disabled = false;
+    lastSpecialDisabled = null;
+  }
+};
 
 const getTypeRelationship = (types, mode, generation, exceptions) => {
   let res = mode === "offense" ? "effectiveness" : "resistances";
@@ -290,6 +337,9 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
 
     const typeName = typeNames[outKey]; // need type string for targeted types
     switch(totalMult) {
+      case 8:
+        effectMults.get("8x").add(typeName);
+        break;
       case 4:
         effectMults.get("4x").add(typeName);
         break;
@@ -313,6 +363,9 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
         break;
       case 0.25:
         effectMults.get("0.25x").add(typeName);
+        break;
+      case 0.125:
+        effectMults.get("0.125x").add(typeName);
         break;
       case 0:
         effectMults.get("0x").add(typeName);
@@ -350,12 +403,30 @@ const initTypeButtons = async () => {
 
       const type = button.dataset.type;
 
+      // if(type === "grass" && mode === "defense") {
+      //   document.querySelector(`button[data-move="forests_curse"]`).disabled = true;
+      //   if(lastSpecialDisabled?.dataset.move === "trick-or-treat") {
+      //     document.querySelector(`button[data-move="trick-or-treat"]`).disabled = true;
+      //   } else {
+      //     document.querySelector(`button[data-move="trick-or-treat"]`).disabled = false;
+      //   }
+      // }
+
+      // if(type === "ghost" && mode === "defense") {
+      //   document.querySelector(`button[data-move="trick-or-treat"]`).disabled = true;
+      //   if(lastSpecialDisabled?.dataset.move === "forests_curse") {
+      //     document.querySelector(`button[data-move="forests_curse"]`).disabled = true; 
+      //   } else {
+      //     document.querySelector(`button[data-move="forests_curse"]`).disabled = false;                  
+      //   }
+      // }
+
       // Container only allows one type selection at a time
       // `selectedTypes` may have more than 1 type, but not duplicates
       // Must check for secondary type grid
       if(selectedTypes.has(type)) {
         // if(secondaryContainer?.querySelector(`button[data-type="${type}"].selected`)) {
-        if(lastSecondarySelected?.getAttribute("data-type") === type) {
+        if(lastSecondarySelected?.dataset.type === type) {
           // Secondary Container exists and the type is selected in it
           // clear the Set and add the selected type
           selectedTypes.clear();
@@ -383,8 +454,11 @@ const initTypeButtons = async () => {
             }
           });
           if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = false;
+          // moveTypeDisable(primaryContainer, secondaryContainer, type);
           lastSecondaryDisabled = secondaryContainer.querySelector(`button[data-type="${type}"]`);
           lastSecondaryDisabled.disabled = true;
+          // Disable the type's corresponding special move if applicable
+          // disableSpecialMove(type);
         } else {
           // No secondary container, clear is faster
           selectedTypes.clear();
@@ -407,6 +481,35 @@ const initTypeButtons = async () => {
         if(!button || !button.dataset.type) return;
 
         const type = button.dataset.type;
+
+        // disableSpecialMove(type);
+
+        // if(type === "grass") {
+        //   if(lastSpecialDisabled) {
+        //     if(lastSpecialDisabled.dataset.move !== "forests_curse") {
+        //       document.querySelector(`button[data-move="forests_curse"]`).disabled = false;
+        //       document.querySelector(`button[data-move="trick-or-treat"]`).disabled = true;
+        //     } else {
+        //       document.querySelector(`button[data-move="forests_curse"]`).disabled = true;
+        //     }
+        //   }
+        //   if(lastSpecialDisabled?.dataset.move !== "forests_curse") {
+        //     document.querySelector(`button[data-move="forests_curse"]`).disabled = true;
+        //     document.querySelector(`button[data-move="trick-or-treat"]`).disabled = false;
+        //   } else {
+        //     document.querySelector(`button[data-move="forests_curse"]`).disabled = false;
+        //     document.querySelector(`button[data-move="trick-or-treat"]`).disabled = true;
+        //   }
+        // }
+  
+        // if(type === "ghost") {
+        //   document.querySelector(`button[data-move="trick-or-treat"]`).disabled = true;
+        //   if(lastSpecialDisabled?.dataset.move === "forests_curse") {
+        //     document.querySelector(`button[data-move="forests_curse"]`).disabled = true;        
+        //   } else {
+        //     document.querySelector(`button[data-move="forests_curse"]`).disabled = false;        
+        //   }
+        // }
 
         // If type is selected in primary container, we don't want to allow selecting it in secondary container
         // Shouldn't be selectable, further logic needed.
@@ -442,13 +545,19 @@ const initTypeButtons = async () => {
   };
 
   // Initial selectedTypes and button selection handling
-  if(genChange || modeChange) {
+  if(genChange || mode !== prevMode) {
+    // If not because of genChange, need to clear the effectivenessCache to redisplay results of prevMode
+    if(!genChange) {
+      effectivenessCache.forEach(set => set.clear());
+    }
+    console.log(`Clearing selectedTypes because genChange: ${genChange} or different mode.`)
     // clear if new generation or "offense" <--> "defense" nav
     selectedTypes.clear();
     selectedTypes.add("normal");
     primaryContainer.querySelector(`button[data-type="normal"]`).classList.add("selected");
     lastSecondaryDisabled = secondaryContainer?.querySelector(`button[data-type="normal"]`);
     if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
+    exceptions.clear();
   } else {
     const maxValid = genTypeCounts[gen] - 1;
     for(const type of selectedTypes) {
@@ -458,27 +567,72 @@ const initTypeButtons = async () => {
         break;
       }
     }
+
+    if(mode === "defense") {
+      const sMove = exceptions.has("forests_curse") ? "forests_curse"
+      : exceptions.has("trick-or-treat") ? "trick-or-treat"
+      : null;
   
-    // Visual selection of current types and exceptions based on what has persisted (currently should only contain two types)
-    let typeIdx = 0;
-    for(const type of selectedTypes) {
-      const button = document.querySelector(`button[data-type="${type}"]`);
-      if(!button) continue;
+      const sMoveType = sMove === null ? null
+      : sMove === "forests_curse" ? "grass"
+      : "ghost";
   
-      button.classList.add("selected");
+      // console.log(sMove, sMoveType);
+
+      for(const type of selectedTypes) {
+        if(sMoveType !== null && type === sMoveType) {
+          console.log("exception found in initialization")
+          lastMoveSelected = document.querySelector(`button[data-move="${sMove}"]`);
   
-      // disable secondary type that corresponds with current primary type -- if on defense
-      if(mode === "defense" && typeIdx === 0) {
-        lastSecondaryDisabled = secondaryContainer?.querySelector(`button[data-type="${type}"]`);
-        if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
+          lastMoveSelected.classList.add("selected");
+
+          moveTypeDisable(primaryContainer, secondaryContainer, sMoveType, true);
+  
+          // primaryContainer.querySelector(`button[data-type="${sMoveType}"]`).disabled = true;
+          // lastSpecialDisabled = secondaryContainer.querySelector(`button[data-type="${sMoveType}"]`)
+          // lastSpecialDisabled.disabled = true;
+        } else {
+          let button;
+          if(lastPrimarySelected.dataset.type === type || !lastPrimarySelected) {
+            button = primaryContainer.querySelector(`button[data-type="${type}"]`);
+            if(!button) continue;
+            lastPrimarySelected = button;
+            lastSecondaryDisabled = secondaryContainer.querySelector(`button[data-type="${type}"]`);
+            if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
+          } else {
+            button = secondaryContainer.querySelector(`button[data-type="${type}"]`);
+            if(!button) continue;
+          }
+          button.classList.add("selected");
+        }
       }
-      typeIdx++;
+    } else {
+      for(const type of selectedTypes) {
+        const button = primaryContainer.querySelector(`button[data-type="${type}"]`);
+        if(!button) continue;
+
+        button.classList.add("selected");
+      }
     }
+  
+    // // Visual selection of current types and exceptions based on what has persisted (currently should only contain two types)
+    // let typeIdx = 0;
+    // for(const type of selectedTypes) {
+    //   const button = document.querySelector(`button[data-type="${type}"]`);
+    //   if(!button) continue;
+    //     button.classList.add("selected");
+    //     // disable secondary type that corresponds with current primary type -- if on defense
+    //     if(mode === "defense" && typeIdx === 0) {
+    //       lastSecondaryDisabled = secondaryContainer?.querySelector(`button[data-type="${type}"]`);
+    //       if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
+    //     }
+    //   typeIdx++;
+    // }
   }
 
   // Reset state flags
   genChange = false;
-  modeChange = false;
+  prevMode = mode;
 
   // const [primaryType, secondaryType] = [...selectedTypes];
 
@@ -566,18 +720,16 @@ const initOffenseExceptions = (primaryContainer, secondaryContainer) => {
       }[move];
 
       if(moveType) {
-        console.log('valid move type')
+        // console.log('valid move type')
         selectedTypes.clear();
         selectedTypes.add(moveType);
 
         // Highlight corresponding type in primaryContainer
         lastPrimarySelected?.classList.remove("selected");
-        console.log(`lastPrimarySelected before exception is ${lastPrimarySelected.dataset.type}`)
         const moveTypeButton = primaryContainer.querySelector(`button[data-type="${moveType}"]`);
         if(moveTypeButton) {
           moveTypeButton.classList.add("selected");
           lastPrimarySelected = moveTypeButton;
-          console.log(`lastPrimarySelected after exception is ${lastPrimarySelected.dataset.type}`)
         }
       }
 
@@ -608,18 +760,57 @@ const initOffenseExceptions = (primaryContainer, secondaryContainer) => {
     return updateSelections(primaryContainer, secondaryContainer);
   });
 
-  let lastMoveSelected = moves.querySelector("button.selected") || null;
+  lastMoveSelected = moves.querySelector("button.selected") || null;
 };
 
 const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
-  const allButtons = [
-    ...primaryContainer.querySelectorAll("button"),
-    ...secondaryContainer?.querySelectorAll("button") || []
-  ];
-  
   const moves = document.querySelector(".special-moves-d");
   const effects = document.querySelector(".special-effects");
   const teraContainer = document.querySelector(".tera-types");
+
+  const moveType = {
+    "forests_curse": "grass",
+    "trick-or-treat": "ghost"
+  };
+
+  moves.addEventListener("click", async (e) => {
+    const button = e.target.closest("button");
+    if(!button || !button.dataset.move) return;
+
+    const move = button.dataset.move;
+
+    if(exceptions.has(move)) {
+      exceptions.delete(move);
+      lastMoveSelected.classList.remove("selected");
+      lastMoveSelected = null;
+      if(lastPrimarySelected.dataset.type !== moveType[move]) {
+        selectedTypes.delete(moveType[move]);
+      }
+      moveTypeEnable(primaryContainer, secondaryContainer, moveType[move], true);
+    } else {
+      if(lastMoveSelected) {
+        const lastMoveName = lastMoveSelected.dataset.move;
+        exceptions.delete(lastMoveName);
+        lastMoveSelected.classList.remove("selected");
+        if(selectedTypes.has(moveType[lastMoveName])) {
+          selectedTypes.delete(moveType[lastMoveName]);
+          moveTypeEnable(primaryContainer, secondaryContainer, moveType[lastMoveName], true)
+        }
+      }
+
+      exceptions.add(move);
+      lastMoveSelected = button;
+      if(lastPrimarySelected.dataset.type !== moveType[move]) {
+        selectedTypes.add(moveType[move]);
+      }
+      lastMoveSelected.classList.add("selected");
+      moveTypeDisable(primaryContainer, secondaryContainer, moveType[move], true);
+    };
+    getTypeRelationship(selectedTypes, mode, gen, exceptions);
+    return updateSelections(primaryContainer, secondaryContainer);
+  });
+
+  lastMoveSelected = moves.querySelector("button.selected") || null;
 };
 
 const initGenButtons = async () => {
@@ -642,12 +833,16 @@ const initGenButtons = async () => {
 
     const newGen = button.dataset.gen;
     if(newGen === gen) return;
-    if(!clearCache) {
+
+    // Clear cache first time generation changes
+    if(!genChange) {
       console.log("clearing effectivenessCache")
       effectivenessCache.forEach(set => set.clear());
       clearCache = true;
-      genChange = true; // flag used to simplify initial offense/defense page interaction with selectedTypes
+      prevMode = null; // remove prevMode reference since its use is to prevent cache clearing upon returning to "offense" or "defense" from "more"
     }
+    genChange = true; // flag used to simplify initial offense/defense page interaction with selectedTypes
+
     genContainer.querySelector(".selected")?.classList.remove("selected");
 
     gen = newGen;
