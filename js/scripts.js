@@ -1,27 +1,48 @@
-// Initialize type buttons on page load and between relevant pages
+/** 
+ * @file scripts.js
+ * @description Global scripts for handling dynamic DOM events, managing state, and processing Pokemon type effectiveness data. 
+ */
+
+/* ----- DOM Event Listeners – handles page navigation and UI initialization. ----- */
+
+/**
+ * Handles the `htmx:afterSwap` event to initialize relevant button functionality after an HTMX swap event occurs, based on the current page.
+ * 
+ * @listens htmx:afterSwap
+ * @param {Event} e - The event object for the htmx swap event.
+ * @returns {Promise<void>} Resolves after initializing the appropriate buttons.
+ */
 document.addEventListener("htmx:afterSwap", async (e) => {
   if(mode !== "more") {
-    await initTypeButtons(); // Reinitialize buttons when mode changes
+    await initTypeButtons();
   } else {
     await initGenButtons();
   }
 });
 
-// Intercept htmx requests if the page is already selected
+/**
+ * Intercepts htmx requests to prevent unnecessary navigation and to manage clearing the result cache under certain conditions.
+ * CLEAR CACHE HERE IF: 
+ * 1. navigating away from mode when there is no genChange and the requestedMode is prevMode
+ * 2. navigating between offense and defense
+ */
 document.addEventListener("htmx:beforeRequest", (e) => {
   const requestedMode = e.detail.elt?.id;
 
-  // Prevent htmx request if clicking the active page
-  if (requestedMode === mode) {
-    console.log(`Already on ${requestedMode} page or navigated to "More". Preventing unnecessary request.`);
+  if (requestedMode === mode) { // Prevent htmx request if user is already on the selected page
+    console.log(`Already on "${requestedMode}" page. Preventing unnecessary request.`);
     e.preventDefault();
-  } else if (mode !== "more") {
-    // If generation hasn't changed, not necessarily clearing...
-    if(!clearCache) {
-      console.log("clearing effectivenessCache")
+    // return;
+  } else if (!genChange) { // Clear cache if navigating between "offense" and "defense" pages or navigating away from "more" to a different page than previous.
+    if(requestedMode !== prevMode && requestedMode !== "more") {
+      // console.log(`Heading to "offense" or "defense" page. Not prevMode, so clearing cache...`)
       effectivenessCache.forEach(set => set.clear());
+      clearCache = true;
     }
   }
+  // } else {
+  //   // console.log(`effectivenessCache already cleared before navigating to ${requestedMode}`);
+  // }
 });
 
 // Listen for clicks on navigation links to update the mode
@@ -32,7 +53,7 @@ document.querySelector("nav").addEventListener("click", (e) => {
 
     // Skip if same mode to prevent reset
     if(newMode === mode) {
-      console.log(`Already on ${newMode} page. Skipping mode update.`);
+      // console.log(`Already on ${newMode} page. Skipping mode update.`);
       return;
     }
 
@@ -53,7 +74,7 @@ let prevMode = null;
 let gen = localStorage.getItem("selectedGen") || "6+";
 let genChange = false;
 let genJSON, exceptJSON;
-let clearCache = false;
+let clearCache = true;
 
 const selectedTypes = new Set(["normal"]); // Track selected types, default to 'normal' type
 const exceptions = new Set([]); // Track selected exceptions, default to none
@@ -82,6 +103,17 @@ const exceptNames = [
 ];
 
 const exceptMap = Object.fromEntries(exceptNames.map((name, index) => [name, index]));
+
+const oMoveType = {
+  "flying_press": "fighting",
+  "freeze-dry": "ice",
+  "thousand_arrows": "ground"
+};
+
+const dMoveType = {
+  "forests_curse": "grass",
+  "trick-or-treat": "ghost"
+};
 
 // const selectedExceptions = new Set([]);
 
@@ -148,27 +180,18 @@ const clearSelections = (container, selectedTypes) => {
 const updateSelections = (primaryContainer, secondaryContainer) => {
   lastPrimarySelected = primaryContainer.querySelector("button.selected");
   lastSecondarySelected = secondaryContainer?.querySelector("button.selected");
+  // const pToggleType = lastPrimarySelected.dataset.type;
+  // const sToggleType = lastSecondarySelected?.dataset.type;
+  // if((pToggleType || sToggleType) === ("grass" || "ghost")) {
+  //   toggleSpecialMoves(pToggleType, sToggleType);    
+  // }
 };
 
-// const disableSpecialMove = (type) => {
-//   if(type === "grass") {
-//     if(lastMoveSelected) {
-//       lastMoveSelected.disabled = false;  
-//     }
-//     lastMoveSelected = document.querySelector(`button[data-move="forests_curse"]`);
-//     lastMoveSelected.disabled = true;
-//   } else if(type === "ghost") {
-//     if(lastMoveSelected) {
-//       lastMoveSelected.disabled = false;
-//     }
-//     lastMoveSelected = document.querySelector(`button[data-move="trick-or-treat"]`);
-//     lastMoveSelected.disabled = true;
-//   } else {
-//     if(lastMoveSelected) {
-//       lastMoveSelected.disabled = false;
-//     } else return;
-//   };
-// }
+// Allows type buttons to cause enabling/disabling of special move buttons (currently only relevant on defense)
+  // work alongside `updateSelections`?
+const toggleSpecialMoves = (pToggleType, sToggleType) => {
+
+}
 
 const moveTypeDisable = (container1, container2, moveType, special = false) => {
   container1.querySelector(`button[data-type="${moveType}"]`).disabled = true
@@ -259,13 +282,21 @@ const setsEqual = (setA, setB) => {
 }
 
 const updateEffectiveness = (newEffectMults) => {
-  newEffectMults.forEach((newSet, mult) => {
-    if(!setsEqual(newSet, effectivenessCache.get(mult))) {
-      // Update only when necessary
-      effectivenessCache.set(mult, new Set(newSet));
-      updateDOM(mult, newSet);
-    }
-  });
+  // console.log(`clearCache in updateEffectiveness is: ${clearCache}`)
+  if(clearCache) {
+    newEffectMults.forEach((newSet, mult) => {
+      if(!setsEqual(newSet, effectivenessCache.get(mult))) {
+        // Update only when necessary
+        effectivenessCache.set(mult, new Set(newSet));
+        updateDOM(mult, newSet);
+      }
+    });
+  } else { // clearCache flag used when applying the uncleared cache to the DOM (useful for render on the way to previous page)
+    newEffectMults.forEach((newSet, mult) => {
+        effectivenessCache.set(mult, new Set(newSet));
+        updateDOM(mult, newSet);
+    });
+  }
 }
 
 const updateDOM = (mult, typeSet) => {
@@ -388,8 +419,6 @@ const initTypeButtons = async () => {
   typeVisibility(primaryContainer);
   // if(!primaryContainer) return; // ".type-buttons" doesn't exist in index.html on initial page load, so the first try for initializing always fails. skip it.
   const secondaryContainer = document.querySelector(".secondary-types");
-  
-  console.log(`Initializing ${mode} exceptions...`);
 
   // console.log("Initializing type buttons...");
   // // Clear previous event listeners to prevent duplicates -- htmx swap results in this already
@@ -402,24 +431,6 @@ const initTypeButtons = async () => {
       if(!button || !button.dataset.type) return;
 
       const type = button.dataset.type;
-
-      // if(type === "grass" && mode === "defense") {
-      //   document.querySelector(`button[data-move="forests_curse"]`).disabled = true;
-      //   if(lastSpecialDisabled?.dataset.move === "trick-or-treat") {
-      //     document.querySelector(`button[data-move="trick-or-treat"]`).disabled = true;
-      //   } else {
-      //     document.querySelector(`button[data-move="trick-or-treat"]`).disabled = false;
-      //   }
-      // }
-
-      // if(type === "ghost" && mode === "defense") {
-      //   document.querySelector(`button[data-move="trick-or-treat"]`).disabled = true;
-      //   if(lastSpecialDisabled?.dataset.move === "forests_curse") {
-      //     document.querySelector(`button[data-move="forests_curse"]`).disabled = true; 
-      //   } else {
-      //     document.querySelector(`button[data-move="forests_curse"]`).disabled = false;                  
-      //   }
-      // }
 
       // Container only allows one type selection at a time
       // `selectedTypes` may have more than 1 type, but not duplicates
@@ -457,8 +468,6 @@ const initTypeButtons = async () => {
           // moveTypeDisable(primaryContainer, secondaryContainer, type);
           lastSecondaryDisabled = secondaryContainer.querySelector(`button[data-type="${type}"]`);
           lastSecondaryDisabled.disabled = true;
-          // Disable the type's corresponding special move if applicable
-          // disableSpecialMove(type);
         } else {
           // No secondary container, clear is faster
           selectedTypes.clear();
@@ -481,35 +490,6 @@ const initTypeButtons = async () => {
         if(!button || !button.dataset.type) return;
 
         const type = button.dataset.type;
-
-        // disableSpecialMove(type);
-
-        // if(type === "grass") {
-        //   if(lastSpecialDisabled) {
-        //     if(lastSpecialDisabled.dataset.move !== "forests_curse") {
-        //       document.querySelector(`button[data-move="forests_curse"]`).disabled = false;
-        //       document.querySelector(`button[data-move="trick-or-treat"]`).disabled = true;
-        //     } else {
-        //       document.querySelector(`button[data-move="forests_curse"]`).disabled = true;
-        //     }
-        //   }
-        //   if(lastSpecialDisabled?.dataset.move !== "forests_curse") {
-        //     document.querySelector(`button[data-move="forests_curse"]`).disabled = true;
-        //     document.querySelector(`button[data-move="trick-or-treat"]`).disabled = false;
-        //   } else {
-        //     document.querySelector(`button[data-move="forests_curse"]`).disabled = false;
-        //     document.querySelector(`button[data-move="trick-or-treat"]`).disabled = true;
-        //   }
-        // }
-  
-        // if(type === "ghost") {
-        //   document.querySelector(`button[data-move="trick-or-treat"]`).disabled = true;
-        //   if(lastSpecialDisabled?.dataset.move === "forests_curse") {
-        //     document.querySelector(`button[data-move="forests_curse"]`).disabled = true;        
-        //   } else {
-        //     document.querySelector(`button[data-move="forests_curse"]`).disabled = false;        
-        //   }
-        // }
 
         // If type is selected in primary container, we don't want to allow selecting it in secondary container
         // Shouldn't be selectable, further logic needed.
@@ -547,10 +527,12 @@ const initTypeButtons = async () => {
   // Initial selectedTypes and button selection handling
   if(genChange || mode !== prevMode) {
     // If not because of genChange, need to clear the effectivenessCache to redisplay results of prevMode
-    if(!genChange) {
-      effectivenessCache.forEach(set => set.clear());
-    }
-    console.log(`Clearing selectedTypes because genChange: ${genChange} or different mode.`)
+    // if(!genChange) {
+    //   effectivenessCache.forEach(set => set.clear());
+    //   clearCache = true;
+    // }
+
+    // console.log(`Clearing selectedTypes because genChange: ${genChange} or different mode.`)
     // clear if new generation or "offense" <--> "defense" nav
     selectedTypes.clear();
     selectedTypes.add("normal");
@@ -654,6 +636,8 @@ const initTypeButtons = async () => {
   lastPrimarySelected = primaryContainer.querySelector("button.selected");
   lastSecondarySelected = secondaryContainer?.querySelector("button.selected");
 
+  // console.log(`Initializing ${mode} exceptions...`);
+
   if(mode === "defense") {
     initDefenseExceptions(primaryContainer, secondaryContainer);
   } else {
@@ -661,7 +645,7 @@ const initTypeButtons = async () => {
   }
 
   // Currently 'normal' type is selected upon initialization, display relevant results
-  console.log(`Getting initial type relationships on ${mode} for gen ${gen}...`);
+  // console.log(`Getting initial type relationships on ${mode} for gen ${gen}...`);
   getTypeRelationship(selectedTypes, mode, gen, exceptions);
   return updateSelections(primaryContainer, secondaryContainer);
 };
@@ -713,20 +697,14 @@ const initOffenseExceptions = (primaryContainer, secondaryContainer) => {
       button.classList.add("selected");
       lastMoveSelected = button;
 
-      const moveType = {
-        "flying_press": "fighting",
-        "freeze-dry": "ice",
-        "thousand_arrows": "ground"
-      }[move];
-
-      if(moveType) {
+      if(oMoveType[move]) {
         // console.log('valid move type')
         selectedTypes.clear();
-        selectedTypes.add(moveType);
+        selectedTypes.add(oMoveType[move]);
 
         // Highlight corresponding type in primaryContainer
         lastPrimarySelected?.classList.remove("selected");
-        const moveTypeButton = primaryContainer.querySelector(`button[data-type="${moveType}"]`);
+        const moveTypeButton = primaryContainer.querySelector(`button[data-type="${oMoveType[move]}"]`);
         if(moveTypeButton) {
           moveTypeButton.classList.add("selected");
           lastPrimarySelected = moveTypeButton;
@@ -768,11 +746,6 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
   const effects = document.querySelector(".special-effects");
   const teraContainer = document.querySelector(".tera-types");
 
-  const moveType = {
-    "forests_curse": "grass",
-    "trick-or-treat": "ghost"
-  };
-
   moves.addEventListener("click", async (e) => {
     const button = e.target.closest("button");
     if(!button || !button.dataset.move) return;
@@ -783,28 +756,28 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
       exceptions.delete(move);
       lastMoveSelected.classList.remove("selected");
       lastMoveSelected = null;
-      if(lastPrimarySelected.dataset.type !== moveType[move]) {
-        selectedTypes.delete(moveType[move]);
+      if(lastPrimarySelected.dataset.type !== dMoveType[move] && lastSecondarySelected?.dataset.type !== dMoveType[move]) {
+        selectedTypes.delete(dMoveType[move]);
       }
-      moveTypeEnable(primaryContainer, secondaryContainer, moveType[move], true);
+      moveTypeEnable(primaryContainer, secondaryContainer, dMoveType[move], true);
     } else {
       if(lastMoveSelected) {
         const lastMoveName = lastMoveSelected.dataset.move;
         exceptions.delete(lastMoveName);
         lastMoveSelected.classList.remove("selected");
-        if(selectedTypes.has(moveType[lastMoveName])) {
-          selectedTypes.delete(moveType[lastMoveName]);
-          moveTypeEnable(primaryContainer, secondaryContainer, moveType[lastMoveName], true)
+        if(selectedTypes.has(dMoveType[lastMoveName])) {
+          selectedTypes.delete(dMoveType[lastMoveName]);
+          moveTypeEnable(primaryContainer, secondaryContainer, dMoveType[lastMoveName], true)
         }
       }
 
       exceptions.add(move);
       lastMoveSelected = button;
-      if(lastPrimarySelected.dataset.type !== moveType[move]) {
-        selectedTypes.add(moveType[move]);
+      if(lastPrimarySelected.dataset.type !== dMoveType[move] || lastSecondarySelected?.dataset.type !== dMoveType[move]) {
+        selectedTypes.add(dMoveType[move]);
       }
       lastMoveSelected.classList.add("selected");
-      moveTypeDisable(primaryContainer, secondaryContainer, moveType[move], true);
+      moveTypeDisable(primaryContainer, secondaryContainer, dMoveType[move], true);
     };
     getTypeRelationship(selectedTypes, mode, gen, exceptions);
     return updateSelections(primaryContainer, secondaryContainer);
@@ -820,11 +793,13 @@ const initGenButtons = async () => {
     return;
   }
 
-  console.log("Gen buttons found, attaching event listener.");
+  // console.log("Gen buttons found, attaching event listener.");
 
   genContainer.querySelectorAll("button").forEach(button => {
     button.classList.toggle("selected", button.dataset.gen === gen);
   });
+
+  clearCache = false;
 
   // One event listener for the container
   genContainer.addEventListener("click", async (e) => {
@@ -836,7 +811,7 @@ const initGenButtons = async () => {
 
     // Clear cache first time generation changes
     if(!genChange) {
-      console.log("clearing effectivenessCache")
+      // console.log("clearing effectivenessCache on gen change")
       effectivenessCache.forEach(set => set.clear());
       clearCache = true;
       prevMode = null; // remove prevMode reference since its use is to prevent cache clearing upon returning to "offense" or "defense" from "more"
@@ -849,7 +824,7 @@ const initGenButtons = async () => {
     localStorage.setItem("selectedGen", gen);
     button.classList.add("selected");
 
-    console.log(`Gen changed to ${gen}.`);
+    // console.log(`Gen changed to ${gen}.`);
   });
   // Set initial selected button
   genContainer.querySelector(`button[data-gen="${gen}"]`)?.classList.add("selected");
