@@ -54,9 +54,12 @@ Notes:
       }
     },
     -1, // Tinted Lens (Gen 4+, doubles "not very effective" damage, so shouldn't modify during calculations.)
-    -1, // Flying Press (Gen 6+, doesn't change effectivity, just adds Flying to a Fighting-type move)
+    { // Flying Press (Gen 6+, doesn't change effectivity, just adds Flying to a Fighting-type move. Temporarily setting Fire to 1 to prevent errors with `populateMoveMaps` and `getEffectiveness`.)
+      "move": "fighting",
+    },
     {  // Freeze-Dry (Gen 6+)
       "mode": "offense",
+      "move": "ice",
       "mult": 2,
       "replace": 1,
       "targets": {
@@ -65,6 +68,7 @@ Notes:
     },
     { // Thousand Arrows (Gen 6+)
       "mode": "offense",
+      "move": "ground",
       "mult": 1,
       "replace": 1,
       "targets": {
@@ -100,8 +104,12 @@ Notes:
     -1, // Purifying Salt
     -1, // Tera Shell
     -1, // Well-Baked Body
-    -1, // Forest's Curse
-    -1 // Trick-Or-Treat
+    { // Forest's Curse
+      "move": "grass"
+    },
+    { // Trick-Or-Treat
+      "move": "ghost"
+    }
   ]
 }
 ```
