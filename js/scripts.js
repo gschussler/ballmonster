@@ -90,6 +90,8 @@ let lastMoveSelected = null;
 let lastSecondaryDisabled = null;
 let lastSpecialDisabled = null;
 
+let teraResult = false;
+
 /**
  * Tracks currently selected Pokémon types.
  * Defaults to "normal" type.
@@ -206,13 +208,13 @@ const populateMoveMaps = async () => {
 // };
 
 /**
- * Maps generation labels to the number of Pokémon types available in that generation.
+ * Maps generation labels to the number of Pokémon types available in that generation. Zero-indexed.
  * @constant {Object<string, number>}
  */
 const genTypeCounts = {
   "1": 15,
   "2-5": 17,
-  "6+": 18,
+  "6+": 19,
 };
 
 /**
@@ -393,7 +395,7 @@ const toggleDefSpecialMoves = (pToggleType, sToggleType) => {
  */
 // CONSIDER: pass containers in specific order to define operations. Will not work with current variables.
 const moveTypeDisable = (container1, container2, moveType, special = false) => {
-  container1.querySelector(`button[data-type="${moveType}"]`).disabled = true
+  container1.querySelector(`button[data-type="${moveType}"]`).disabled = true;
   if(!special) {
     lastSecondaryDisabled = container2.querySelector(`button[data-type="${moveType}"]`);
     lastSecondaryDisabled.disabled = true;
@@ -420,6 +422,7 @@ const moveTypeEnable = (container1, container2, moveType, special = false) => {
     lastSecondaryDisabled = null;
   } else {
     lastSpecialDisabled.disabled = false;
+    console.log(lastSpecialDisabled.dataset.type)
     lastSpecialDisabled = null;
   }
 };
@@ -484,8 +487,10 @@ const updateDOM = (mult, typeSet) => {
 
   typeSet.forEach(type => {
     const listItem = document.createElement("li");
-    listItem.textContent = type;
-    listEl.appendChild(listItem);
+    if(type !== null) {
+      listItem.textContent = type;
+      listEl.appendChild(listItem);
+    }
   });
 
   // Get the parent `.result-group` div and toggle its visibility
@@ -509,6 +514,7 @@ const getTypeRelationship = (types, mode, generation, exceptions) => {
   let res = mode === "offense" ? "effectiveness" : "resistances";
   // Update effectiveness sublists with the results
   console.log(`Checking ${res} of ${[...types]}`);
+  if(exceptions.size > 0) console.log(`...with ${[...exceptions]} applied`);
   const newEffectMults = getEffectiveness([...types], mode, generation, exceptions);
   updateEffectiveness(newEffectMults);
 };
@@ -546,34 +552,87 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
             exceptionMap.set(`${parseInt(inKey, 10)},${parseInt(outKey, 10)}`, exceptEntry);
           }
         }
-      } else break;
+      }
+      // } else break;
     }
   };
+
+  // // TERA CHECK before gathering results (should only be accessible in Gen 6+)
+  // // On offense: if move is Stellar-type, directly add `Tera Pokemon` to `2x` effectMults Set. Otherwise, remove it if present
+  // // On defense: if Tera Pokemon, `Stellar` effectivity set to 2. Otherwise `Stellar` is 1x
+  // const superEffective = effectMults.get("2x");
+  // if(gen === "6+") {
+  //   if(teraResult) {
+  //     if(mode === "offense") {
+        
+  //     }
+  //     addStellar.add("tera");
+  //   } else {
+      
+  //   }
+  // }
 
   // Loop through all Pokemon types in the current generation to output their effectiveness relationships
     // mode === "offense" –> selected ATK types are `inKeys`, opposing Pokemon DEF types are `outKeys`
     // mode === "defense" -> selected DEF types are `inKeys`, opposing Pokemon ATK types are `outKeys`
   for (let outKey = 0; outKey < outKeys; outKey++) {
     let totalMult = 1;
+    let stellarInKey = false;
 
     // Process input types to get their effectiveness relationship with output types
     for (const type of inTypes) {
       const inKey = typeMap[type];
+      if(inKey === 18) {
+        stellarInKey = true;
+        // console.log(`stellar is inKey ${inKey} at outKey ${outKey}`)
+      }
       // if(inKey === undefined) continue; // ignore invalid types
-
       const effectMult = mode === "offense"
         ? genJSON.s[inKey][outKey] // Offense: `Deals ${n}x to`; inKey –> outKey
-        : genJSON.s[outKey][inKey]; // Defense: `Takes ${n}x from`; outKey –> inKey 
+        : genJSON.s[outKey][inKey]; // Defense: `Takes ${n}x from`; outKey –> inKey
+
       totalMult *= effectMult;
 
       // CURRENT IDEA for applying exception 3/4/2025
-      const exception = exceptionMap.get(`${inKey},${outKey}`);
+      const exception = exceptionMap.get(`${inKey},${outKey}`)
+      // console.log(exception);
+
       if(exception) {
         totalMult = exception.replace === 1 ? exception.mult : totalMult * exception.mult;
+        // console.log(`exception applied to ${inKey},${outKey}`)
       }
+
+      // if(outKey === 1) console.log(`totalMult for fire against ${type} is ${totalMult}`);
     }
 
-    const typeName = typeNames[outKey]; // need type string for targeted types
+    /** 
+     * Stellar Considerations (on Offense):  
+        - Stellar has no defensive property. In its place is `Tera Pokemon`, which is only present in results if Stellar is within selectedTypes (is selected).
+          - Hide from results if any other type is selected. (NOTE: Current logic needs effectMults and effectivenessCache to be the same size to prevent clearing). Possible solutions:
+            - Allow calculations, but prevent display of `Tera Pokemon`. Change is somewhere in update effectiveness...
+            - Do not hide Stellar, explicitly add `Tera Pokemon` to `2x` effectMults Set when inKey = 18 and outKey = 18
+    */
+
+    /**
+     * Tera Considerations (on Defense):
+     * - Stellar has 1x effectivity against all other types except Tera Pokemon (2x).
+     * - Selecting a Tera Type should simply add `Stellar` to selectedTypes in order to reflect the 2x. No need to change logic here, just initDefenseExceptions logic to account for teraDropdown changes and initialization in case of cached tera type
+     */
+    let typeName = null;
+    if(outKey === 18) {
+      if(stellarInKey) {
+        if(mode !== "defense") {
+          typeName = "tera_pokemon"
+        } else {
+          typeName = typeNames[outKey];
+        }
+      } else if(mode !== "offense") {
+        typeName = typeNames[outKey];
+      }
+    } else {
+      typeName = typeNames[outKey]; // need type string for targeted types
+    }
+    
     switch(totalMult) {
       case 8:
         effectMults.get("8x").add(typeName);
@@ -611,6 +670,7 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
       default:
         throw new Error(`Invalid effectiveness multiplier: ${totalMult}`);
     }
+    // if(typeName === null) // Allow null type into effectMults to prevent stellar from displaying under certain conditions....
   }
   // console.log(effectMults);
   return effectMults;
@@ -754,62 +814,11 @@ const initTypeButtons = async () => {
   } else {
     // Otherwise the cache hasn't been cleared, so the proper reassignments need to occur for this page render
     if(mode === "defense") {
-      for(const type of selectedTypes) {
-        // if type has an association with a special move and the move is currently in exceptions, treat as if the move is being selected now
-        const sdMove = moveByType.get(type);
-        if(sdMove && exceptions.has(sdMove)) {
-          console.log("exception found in initialization")
-          lastMoveSelected = document.querySelector(`button[data-move="${sdMove}"]`);
-  
-          lastMoveSelected.classList.add("selected");
-
-          moveTypeDisable(primaryContainer, secondaryContainer, type, true);
-  
-          // primaryContainer.querySelector(`button[data-type="${type}"]`).disabled = true;
-          // lastSpecialDisabled = secondaryContainer.querySelector(`button[data-type="${type}"]`)
-          // lastSpecialDisabled.disabled = true;
-        } else {
-          let button;
-          if(lastPrimarySelected.dataset.type === type || !lastPrimarySelected) {
-            button = primaryContainer.querySelector(`button[data-type="${type}"]`);
-            if(!button) continue;
-            lastPrimarySelected = button;
-            lastSecondaryDisabled = secondaryContainer.querySelector(`button[data-type="${type}"]`);
-            if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
-          } else {
-            button = secondaryContainer.querySelector(`button[data-type="${type}"]`);
-            if(!button) continue;
-          }
-          button.classList.add("selected");
-        }
-      }
+      await initCachedResults(primaryContainer, secondaryContainer);
     } else {
-      for(const type of selectedTypes) {
-        const soMove = moveByType.get(type);
-        if(soMove && exceptions.has(soMove)) {
-          console.log("special offensive move found in initialization");
-          lastPrimarySelected = primaryContainer.querySelector(`button[data-type="${type}"]`);
-          lastPrimarySelected.classList.add("selected");
-
-          lastMoveSelected = document.querySelector(`button[data-move="${soMove}"]`);
-          lastMoveSelected.classList.add("selected");
-
-          primaryContainer.querySelectorAll("button").forEach((btn) => {
-            btn.disabled = true;
-          });
-        } else {
-          if(type === "flying") {
-            continue;
-          } else {
-            const button = primaryContainer.querySelector(`button[data-type="${type}"]`);
-            if(!button) continue;
-    
-            button.classList.add("selected");
-          }
-        }
-      }
+      await initCachedResults(primaryContainer);
     }
-  }
+  };
 
   // Reset state flags
   genChange = false;
@@ -832,6 +841,90 @@ const initTypeButtons = async () => {
   // console.log(`Getting initial type relationships on ${mode} for gen ${gen}...`);
   getTypeRelationship(selectedTypes, mode, gen, exceptions);
   return updateSelections(primaryContainer, secondaryContainer);
+};
+
+const initCachedResults = async (primaryContainer, secondaryContainer = null) => {
+  // Handle non-move exceptions first (applies to both offense and defense)
+  if(exceptions.size > 0) {
+    const effects = document.querySelector(".special-effects");
+    for(let exception of exceptions) {
+      const exceptChecked = effects.querySelector(`.effect-checkbox[value=${exception}]`);
+      if(exceptChecked) {
+        exceptChecked.checked = true;
+      }
+    }
+  }
+  if(secondaryContainer) {
+    for(const type of selectedTypes) {
+      // if a tera type had been selected before navigating away, reselect the relevant monotype
+      if(teraResult && type !== "stellar") {
+        console.log("tera type found, selecting monotype...");
+        lastPrimarySelected = primaryContainer.querySelector(`button[data-type="${type}"]`);
+        lastPrimarySelected.classList.add("selected");
+        
+        primaryContainer.querySelectorAll("button").forEach((btn) => {
+          btn.disabled = true;
+        });
+
+        secondaryContainer.querySelectorAll("button").forEach((btn) => {
+          btn.disabled = true;
+        })
+      }
+
+      // if type has an association with a special move and the move is currently in exceptions, treat as if the move is being selected now
+      const sdMove = moveByType.get(type);
+      if(sdMove && exceptions.has(sdMove)) {
+        console.log("special defensive move found in initialization")
+        lastMoveSelected = document.querySelector(`button[data-move="${sdMove}"]`);
+
+        lastMoveSelected.classList.add("selected");
+
+        moveTypeDisable(primaryContainer, secondaryContainer, type, true);
+
+        // primaryContainer.querySelector(`button[data-type="${type}"]`).disabled = true;
+        // lastSpecialDisabled = secondaryContainer.querySelector(`button[data-type="${type}"]`)
+        // lastSpecialDisabled.disabled = true;
+      } else {
+        let button;
+        if(lastPrimarySelected.dataset.type === type || !lastPrimarySelected) {
+          button = primaryContainer.querySelector(`button[data-type="${type}"]`);
+          if(!button) continue;
+          lastPrimarySelected = button;
+          lastSecondaryDisabled = secondaryContainer.querySelector(`button[data-type="${type}"]`);
+          if(lastSecondaryDisabled) lastSecondaryDisabled.disabled = true;
+        } else {
+          button = secondaryContainer.querySelector(`button[data-type="${type}"]`);
+          if(!button) continue;
+        }
+        button.classList.add("selected");
+      }
+    }
+  } else {
+    for(const type of selectedTypes) {
+      const soMove = moveByType.get(type);
+      if(soMove && exceptions.has(soMove)) {
+        console.log("special offensive move found in initialization");
+        lastPrimarySelected = primaryContainer.querySelector(`button[data-type="${type}"]`);
+        lastPrimarySelected.classList.add("selected");
+
+        lastMoveSelected = document.querySelector(`button[data-move="${soMove}"]`);
+        lastMoveSelected.classList.add("selected");
+
+        primaryContainer.querySelectorAll("button").forEach((btn) => {
+          btn.disabled = true;
+        });
+      } else {
+        if(type === "flying") {
+          continue;
+        } else {
+          const button = primaryContainer.querySelector(`button[data-type="${type}"]`);
+          if(!button) continue;
+  
+          button.classList.add("selected");
+        }
+      }
+    }
+  }
 };
 
 /**
@@ -940,37 +1033,57 @@ const initOffenseExceptions = (primaryContainer) => {
 const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
   const moves = document.querySelector(".special-moves-d");
   const effects = document.querySelector(".special-effects");
-  const teraContainer = document.querySelector(".tera-types");
+  const teraDropdown = document.getElementById("tera-dropdown");
+  const allButtons = [
+    ...primaryContainer.querySelectorAll("button"),
+    ...secondaryContainer.querySelectorAll("button")
+  ];
 
   moves.addEventListener("click", async (e) => {
     const button = e.target.closest("button");
     if(!button || !button.dataset.move) return;
 
     const move = button.dataset.move;
+    let pTypeDisabled;
+    let sTypeDisabled;
 
     if(exceptions.has(move)) {
       exceptions.delete(move);
       
       const mType = typeByMove.get(move);
+      let lastType;
 
       if(lastMoveSelected) {
+        const lastMoveName = lastMoveSelected.dataset.move;
+        lastType = typeByMove.get(lastMoveName);
+        pTypeDisabled = primaryContainer.querySelector(`button[data-type=${lastType}]`);
+        sTypeDisabled = secondaryContainer.querySelector(`button[data-type=${lastType}]`);
+
         lastMoveSelected.classList.remove("selected");
         lastMoveSelected = null;
       }
+
       if(lastPrimarySelected?.dataset.type !== mType && lastSecondarySelected?.dataset.type !== mType) {
         selectedTypes.delete(mType);
       }
-      moveTypeEnable(primaryContainer, secondaryContainer, mType, true);
+
+      if(!teraResult && ((pTypeDisabled.disabled = true) && (sTypeDisabled.disabled = true))) {
+        moveTypeEnable(primaryContainer, secondaryContainer, lastType, true);
+      }
     } else {
       const mType = typeByMove.get(move);
       if(lastMoveSelected) {
-        const lastType = typeByMove.get(move);
         const lastMoveName = lastMoveSelected.dataset.move;
+        lastType = typeByMove.get(lastMoveName);
+        pTypeDisabled = primaryContainer.querySelector(`button[data-type=${lastType}]`);
+        sTypeDisabled = secondaryContainer.querySelector(`button[data-type=${lastType}]`);
         exceptions.delete(lastMoveName);
         lastMoveSelected.classList.remove("selected");
         if(selectedTypes.has(lastType)) {
           selectedTypes.delete(lastType);
-          moveTypeEnable(primaryContainer, secondaryContainer, lastType, true)
+          if(!teraResult && ((pTypeDisabled.disabled = true) && (sTypeDisabled.disabled = true))) {
+            moveTypeEnable(primaryContainer, secondaryContainer, lastType, true);
+          }
         }
       }
 
@@ -986,6 +1099,89 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
     return updateSelections(primaryContainer, secondaryContainer);
   });
 
+  effects.addEventListener("change", async (e) => {
+    const checkbox = e.target.closest(".effect-checkbox");
+    if(!checkbox) return;
+    const effect = checkbox.value;
+    // console.log(effect);
+
+    if(checkbox.checked) {
+      exceptions.add(effect);
+    } else {
+      exceptions.delete(effect);
+    };
+    // console.log(exceptions);
+    getTypeRelationship(selectedTypes, mode, gen, exceptions);
+    return updateSelections(primaryContainer, secondaryContainer);
+  });
+
+  /** 
+   * Terastallization needs to result in a few things
+   * - clear selectedTypes
+   * - selected value is set as primaryContainer selection
+   * - all type buttons are disabled
+   * - add Stellar 2x effectivity to results (only interaction that Stellar has is super-effecitivity against Tera Pokemon)
+   */ 
+  teraDropdown.addEventListener("change", async (e) => {
+    const selectedType = e.target.value;
+    if(lastMoveSelected && selectedType === typeByMove.get(lastMoveSelected.dataset.move)) {
+      console.log(`selectedType has the same type as ${lastMoveSelected.dataset.move}, so the selection did not succeed.`);
+      return;
+    } else {
+      // if a type other than `""` is selected
+      if(selectedType !== "") {
+        // if selectedType is not the same type as primary, secondary, or last move...clear data and UI types selected, replace with tera type
+        if(selectedType !== lastPrimarySelected.dataset.type) {
+          selectedTypes.delete(lastPrimarySelected.dataset.type);
+          if(lastSecondarySelected) {
+            if(selectedType !== lastSecondarySelected.dataset.type) {
+              selectedTypes.delete(lastSecondarySelected.dataset.type);
+              if(lastMoveSelected) {
+                const lastMoveType = typeByMove.get(lastMoveSelected.dataset.move);
+                for(let type of selectedTypes) {
+                  if(type !== lastMoveType && type !== selectedType) {
+                    selectedTypes.delete(type);
+                  }
+                }
+              }
+            }
+          }
+          selectedTypes.add(selectedType);
+          // remove all selections from both containers
+          lastPrimarySelected.classList.remove("selected");
+          lastSecondarySelected?.classList.remove("selected"); // could be a secondary selected as well
+          lastPrimarySelected = primaryContainer.querySelector(`button[data-type=${selectedType}]`);
+          lastPrimarySelected.classList.add("selected");
+        };
+        // otherwise, there isn't currently a way for only secondary to be selected. 
+        // any selection other than `""` disables all buttons since Tera Pokemon are monotype
+        allButtons.forEach(button => {
+          button.disabled = true;
+        });
+        // if not already present, add Stellar to calculations
+        if(!teraResult) {
+          selectedTypes.add("stellar");
+        }
+        teraResult = true;
+      } else {
+        // if default selected, renable all buttons as long as not interfering with special moves. lastPrimarySelected should keep its reference, so no need to clear selectedTypes
+        allButtons.forEach(button => button.disabled = false);
+        if(lastMoveSelected) {
+          const lastMoveType = typeByMove.get(lastMoveSelected.dataset.move);
+          moveTypeDisable(primaryContainer, secondaryContainer, lastMoveType, true);
+        }
+        // if present in selectedTypes, remove Stellar
+        if(teraResult) {
+          selectedTypes.delete("stellar");
+        }
+        teraResult = false;
+      }
+      getTypeRelationship(selectedTypes, mode, gen, exceptions, teraResult);
+      return updateSelections(primaryContainer, secondaryContainer);
+    };
+  });
+
+  teraResult = teraDropdown.value !== "" ? true : false;
   lastMoveSelected = moves.querySelector("button.selected") || null;
 };
 
