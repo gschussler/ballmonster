@@ -14,6 +14,9 @@
  */
 document.addEventListener("htmx:afterSwap", async (e) => {
   if(mode !== "more") {
+    // clear effectMults and multOrder entirely if destination is "offense" or "defense"
+    effectMults.clear();
+    multOrder = new LinkedList();
     await initTypeButtons();
   } else {
     await initGenButtons();
@@ -36,7 +39,7 @@ document.addEventListener("htmx:beforeRequest", (e) => {
   } else if (!genChange) { // Clear cache if navigating between "offense" and "defense" pages or navigating away from "more" to a different page than previous.
     if(requestedMode !== prevMode && requestedMode !== "more") {
       // console.log(`Heading to "offense" or "defense" page. Not prevMode, so clearing cache...`)
-      effectivenessCache.forEach(set => set.clear());
+      effectivenessCache.clear();
       clearCache = true;
     }
   }
@@ -90,6 +93,8 @@ let lastMoveSelected = null;
 let lastSecondaryDisabled = null;
 let lastSpecialDisabled = null;
 
+let oAbility = "";
+let dAbility = "";
 let teraResult = false;
 
 /**
@@ -130,9 +135,9 @@ const typeMap = Object.fromEntries(typeNames.map((name, index) => [name, index])
  */
 const exceptNames = [
   // Offense exceptions (Gen-ascending)
-  "foresight", "flash_fire_atk", "odor_sleuth", "gravity_atk", "scrappy", "tinted_lens", "flying_press", "freeze-dry", "thousand_arrows", "water_bubble_atk",
+  "flash_fire_atk", "scrappy", "tinted_lens", "flying_press", "freeze-dry", "thousand_arrows", "water_bubble_atk",
   // Defense exceptions (Gen-ascending)
-  "flash_fire_def", "levitate", "lightning_rod", "thick_fat", "volt_absorb", "water_absorb", "wonder_guard", "dry_skin", "filter", "gravity_def", "heatproof", "motor_drive", "storm_drain", "sap_sipper", "delta_stream", "fluffy", "water_bubble_def", "earth_eater", "purifying_salt", "tera_shell", "well-baked_body", "forests_curse", "trick-or-treat"
+  "flash_fire_def", "levitate", "lightning_rod", "thick_fat", "volt_absorb", "water_absorb", "wonder_guard", "dry_skin", "filter", "heatproof", "motor_drive", "storm_drain", "sap_sipper", "delta_stream", "fluffy", "water_bubble_def", "earth_eater", "purifying_salt", "tera_shell", "well-baked_body", "forests_curse", "trick-or-treat"
 ];
 
 /**
@@ -222,37 +227,84 @@ const genTypeCounts = {
  * Populated dynamically by monotype relationship calculations (`getEffectiveness` operations).
  * @type {Map<string, Set<string>>}
  */
-const effectMults = new Map([
-  ["8x", new Set()],
-  ["4x", new Set()],
-  ["3x", new Set()],
-  ["2x", new Set()],
-  ["1.5x", new Set()],
-  ["1x", new Set()],
-  ["0.75x", new Set()],
-  ["0.5x", new Set()],
-  ["0.25x", new Set()],
-  ["0.125x", new Set()],
-  ["0x", new Set()],
-]);
+const effectMults = new Map();
 
 /**
  * Stores effectiveness results to prevent redundant calculations.
  * @type {Map<string, Set<string>>}
  */
-const effectivenessCache = new Map([
-  ["8x", new Set()],
-  ["4x", new Set()],
-  ["3x", new Set()],
-  ["2x", new Set()],
-  ["1.5x", new Set()],
-  ["1x", new Set()],
-  ["0.75x", new Set()],
-  ["0.5x", new Set()],
-  ["0.25x", new Set()],
-  ["0.125x", new Set()],
-  ["0x", new Set()],
-]);
+const effectivenessCache = new Map();
+
+class ListNode {
+  constructor(mult) {
+    this.mult = mult;
+    this.next = null;
+  }
+}
+
+class LinkedList {
+  constructor() {
+    this.head = null; // largest mult
+  }
+
+  /**
+   * Inserts a new multiplier in sorted (descending) order.
+   * @param {number} mult - The multiplier value.
+   * @returns {ListNode} - The inserted or existing node.
+   */
+  insert(mult) {
+    let newNode = new ListNode(mult);
+
+    // empty list or new highest mult
+    if (!this.head || this.head.mult < mult) {
+      newNode.next = this.head;
+      this.head = newNode;
+      return newNode;
+    }
+
+    let current = this.head;
+    while (current.next && current.next.mult > mult) {
+      current = current.next;
+    }
+
+    // if mult already exists, return the existing node. shouldn't be possible to reach in current implementation
+    if (current.next && current.next.mult === mult) {
+      return current.next;
+    }
+
+    // insert the new node in order
+    newNode.next = current.next;
+    current.next = newNode;
+
+    return newNode;
+  }
+
+  /**
+   * Finds the node with the given multiplier.
+   * @param {number} mult - The multiplier value.
+   * @returns {ListNode|null} - The node if found, otherwise null.
+   */
+  find(mult) {
+    let current = this.head;
+    while (current) {
+      if (current.mult === mult) return current;
+      current = current.next;
+    }
+    return null;
+  }
+}
+
+// create the linked list that keeps track of multiplier order
+let multOrder = new LinkedList();
+
+const addToEffectMults = (mult, typeName) => {
+  if(!effectMults.has(mult)) {
+    effectMults.set(mult, new Set());
+    multOrder.insert(mult);
+  }
+
+  effectMults.get(mult).add(typeName);
+};
 /* ---------------------------------------------------------------------------------------------------------------- */
 /* ----- JSON data loaders – Provide Pokemon type relatioship data by generation as well as special type exception data ----- */
 
@@ -460,9 +512,10 @@ const setsEqual = (setA, setB) => {
  */
 const updateEffectiveness = (newEffectMults) => {
   // console.log(`clearCache in updateEffectiveness is: ${clearCache}`)
+  // console.log(newEffectMults)
   if(clearCache) {
     newEffectMults.forEach((newSet, mult) => {
-      if(!setsEqual(newSet, effectivenessCache.get(mult))) {
+      if(!effectivenessCache.has(mult) || !setsEqual(newSet, effectivenessCache.get(mult))) {
         // Update only when necessary
         effectivenessCache.set(mult, new Set(newSet));
         updateDOM(mult, newSet);
@@ -474,7 +527,7 @@ const updateEffectiveness = (newEffectMults) => {
         updateDOM(mult, newSet);
     });
   }
-}
+};
 
 /**
  * Updates the DOM to reflect effectiveness changes.
@@ -482,23 +535,85 @@ const updateEffectiveness = (newEffectMults) => {
  * @param {Set<string>} typeSet - The set of types corresponding to the multiplier.
  */
 const updateDOM = (mult, typeSet) => {
-  const listEl = document.getElementById(mult);
+  const resGroupsContainer = document.querySelector(".result-groups");
+  let resGroup = document.getElementById(`${mult}`);
+
+  // create the result group for the typeSet if it doesn't exist yet
+  if(!resGroup) {
+    resGroup = document.createElement("div");
+    resGroup.classList.add("result-group");
+    resGroup.id = `${mult}`;
+
+    const header = document.createElement("h3");
+    header.textContent = mode === "offense"
+    ? `Deals ${mult}x to`
+    : `Takes ${mult}x from`;
+
+    const listEl = document.createElement("ul");
+    
+    resGroup.appendChild(header);
+    resGroup.appendChild(listEl);
+
+    // update resGroupsContainer DOM state with multOrder additions
+    // check if this mult should be placed at the top of the container
+    const currHighest = resGroupsContainer.firstChild;
+    if (currHighest && parseFloat(currHighest.id) < mult) {
+      // insert at the top if this mult is greater than the current highest
+      resGroupsContainer.insertBefore(resGroup, currHighest);
+    } else {
+      // otherwise, insert in the correct position (or at the end)
+      let node = multOrder.find(mult);
+      let nextGroup = null;
+
+      // traverse forward until we find the next existing DOM element
+      while (node && node.next) {
+        nextGroup = document.getElementById(`${node.next.mult}`);
+        if (nextGroup) break; // stop once we find an existing element
+        node = node.next;
+      }
+
+      // Insert in correct position or append at the end
+      if (nextGroup) {
+        resGroupsContainer.insertBefore(resGroup, nextGroup);
+      } else {
+        resGroupsContainer.appendChild(resGroup);
+      }
+    }
+  }
+  // clear and repopulate list even if result group ends up the same (reduces slowdowns from DOM access)
+  const listEl = resGroup.querySelector("ul");
   listEl.innerHTML = "";
 
   typeSet.forEach(type => {
-    const listItem = document.createElement("li");
     if(type !== null) {
+      const listItem = document.createElement("li");
       listItem.textContent = type;
       listEl.appendChild(listItem);
     }
   });
 
-  // Get the parent `.result-group` div and toggle its visibility
-  const resultGroup = listEl.closest(".result-group");
-  if(resultGroup) {
-    resultGroup.style.display = typeSet.size > 0 ? "block" : "none";
-  }
+  // hide unused result groups
+  resGroup.style.display = typeSet.size > 0 ? "block" : "none";
 };
+// const updateDOM = (mult, typeSet) => {
+//   const listEl = document.getElementById(mult);
+//   // console.log(listEl)
+//   listEl.innerHTML = "";
+
+//   typeSet.forEach(type => {
+//     if(type !== null) {
+//       const listItem = document.createElement("li");
+//       listItem.textContent = type;
+//       listEl.appendChild(listItem);
+//     }
+//   });
+
+//   // Get the parent `.result-group` div and toggle its visibility
+//   const resultGroup = listEl.closest(".result-group");
+//   if(resultGroup) {
+//     resultGroup.style.display = typeSet.size > 0 ? "block" : "none";
+//   }
+// };
 /* ---------------------------------------------------------------------------------------------------------------- */
 /* ----- CORE FUNCTIONS – Functions that centralize processes for UI rendering and type effectiveness calculation. ----- */
 
@@ -539,13 +654,24 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
   // If there are exceptions, only check type relationships that the exceptions apply to
     // some exceptions have unique interactions that require checks during result group placement
   const exceptionMap = new Map();
-  let tintedLens = 0;
+  const postProcessExceptAll = []; // if exceptions will target all types once they are already grouped, push them here
   if (exceptions.size > 0) {
     for (const exception of exceptions) {
       const exceptIndex = exceptMap[exception];
-      if(exceptIndex === 5) tintedLens = 1; 
       const exceptEntry = exceptJSON.e[exceptIndex];
+      if (exceptEntry.after === 1) {
+        postProcessExceptAll.push(exceptEntry); // push except index to avoid pushing the whole object
+        continue;
+      }
       if(exceptEntry.targets) { // Exceptions that don't modify effectivity have been set to `-1` in JSON
+        if(exceptEntry.targets["any"]) {
+          // Special case for general "any" type exceptions that rely on outKey only (in defense mode)
+          for (const outKey of Object.keys(exceptEntry.targets["any"])) {
+            exceptionMap.set(`any,${parseInt(outKey, 10)}`, exceptEntry);
+          }
+        }
+        
+        // Generic exception case that relies on both inKey and outKey
         for (const [inKey, targets] of Object.entries(exceptEntry.targets)) {
           for (const outKey of Object.keys(targets)) {
             // console.log(`${inKey},${outKey}`)
@@ -557,31 +683,17 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
     }
   };
 
-  // // TERA CHECK before gathering results (should only be accessible in Gen 6+)
-  // // On offense: if move is Stellar-type, directly add `Tera Pokemon` to `2x` effectMults Set. Otherwise, remove it if present
-  // // On defense: if Tera Pokemon, `Stellar` effectivity set to 2. Otherwise `Stellar` is 1x
-  // const superEffective = effectMults.get("2x");
-  // if(gen === "6+") {
-  //   if(teraResult) {
-  //     if(mode === "offense") {
-        
-  //     }
-  //     addStellar.add("tera");
-  //   } else {
-      
-  //   }
-  // }
-
   // Loop through all Pokemon types in the current generation to output their effectiveness relationships
     // mode === "offense" –> selected ATK types are `inKeys`, opposing Pokemon DEF types are `outKeys`
     // mode === "defense" -> selected DEF types are `inKeys`, opposing Pokemon ATK types are `outKeys`
   for (let outKey = 0; outKey < outKeys; outKey++) {
     let totalMult = 1;
     let stellarInKey = false;
+    let inKey;
 
     // Process input types to get their effectiveness relationship with output types
     for (const type of inTypes) {
-      const inKey = typeMap[type];
+      inKey = typeMap[type];
       if(inKey === 18) {
         stellarInKey = true;
         // console.log(`stellar is inKey ${inKey} at outKey ${outKey}`)
@@ -593,16 +705,46 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
 
       totalMult *= effectMult;
 
-      // CURRENT IDEA for applying exception 3/4/2025
-      const exception = exceptionMap.get(`${inKey},${outKey}`)
-      // console.log(exception);
+      // modify totalMult if an exception has a direct effect on it
+      let exception = exceptionMap.get(`${inKey},${outKey}`);
+      let anyException = null;
 
-      if(exception) {
-        totalMult = exception.replace === 1 ? exception.mult : totalMult * exception.mult;
-        // console.log(`exception applied to ${inKey},${outKey}`)
+      // check for the "any" case for defense exceptions
+      if (mode !== "offense" && exceptionMap.has(`any,${outKey}`)) {
+        console.log(`"any" exception found`)
+        anyException = exceptionMap.get(`any,${outKey}`);
       }
+      
+      if (exception) {
+        // apply the specific exception first
+        totalMult = exception.replace === 1 ? exception.mult : totalMult * exception.mult;
+      }
+      
+      if (anyException) {
+        // Apply the "any" exception after the specific exception
+        const target = anyException.targets["any"][outKey.toString()];
+        if(target) {
+          console.log("valid target for 'any' exception?")
+          totalMult = target.replace === 1 ? target.mult : totalMult * target.mult;
+        } else {
+          totalMult = anyException.replace === 1 ? anyException.mult : totalMult * anyException.mult;
+        }
+      }
+    };
 
-      // if(outKey === 1) console.log(`totalMult for fire against ${type} is ${totalMult}`);
+    // Apply post-processing exceptions AFTER effectiveness is determined
+    for (const exceptEntry of postProcessExceptAll) {
+      if(exceptEntry.group) {
+        if(!exceptEntry.replace) {
+          totalMult *= exceptEntry.mult; // Filter or Tinted Lens
+        } else {
+          totalMult = exceptEntry.mult; // Wonder Guard
+        }
+      } else {
+        if (totalMult !== 0) {
+          totalMult = exceptEntry.mult; // Tera Shell
+        }
+      }
     }
 
     /** 
@@ -633,43 +775,48 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
       typeName = typeNames[outKey]; // need type string for targeted types
     }
     
-    switch(totalMult) {
-      case 8:
-        effectMults.get("8x").add(typeName);
-        break;
-      case 4:
-        effectMults.get("4x").add(typeName);
-        break;
-      case 3:
-        effectMults.get("3x").add(typeName);
-        break;
-      case 2:
-        effectMults.get("2x").add(typeName);
-        break;
-      case 1.5:
-        effectMults.get("1.5x").add(typeName);
-        break;
-      case 1:
-        effectMults.get("1x").add(typeName);
-        break;
-      case 0.75:
-        effectMults.get("0.75x").add(typeName);
-        break;
-      case 0.5:
-        effectMults.get(tintedLens ? "1x" : "0.5x").add(typeName);
-        break;
-      case 0.25:
-        effectMults.get("0.25x").add(typeName);
-        break;
-      case 0.125:
-        effectMults.get("0.125x").add(typeName);
-        break;
-      case 0:
-        effectMults.get("0x").add(typeName);
-        break;
-      default:
-        throw new Error(`Invalid effectiveness multiplier: ${totalMult}`);
-    }
+    // console.log(`${typeName}'s totalMult is...`)
+    // console.log(totalMult);
+
+    addToEffectMults(totalMult, typeName);
+    
+    // switch(totalMult) {
+    //   case 8:
+    //     effectMults.get("8x").add(typeName);
+    //     break;
+    //   case 4:
+    //     effectMults.get("4x").add(typeName);
+    //     break;
+    //   case 3:
+    //     effectMults.get("3x").add(typeName);
+    //     break;
+    //   case 2:
+    //     effectMults.get("2x").add(typeName);
+    //     break;
+    //   case 1.5:
+    //     effectMults.get("1.5x").add(typeName);
+    //     break;
+    //   case 1:
+    //     effectMults.get("1x").add(typeName);
+    //     break;
+    //   case 0.75:
+    //     effectMults.get("0.75x").add(typeName);
+    //     break;
+    //   case 0.5:
+    //     effectMults.get("0.5x").add(typeName);
+    //     break;
+    //   case 0.25:
+    //     effectMults.get("0.25x").add(typeName);
+    //     break;
+    //   case 0.125:
+    //     effectMults.get("0.125x").add(typeName);
+    //     break;
+    //   case 0:
+    //     effectMults.get("0x").add(typeName);
+    //     break;
+    //   default:
+    //     throw new Error(`Invalid effectiveness multiplier: ${totalMult}`);
+    // }
     // if(typeName === null) // Allow null type into effectMults to prevent stellar from displaying under certain conditions....
   }
   // console.log(effectMults);
@@ -846,31 +993,14 @@ const initTypeButtons = async () => {
 const initCachedResults = async (primaryContainer, secondaryContainer = null) => {
   // Handle non-move exceptions first (applies to both offense and defense)
   if(exceptions.size > 0) {
-    const effects = document.querySelector(".special-effects");
-    for(let exception of exceptions) {
-      const exceptChecked = effects.querySelector(`.effect-checkbox[value=${exception}]`);
-      if(exceptChecked) {
-        exceptChecked.checked = true;
-      }
+    const abilitySelect = document.getElementById("ability-select");
+    // update abilitySelect if the currentAbility is a value other than "" in the cache
+    if (exceptions.has(currentAbility)) {
+      abilitySelect.value = currentAbility;
     }
   }
   if(secondaryContainer) {
     for(const type of selectedTypes) {
-      // if a tera type had been selected before navigating away, reselect the relevant monotype
-      if(teraResult && type !== "stellar") {
-        console.log("tera type found, selecting monotype...");
-        lastPrimarySelected = primaryContainer.querySelector(`button[data-type="${type}"]`);
-        lastPrimarySelected.classList.add("selected");
-        
-        primaryContainer.querySelectorAll("button").forEach((btn) => {
-          btn.disabled = true;
-        });
-
-        secondaryContainer.querySelectorAll("button").forEach((btn) => {
-          btn.disabled = true;
-        })
-      }
-
       // if type has an association with a special move and the move is currently in exceptions, treat as if the move is being selected now
       const sdMove = moveByType.get(type);
       if(sdMove && exceptions.has(sdMove)) {
@@ -884,6 +1014,23 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
         // primaryContainer.querySelector(`button[data-type="${type}"]`).disabled = true;
         // lastSpecialDisabled = secondaryContainer.querySelector(`button[data-type="${type}"]`)
         // lastSpecialDisabled.disabled = true;
+      } else if(teraResult) {
+        if(type !== "stellar") {
+          // if a tera type had been selected before navigating away, reselect the relevant monotype
+          console.log("tera type found, selecting monotype...");
+          lastPrimarySelected = primaryContainer.querySelector(`button[data-type="${type}"]`);
+          lastPrimarySelected.classList.add("selected");
+
+          document.getElementById("tera-dropdown").value = type;
+
+          primaryContainer.querySelectorAll("button").forEach((btn) => {
+            btn.disabled = true;
+          });
+
+          secondaryContainer.querySelectorAll("button").forEach((btn) => {
+            btn.disabled = true;
+          });
+        }
       } else {
         let button;
         if(lastPrimarySelected.dataset.type === type || !lastPrimarySelected) {
@@ -940,7 +1087,7 @@ const initOffenseExceptions = (primaryContainer) => {
   ];
   
   const moves = document.querySelector(".special-moves-o");
-  const effects = document.querySelector(".special-effects");
+  const abilitySelect = document.getElementById("ability-select");
 
   moves.addEventListener("click", async (e) => {
     const button = e.target.closest("button");
@@ -1006,17 +1153,23 @@ const initOffenseExceptions = (primaryContainer) => {
     return updateSelections(primaryContainer);
   });
 
-  effects.addEventListener("change", async (e) => {
-    const checkbox = e.target.closest(".effect-checkbox");
-    if(!checkbox) return;
-    const effect = checkbox.value;
-    // console.log(effect);
+  abilitySelect.addEventListener("change", async (e) => {
+    const selectedAbility = e.target.value;
+    if (selectedAbility === oAbility) return;
 
-    if(checkbox.checked) {
-      exceptions.add(effect);
-    } else {
-      exceptions.delete(effect);
-    };
+    // remove the previous ability if there was one
+    if (oAbility !== "") {
+      exceptions.delete(oAbility);
+    }
+
+    // add new ability unless none was selected
+    if(selectedAbility !== "") {
+      exceptions.add(selectedAbility);
+    }
+
+    oAbility = selectedAbility;
+
+    // console.log(exceptions);
     getTypeRelationship(selectedTypes, mode, gen, exceptions);
     return updateSelections(primaryContainer);
   });
@@ -1032,8 +1185,15 @@ const initOffenseExceptions = (primaryContainer) => {
  */
 const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
   const moves = document.querySelector(".special-moves-d");
-  const effects = document.querySelector(".special-effects");
+  const abilitySelect = document.getElementById("ability-select");
   const teraDropdown = document.getElementById("tera-dropdown");
+  // hide tera types if not gen 6+
+  if(gen !== "6+") {
+    document.querySelector(".tera-types").style.display = "none";
+  } else {
+    document.querySelector(".tera-types").style.display = "block";
+  }
+
   const allButtons = [
     ...primaryContainer.querySelectorAll("button"),
     ...secondaryContainer.querySelectorAll("button")
@@ -1099,17 +1259,22 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
     return updateSelections(primaryContainer, secondaryContainer);
   });
 
-  effects.addEventListener("change", async (e) => {
-    const checkbox = e.target.closest(".effect-checkbox");
-    if(!checkbox) return;
-    const effect = checkbox.value;
-    // console.log(effect);
+  abilitySelect.addEventListener("change", async (e) => {
+    const selectedAbility = e.target.value;
+    if (selectedAbility === dAbility) return;
 
-    if(checkbox.checked) {
-      exceptions.add(effect);
-    } else {
-      exceptions.delete(effect);
-    };
+    // remove the previous ability if there was one
+    if (dAbility !== "") {
+      exceptions.delete(dAbility);
+    }
+
+    // add new ability unless none was selected
+    if(selectedAbility !== "") {
+      exceptions.add(selectedAbility);
+    }
+
+    dAbility = selectedAbility;
+
     // console.log(exceptions);
     getTypeRelationship(selectedTypes, mode, gen, exceptions);
     return updateSelections(primaryContainer, secondaryContainer);
@@ -1214,7 +1379,7 @@ const initGenButtons = async () => {
     // Clear cache first time generation changes
     if(!genChange) {
       // console.log("clearing effectivenessCache on gen change")
-      effectivenessCache.forEach(set => set.clear());
+      effectivenessCache.clear();
       clearCache = true;
       prevMode = null; // remove prevMode reference since its use is to prevent cache clearing upon returning to "offense" or "defense" from "more"
     }

@@ -1,11 +1,31 @@
 /* Development styles, compile to css for production */
 /* RUN `sass --watch scss/index.scss:dist/index.css --style compressed` */
 
+/* Global variables, default to dark mode */
+$background-color: #333;
+$text-color: #f0f0f0;
+$generic-selected: #4CAF50;
+
+@media (prefers-color-scheme: light) {
+  $background-color: #f0f0f0;
+  $text-color: #333;
+}
+
+:root {
+  color-scheme: dark light; /* Explicitly declare dark mode support */
+  background-color: $background-color; /* Cover the entire viewport */
+  margin: 0;
+  padding: 0;
+  min-height: 100vh; /* Ensure full viewport coverage */
+}
+
 /* Global styles */
 body {
   font-family: Arial, sans-serif;
-  background-color: #f0f0f0;
-  color: #333;
+  color: $text-color;
+  user-select: none;
+  margin: 0;
+  padding: 0;
 }
 
 h1 {
@@ -52,19 +72,19 @@ nav a.active {
 .button-grid button, .gen-grid button {
   display: block;
   padding: 0.5rem;
-  background-color: #f0f0f0;
+  background-color: $background-color;
   border: 1px solid #ccc;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s;
-  user-select: none;
+  // user-select: none;
 
   &:hover {
     background-color: #ddd;
   }
   
   &.selected {
-    background-color: #4CAF50;
+    background-color: $generic-selected;
     color: white;
     border-color: #388E3C;
     font-weight: bold;
@@ -73,7 +93,7 @@ nav a.active {
 
 .button-grid button:disabled {
   &:hover {
-    background-color: #f0f0f0;
+    background-color: $background-color;
     cursor: default;
   }
 }
@@ -97,6 +117,11 @@ nav a.active {
 .effect-list {
   display: flex;
   flex-direction: column;
+  color:$generic-selected;
+}
+
+.needs-work {
+  color: orange;
 }
 
 .effectiveness-results {
@@ -112,7 +137,7 @@ nav a.active {
 
 .result-group {
   display: none;
-  background-color: #f9f9f9;
+  background-color: $background-color;
   padding: 1rem;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

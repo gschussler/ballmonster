@@ -19,38 +19,12 @@ Notes:
 ```json
 {
   "e": [ // EXCEPTIONS ARRAY, starting with OFFENSIVE
-    { // Foresight (Gen 2 only) – Normal and Fighting deal 1x to Ghost
-      "mode": "offense",
-      "mult": 1,
-      "replace": 1,
-      "targets": {
-        "0": { "13": 1 },
-        "6": { "13": 1 }
-      }
-    },
     { // Flash Fire, offensive (Gen 3+) – Fire deals 50% more damage to all types
       "mode": "offense",
       "mult": 1.5,
       "replace": 0,
       "targets": {
         "1": { "0": 1, "1": 1, "2": 1, "3": 1, "4": 1, "5": 1, "6": 1, "7": 1, "8": 1, "9": 1, "10": 1, "11": 1, "12": 1, "13": 1, "14": 1, "15": 1, "16": 1, "17": 1 }
-      }
-    },
-    { // Odor Sleuth (Gen 3 only) – Normal and Fighting deal 1x to Ghost
-      "mode": "offense",
-      "mult": 1,
-      "replace": 1,
-      "targets": {
-        "0": { "13": 1 },
-        "6": { "13": 1 }
-      }
-    },
-    { // Gravity, offensive (Gen 4+) – All reasons for immunity to ground-type moves are nullified (at the moment, simplified to 'Ground deals 1x to Flying')
-      "mode": "offense",
-      "mult": 1,
-      "replace": 1,
-      "targets": {
-        "8": { "9": 1 }
       }
     },
     { // Scrappy (Gen 4+) - Normal and Fighting deal 1x to Ghost
@@ -62,7 +36,13 @@ Notes:
         "6": { "13": 1 }
       }
     },
-    -1, // Tinted Lens (Gen 4+, doubles "not very effective" damage, which is distinctive from simply 0.5x effectivity relationship.)
+    { // Tinted Lens (Gen 4+, doubles "not very effective" damage, which is distinctive from simply 0.5x effectivity relationship.)
+      "mode": "defense",
+      "mult": 2,
+      "replace": 0,
+      "after": 1,
+      "group": 0.5
+    },
     { // Flying Press (Gen 6+, Fighting-type move that also deals Flying-type damage.)
       "move": "fighting",
     },
@@ -100,7 +80,14 @@ Notes:
         "0": { "1": 1 }, "1": { "1": 1 }, "2": { "1": 1 }, "3": { "1": 1 }, "4": { "1": 1 }, "5": { "1": 1 }, "6": { "1": 1 }, "7": { "1": 1 }, "8": { "1": 1 }, "9": { "1": 1 }, "10": { "1": 1 }, "11": { "1": 1 }, "12": { "1": 1 }, "13": { "1": 1 }, "14": { "1": 1 }, "15": { "1": 1 }, "16": { "1": 1 }, "17": { "1": 1 }, "18": { "1": 1}
       }
     },
-    -1, // Levitate (Gen 3) – Immune to Ground-type damage (except when struck by Thousand Arrows, affected by Gravity, etc. Perhaps need to add Flying type immunities but ignore that change if the aforementioned moves/effects are involved?)
+    { // Levitate (Gen 3) – Immune to Ground-type damage (except when struck by Thousand Arrows, affected by Gravity, etc. Perhaps need to add Flying type immunities but ignore that change if the aforementioned moves/effects are involved?)
+      "mode": "defense",
+      "mult": 0,
+      "replace": 1,
+      "targets": {
+        "0": { "8": 1 }, "1": { "8": 1 }, "2": { "8": 1 }, "3": { "8": 1 }, "4": { "8": 1 }, "5": { "8": 1 }, "6": { "8": 1 }, "7": { "8": 1 }, "8": { "8": 1 }, "9": { "8": 1 }, "10": { "8": 1 }, "11": { "8": 1 }, "12": { "8": 1 }, "13": { "8": 1 }, "14": { "8": 1 }, "15": { "8": 1 }, "16": { "8": 1 }, "17": { "8": 1 }, "18": { "8": 1}
+      }
+    },
     { // Lightning Rod (Gen 3, only Gen 5+ is relevant) - Immune to Electric
       "mode": "defense",
       "mult": 0,
@@ -133,10 +120,26 @@ Notes:
         "0": { "2": 1 }, "1": { "2": 1 }, "2": { "2": 1 }, "3": { "2": 1 }, "4": { "2": 1 }, "5": { "2": 1 }, "6": { "2": 1 }, "7": { "2": 1 }, "8": { "2": 1 }, "9": { "2": 1 }, "10": { "2": 1 }, "11": { "2": 1 }, "12": { "2": 1 }, "13": { "2": 1 }, "14": { "2": 1 }, "15": { "2": 1 }, "16": { "2": 1 }, "17": { "2": 1 }
       }
     },
-    -1, // Wonder Guard (Gen 3) – Immune to ALL damaging move types except those super-effective. This is distinctive from simply '2x'.)
-    -1, // Dry Skin (Gen 4) – Fire-type damage increased by 25%. Immune to Water-type damage. Need to handle multiple values for type change.)
-    -1, // Filter (Gen 4) – Reduces damage from super-effective moves by 25%. "Super-effective" distinctive from '2x'.)
-    -1, // Gravity, defensive (Gen 4+) – All reasons for immunity to ground-type moves are nullified. Modify logic to account for source pokemon losing this immunity instead.
+    { // Wonder Guard (Gen 3) – Immune to ALL damaging move types except those super-effective. This is distinctive from simply '2x'.)
+      "mode": "defense",
+      "mult": 0,
+      "replace": 1,
+      "after": 1,
+      "group": 2
+    },
+    { // Dry Skin (Gen 4) – Fire-type damage increased by 25%. Immune to Water-type damage. Need to handle multiple values for type change.)
+      "mode": "defense",
+      "targets": {
+        "any": { "1": { "mult": 1.25, "replace": 0 }, "2": { "mult": 0, "replace": 1 } } // DEF Type -> Fire damage increased by 25% && DEF Type -> Water damage immunity
+      }
+    },
+    { // Filter (Gen 4) – Reduces damage from super-effective moves by 25%. "Super-effective" distinctive from '2x'.
+      "mode": "defense",
+      "mult": 0.75,
+      "replace": 0,
+      "after": 1,
+      "group": 2
+    },
     { // Heatproof (Gen 4) – Fire-type damaging moves deal 50% less damage
       "mode": "defense",
       "mult": 0.5,
@@ -209,7 +212,12 @@ Notes:
         "0": { "13": 1 }, "1": { "13": 1 }, "2": { "13": 1 }, "3": { "13": 1 }, "4": { "13": 1 }, "5": { "13": 1 }, "6": { "13": 1 }, "7": { "13": 1 }, "8": { "13": 1 }, "9": { "13": 1 }, "10": { "13": 1 }, "11": { "13": 1 }, "12": { "13": 1 }, "13": { "13": 1 }, "14": { "13": 1 }, "15": { "13": 1 }, "16": { "13": 1 }, "17": { "13": 1 }
       }
     },
-    -1, // Tera Shell (Gen 9) – Damage-dealing moves of all types are set to 0.5x, "not very effective". This is the sole ability that includes a reduction to Stellar-type damage.
+    { // Tera Shell (Gen 9) – Damage-dealing moves of all types are set to 0.5x, "not very effective". This is the sole ability that includes a reduction to Stellar-type damage.
+      "mode": "defense",
+      "mult": 0.5,
+      "replace": 1,
+      "after": 1
+    },
     { // Well-Baked Body (Gen 9) – Immune to Fire-type damage
       "mode": "defense",
       "mult": 0,
