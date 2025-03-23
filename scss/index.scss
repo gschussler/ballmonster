@@ -1,19 +1,12 @@
-/* Development styles, compile to css for production */
+@use "sass:color";
+@use "sass:map";
+@use "variables.scss";
+/* Main development styles, compile to css for production */
 /* RUN `sass --watch scss/index.scss:dist/index.css --style compressed` */
-
-/* Global variables, default to dark mode */
-$background-color: #333;
-$text-color: #f0f0f0;
-$generic-selected: #4CAF50;
-
-@media (prefers-color-scheme: light) {
-  $background-color: #f0f0f0;
-  $text-color: #333;
-}
 
 :root {
   color-scheme: dark light; /* Explicitly declare dark mode support */
-  background-color: $background-color; /* Cover the entire viewport */
+  background-color: variables.$background-color; /* Cover the entire viewport */
   margin: 0;
   padding: 0;
   min-height: 100vh; /* Ensure full viewport coverage */
@@ -22,7 +15,7 @@ $generic-selected: #4CAF50;
 /* Global styles */
 body {
   font-family: Arial, sans-serif;
-  color: $text-color;
+  color: variables.$text-color;
   user-select: none;
   margin: 0;
   padding: 0;
@@ -69,34 +62,88 @@ nav a.active {
   gap: 0.5rem;
 }
 
+.icon { // viewBox 0 0 64 64
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 35%;
+  height: 100%;
+  stroke: variables.$background-color;
+  stroke-width: 2;
+  transition: fill 0.2s stroke 0.2s;
+}
+
 .button-grid button, .gen-grid button {
   display: block;
+  position: relative;
+  overflow: hidden;
+  align-items: center;
   padding: 0.5rem;
-  background-color: $background-color;
-  border: 1px solid #ccc;
+  background-color: color.adjust(variables.$background-color, $lightness: 10%);
+  border: 2px groove color.adjust(variables.$background-color, $lightness: 30%);
   border-radius: 4px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9), 0px 0px 10px rgba(0, 0, 0, 0.9);
   cursor: pointer;
   transition: background-color 0.2s;
-  // user-select: none;
 
-  &:hover {
-    background-color: #ddd;
+  &:hover:not(:disabled) {
+    background-color: color.adjust(variables.$background-color, $lightness: 25%);
   }
   
   &.selected {
-    background-color: $generic-selected;
+    background-color: variables.$generic-selected;
     color: white;
     border-color: #388E3C;
-    font-weight: bold;
-  }
-}
 
-.button-grid button:disabled {
-  &:hover {
-    background-color: $background-color;
+    .icon {
+      fill: variables.$background-color;
+    }
+  }
+
+  &:disabled {
     cursor: default;
   }
-}
+};
+
+/* Loop to generate type-specific button styles */
+@each $type, $color in variables.$pokemon-type-colors {
+  $hover-color: map.get(variables.$pokemon-type-colors-light, $type);
+  $selected-color: map.get(variables.$pokemon-type-colors-dark, $type);
+  
+  .button-grid button.#{$type} {
+    // border-color: $selected-color;
+    padding-left: 35%;
+
+    // &:hover {
+    //   background-color: $hover-color;
+    // }
+
+    &.selected {
+      background-color: $selected-color;
+      border-color: $hover-color;
+
+      .icon {
+        fill: variables.$background-color;
+        stroke: $color
+      }
+    }
+
+    &:disabled {
+      .icon {
+        fill: variables.$background-color; // Desaturate the type color for disabled buttons
+        // stroke: desaturate($hover-color, 50%);
+      }
+    }
+  }
+
+  .button-grid button.#{$type} .icon {
+    fill: $color;
+  }
+
+  .result-group ul li[data-type="#{$type}"] {
+    color: $color;
+  }
+};
 
 .exceptions_o {
 
@@ -117,7 +164,7 @@ nav a.active {
 .effect-list {
   display: flex;
   flex-direction: column;
-  color:$generic-selected;
+  color:variables.$generic-selected;
 }
 
 .needs-work {
@@ -137,7 +184,7 @@ nav a.active {
 
 .result-group {
   display: none;
-  background-color: $background-color;
+  background-color: variables.$background-color;
   padding: 1rem;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

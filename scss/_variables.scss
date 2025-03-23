@@ -1,0 +1,75 @@
+/* Global variables, default to dark mode */
+$background-color: #333;
+$text-color: #f0f0f0;
+$generic-selected: #4CAF50;
+
+@media (prefers-color-scheme: light) {
+  $background-color: #f0f0f0;
+  $text-color: #333;
+}
+
+$pokemon-type-colors: (
+  normal: #9FA19F,
+  fire: #E62829,
+  water: #2980EF,
+  electric: #FAC000,
+  grass: #3FA129,
+  ice: #3DCEF3,
+  fighting: #FF8000,
+  poison: #9141CB,
+  ground: #915121,
+  flying: #81B9EF,
+  psychic: #EF4179,
+  bug: #91A119,
+  rock: #AFA981,
+  ghost: #704170,
+  dragon: #5060E1,
+  dark: #624D4E,
+  steel: #60A1B8,
+  fairy: #EF70EF,
+  stellar: #40B5A5
+);
+
+$pokemon-type-colors-light: (
+  normal: #C1C2C1,
+  fire: #EF7374,
+  water: #74ACF5,
+  electric: #FCD659,
+  grass: #82C274,
+  ice: #81DFF7,
+  fighting: #FFAC59,
+  poison: #B884DD,
+  ground: #B88E6F,
+  flying: #ADD2F5,
+  psychic: #F584A8,
+  bug: #B8C26A,
+  rock: #CBC7AD,
+  ghost: #A284A2,
+  dragon: #8D98EC,
+  dark: #998B8C,
+  steel: #98C2D1,
+  fairy: #F5A2F5,
+  stellar: #83CFC5
+);
+
+$pokemon-type-colors-dark: (
+  normal: #676967,
+  fire: #961A1B,
+  water: #1B539B,
+  electric: #A37D00,
+  grass: #29691B,
+  ice: #28869E,
+  fighting: #A65300,
+  poison: #5E2A84,
+  ground: #5E3515,
+  flying: #54789B,
+  psychic: #9B2A4F,
+  bug: #5E6910,
+  rock: #726E54,
+  ghost: #492A49,
+  dragon: #343E92,
+  dark: #403233,
+  steel: #3E6978,
+  fairy: #9B499B,
+  stellar: #2A766B
+);

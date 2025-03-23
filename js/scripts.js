@@ -588,6 +588,7 @@ const updateDOM = (mult, typeSet) => {
     if(type !== null) {
       const listItem = document.createElement("li");
       listItem.textContent = type;
+      listItem.setAttribute("data-type", type);
       listEl.appendChild(listItem);
     }
   });
@@ -995,6 +996,12 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
   if(exceptions.size > 0) {
     const abilitySelect = document.getElementById("ability-select");
     // update abilitySelect if the currentAbility is a value other than "" in the cache
+    let currentAbility;
+    if(mode !== "defense") {
+      currentAbility = oAbility;
+    } else {
+      currentAbility = dAbility;
+    }
     if (exceptions.has(currentAbility)) {
       abilitySelect.value = currentAbility;
     }
