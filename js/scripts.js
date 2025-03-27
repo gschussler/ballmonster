@@ -587,14 +587,22 @@ const updateDOM = (mult, typeSet) => {
   typeSet.forEach(type => {
     if(type !== null) {
       const listItem = document.createElement("li");
-      listItem.textContent = type;
-      listItem.setAttribute("data-type", type);
+      if(type !== "tera_pokemon") {
+        listItem.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+        listItem.setAttribute("data-type", type);
+        listEl.classList.remove("tera-list");
+      } else {
+        listItem.textContent = "Tera Pokemon";
+        listItem.setAttribute("data-type", "tera");
+        listItem.classList.add("tera-item");
+        listEl.classList.add("tera-list");
+      }
       listEl.appendChild(listItem);
     }
   });
 
   // hide unused result groups
-  resGroup.style.display = typeSet.size > 0 ? "block" : "none";
+  resGroup.style.display = typeSet.size > 0 ? "grid" : "none";
 };
 // const updateDOM = (mult, typeSet) => {
 //   const listEl = document.getElementById(mult);
@@ -1097,15 +1105,15 @@ const initOffenseExceptions = (primaryContainer) => {
   const abilitySelect = document.getElementById("ability-select");
 
   moves.addEventListener("click", async (e) => {
-    const button = e.target.closest("button");
-    if(!button || !button.dataset.move) return;
+    const container = e.target.closest("button");
+    if(!container || !container.dataset.move) return;
     
-    const move = button.dataset.move;
+    const move = container.dataset.move;
     // console.log(move);
 
     if(exceptions.has(move)) {
       exceptions.delete(move);
-      button.classList.remove("selected");
+      container.classList.remove("selected");
       lastMoveSelected = null;
       
       // Only flying_press has a second damage type to be deleted
@@ -1131,8 +1139,8 @@ const initOffenseExceptions = (primaryContainer) => {
       }
 
       exceptions.add(move);
-      button.classList.add("selected");
-      lastMoveSelected = button;
+      container.classList.add("selected");
+      lastMoveSelected = container;
 
       // if(typeByMove.get(move)) {
       const mType = typeByMove.get(move);
@@ -1207,10 +1215,10 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
   ];
 
   moves.addEventListener("click", async (e) => {
-    const button = e.target.closest("button");
-    if(!button || !button.dataset.move) return;
+    const container = e.target.closest("button");
+    if(!container || !container.dataset.move) return;
 
-    const move = button.dataset.move;
+    const move = container.dataset.move;
     let pTypeDisabled;
     let sTypeDisabled;
 
@@ -1255,7 +1263,7 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
       }
 
       exceptions.add(move);
-      lastMoveSelected = button;
+      lastMoveSelected = container;
       if(lastPrimarySelected?.dataset.type !== mType && lastSecondarySelected?.dataset.type !== mType) {
         selectedTypes.add(mType);
       }
@@ -1354,7 +1362,7 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
   });
 
   teraResult = teraDropdown.value !== "" ? true : false;
-  lastMoveSelected = moves.querySelector("button.selected") || null;
+  lastMoveSelected = moves.querySelector(".move-container.selected") || null;
 };
 
 /**

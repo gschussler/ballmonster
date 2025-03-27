@@ -1,6 +1,6 @@
 <div class="offense">
   <!-- Left Side -->
-  <div class="selectable">
+  <div class="selectable-o">
     <!-- Type Buttons -->
     <div class="primary-types">
       <h2>Choose type</h2>
@@ -126,10 +126,19 @@
       <!-- Special Moves -->
       <div class="special-moves-o">
         <h3>Choose special move</h3>
-        <div class="button-grid">
-          <button class="" class="move-button" data-move="flying_press">Flying Press</button>
-          <button class="" class="move-button" data-move="freeze-dry">Freeze-Dry</button>
-          <button class="" class="move-button" data-move="thousand_arrows">Thousand Arrows</button>
+        <div class="button-grid m">
+          <button data-move="flying_press" data-type="fighting">
+            <span>Flying Press</span>
+            <span class="close-x">&times;</span>
+          </button>
+          <button data-move="freeze-dry" data-type="ice">
+            <span>Freeze-Dry</span>
+            <span class="close-x">&times;</span>
+          </button>
+          <button data-move="thousand_arrows" data-type="ground">
+            <span>Thousand Arrows</span>
+            <span class="close-x">&times;</span>
+          </button>
         </div>
       </div>
       <!-- Special Effects -->
