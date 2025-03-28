@@ -8,9 +8,11 @@
   <meta name="color-scheme" content="dark light">
   <meta name="darkreader-lock">
   <script src="/js/htmx.min.js"></script>
+  <script src="/js/class-tools.min.js"></script>
+  <script src="/js/preload.min.js"></script>
   <link rel="stylesheet" href="/dist/index.css">
 </head>
-<body>
+<body classes="add appear" hx-ext="class-tools, preload" ondragstart="return false;">
   <header>
     <!-- <img src="/svg/pokecalcgg.min.svg" alt="pokecalcgg"> -->
     <div>
@@ -20,16 +22,13 @@
     </div>
     <p>...a Pokémon type calculator.</p>
   </header>
-  <nav>
-    <a href="#" id="offense" hx-get="/pages/offense.html" hx-target="#content" hx-swap="innerHTML" class="page-link active" aria-label="Offense">Offense</a>
-    <a href="#" id="defense" hx-get="/pages/defense.html" hx-target="#content" hx-swap="innerHTML" class="page-link" aria-label="Defense">Defense</a>
-    <a href="#" id="more" hx-get="/pages/more.html" hx-target="#content" hx-swap="innerHTML" class="page-link" aria-label="More">More</a>
+  <nav hx-boost="true">
+    <a href="#" id="offense" hx-get="/pages/offense" hx-target="#content" hx-swap="innerHTML" class="page-link active" aria-label="Offense" preload="mouseover">Offense</a>
+    <a href="#" id="defense" hx-get="/pages/defense" hx-target="#content" hx-swap="innerHTML" class="page-link" aria-label="Defense" preload="mouseover">Defense</a>
+    <a href="#" id="more" hx-get="/pages/more" hx-target="#content" hx-swap="innerHTML" class="page-link" aria-label="More" preload="mouseover">More</a>
   </nav>
 
-  <main id="content" data-mode="offense">
-    <!-- Content will be dynamically loaded here -->
-    <!-- Initial content (e.g., Offense page) -->
-    <div hx-get="/pages/offense.html" hx-trigger="load" hx-target="this" hx-swap="innerHTML"></div>
+  <main id="content" data-mode="offense" hx-get="/pages/offense" hx-trigger="load">
   </main>
   <script src="/js/scripts.js" defer></script>
 </body>

@@ -17,10 +17,13 @@ document.addEventListener("htmx:afterSwap", async (e) => {
     // clear effectMults and multOrder entirely if destination is "offense" or "defense"
     effectMults.clear();
     multOrder = new LinkedList();
+    typeVisibility();
     await initTypeButtons();
   } else {
     await initGenButtons();
   }
+  // let content = document.getElementById('content');
+  // content.classList.add('appear');
 });
 
 /**
@@ -70,10 +73,15 @@ document.querySelector("nav").addEventListener("click", (e) => {
     document.getElementById('content').setAttribute("data-mode", newMode);
     link.classList.add("active");
 
-    console.log(`Mode updating from ${mode} to: ${newMode}`);
+    // console.log(`Mode updating from ${mode} to: ${newMode}`);
     mode = newMode;
   }
 });
+
+// document.addEventListener('htmx:beforeSwap', (e) => {
+//   let content = document.getElementById('content');
+//   content.classList.remove('appear');
+// });
 /* ---------------------------------------------------------------------------------------------------------------- */
 /* ----- GLOBAL VARIABLES – Data primitives and structures used for application state as well as within one or more functional components ----- */
 
@@ -375,10 +383,22 @@ const loadExceptions = async () => {
  * Adjusts the visibility of type buttons based on number of Pokemon within a generation.
  * @param {HTMLElement} container - The container element holding the type buttons
  */
-const typeVisibility = (container, gen) => {
-  const btns = container.querySelector(".button-grid").children;
+const typeVisibility = () => {
+  const primaryContainer = document.querySelector(".primary-types");
+  const secondaryContainer = document.querySelector(".secondary-types");
+  
+  const btns = primaryContainer.querySelector(".button-grid").children;
+
   for(let i = 15; i < btns.length; i++) {
-    btns[i].style.display = (genTypeCounts[gen] > i) ? "block" : "none";
+    btns[i].style.display = genTypeCounts[gen] > i ? "block" : "none";
+  }
+
+  if(secondaryContainer) {
+    const sbtns = secondaryContainer.querySelector(".button-grid").children;
+
+    for(let i = 15; i < sbtns.length; i++) {
+      sbtns[i].style.display = genTypeCounts[gen] > i ? "block" : "none";
+    }
   }
 };
 
@@ -474,7 +494,7 @@ const moveTypeEnable = (container1, container2, moveType, special = false) => {
     lastSecondaryDisabled = null;
   } else {
     lastSpecialDisabled.disabled = false;
-    console.log(lastSpecialDisabled.dataset.type)
+    // console.log(lastSpecialDisabled.dataset.type)
     lastSpecialDisabled = null;
   }
 };
@@ -637,8 +657,8 @@ const updateDOM = (mult, typeSet) => {
 const getTypeRelationship = (types, mode, generation, exceptions) => {
   let res = mode === "offense" ? "effectiveness" : "resistances";
   // Update effectiveness sublists with the results
-  console.log(`Checking ${res} of ${[...types]}`);
-  if(exceptions.size > 0) console.log(`...with ${[...exceptions]} applied`);
+  // console.log(`Checking ${res} of ${[...types]}`);
+  // if(exceptions.size > 0) console.log(`...with ${[...exceptions]} applied`);
   const newEffectMults = getEffectiveness([...types], mode, generation, exceptions);
   updateEffectiveness(newEffectMults);
 };
@@ -720,7 +740,7 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
 
       // check for the "any" case for defense exceptions
       if (mode !== "offense" && exceptionMap.has(`any,${outKey}`)) {
-        console.log(`"any" exception found`)
+        // console.log(`"any" exception found`)
         anyException = exceptionMap.get(`any,${outKey}`);
       }
       
@@ -733,7 +753,7 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
         // Apply the "any" exception after the specific exception
         const target = anyException.targets["any"][outKey.toString()];
         if(target) {
-          console.log("valid target for 'any' exception?")
+          // console.log("valid target for 'any' exception?")
           totalMult = target.replace === 1 ? target.mult : totalMult * target.mult;
         } else {
           totalMult = anyException.replace === 1 ? anyException.mult : totalMult * anyException.mult;
@@ -767,7 +787,7 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
     /**
      * Tera Considerations (on Defense):
      * - Stellar has 1x effectivity against all other types except Tera Pokemon (2x).
-     * - Selecting a Tera Type should simply add `Stellar` to selectedTypes in order to reflect the 2x. No need to change logic here, just initDefenseExceptions logic to account for teraDropdown changes and initialization in case of cached tera type
+     * - Selecting a Tera Type should simply add `Stellar` to selectedTypes in order to reflect the 2x. No need to change logic here, just initDefenseExceptions logic to account for teraSelect changes and initialization in case of cached tera type
      */
     let typeName = null;
     if(outKey === 18) {
@@ -842,13 +862,11 @@ const getEffectiveness = (inTypes, mode, gen, exceptions) => {
  * @returns {Promise<void>} - A promise that resolves when the initial page state of "offense" or "defense" has finished initial type calculations and display.
  */
 const initTypeButtons = async () => {
-  console.log(`Mode: ${mode}`);
-  console.log(`Gen: ${gen}`);
+  console.log(`${mode}, gen ${gen}`);
   genJSON = await loadGenerationData(gen);
   exceptJSON = await loadExceptions();
 
   const primaryContainer = document.querySelector(".primary-types");
-  typeVisibility(primaryContainer, gen);
   // if(!primaryContainer) return; // ".type-buttons" doesn't exist in index.html on initial page load, so the first try for initializing always fails. skip it.
   const secondaryContainer = document.querySelector(".secondary-types");
 
@@ -892,7 +910,7 @@ const initTypeButtons = async () => {
           selectedTypes.forEach((existingType) => {
             // `selectedTypes` contains one type previously selected in each container
             if(primaryContainer.querySelector(`button[data-type="${existingType}"].selected`)) {
-              console.log(`Removing ${existingType}`);
+              // console.log(`Removing ${existingType}`);
               selectedTypes.delete(existingType);
             }
           });
@@ -916,7 +934,6 @@ const initTypeButtons = async () => {
 
   // Additional initialization for "defense.html"
   if(secondaryContainer) {
-    typeVisibility(secondaryContainer, gen);
     secondaryContainer.addEventListener("click", async (e) => {
         const button = e.target.closest("button");
         if(!button || !button.dataset.type) return;
@@ -1019,7 +1036,7 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
       // if type has an association with a special move and the move is currently in exceptions, treat as if the move is being selected now
       const sdMove = moveByType.get(type);
       if(sdMove && exceptions.has(sdMove)) {
-        console.log("special defensive move found in initialization")
+        // console.log("special defensive move found in initialization")
         lastMoveSelected = document.querySelector(`button[data-move="${sdMove}"]`);
 
         lastMoveSelected.classList.add("selected");
@@ -1032,11 +1049,11 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
       } else if(teraResult) {
         if(type !== "stellar") {
           // if a tera type had been selected before navigating away, reselect the relevant monotype
-          console.log("tera type found, selecting monotype...");
+          // console.log("tera type found, selecting monotype...");
           lastPrimarySelected = primaryContainer.querySelector(`button[data-type="${type}"]`);
           lastPrimarySelected.classList.add("selected");
 
-          document.getElementById("tera-dropdown").value = type;
+          document.getElementById("tera-select").value = type;
 
           primaryContainer.querySelectorAll("button").forEach((btn) => {
             btn.disabled = true;
@@ -1065,7 +1082,7 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
     for(const type of selectedTypes) {
       const soMove = moveByType.get(type);
       if(soMove && exceptions.has(soMove)) {
-        console.log("special offensive move found in initialization");
+        // console.log("special offensive move found in initialization");
         lastPrimarySelected = primaryContainer.querySelector(`button[data-type="${type}"]`);
         lastPrimarySelected.classList.add("selected");
 
@@ -1201,12 +1218,10 @@ const initOffenseExceptions = (primaryContainer) => {
 const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
   const moves = document.querySelector(".special-moves-d");
   const abilitySelect = document.getElementById("ability-select");
-  const teraDropdown = document.getElementById("tera-dropdown");
+  const teraSelect = document.getElementById("tera-select");
   // hide tera types if not gen 6+
   if(gen !== "6+") {
     document.querySelector(".tera-types").style.display = "none";
-  } else {
-    document.querySelector(".tera-types").style.display = "block";
   }
 
   const allButtons = [
@@ -1302,7 +1317,7 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
    * - all type buttons are disabled
    * - add Stellar 2x effectivity to results (only interaction that Stellar has is super-effecitivity against Tera Pokemon)
    */ 
-  teraDropdown.addEventListener("change", async (e) => {
+  teraSelect.addEventListener("change", async (e) => {
     const selectedType = e.target.value;
     if(lastMoveSelected && selectedType === typeByMove.get(lastMoveSelected.dataset.move)) {
       console.log(`selectedType has the same type as ${lastMoveSelected.dataset.move}, so the selection did not succeed.`);
@@ -1361,7 +1376,7 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
     };
   });
 
-  teraResult = teraDropdown.value !== "" ? true : false;
+  teraResult = teraSelect.value !== "" ? true : false;
   lastMoveSelected = moves.querySelector(".move-container.selected") || null;
 };
 
