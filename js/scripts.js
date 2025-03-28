@@ -1377,7 +1377,7 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
   });
 
   teraResult = teraSelect.value !== "" ? true : false;
-  lastMoveSelected = moves.querySelector(".move-container.selected") || null;
+  lastMoveSelected = moves.querySelector("button.selected") || null;
 };
 
 /**
