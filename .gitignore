@@ -1,1 +1,3 @@
-banner.txt
+/node_modules
+/dist
+/src/js/fuzzy-search.js

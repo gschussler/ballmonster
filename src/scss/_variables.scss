@@ -1,0 +1,107 @@
+/* Global variables, default to dark mode */
+@use "sass:color";
+@use "sass:map";
+
+$base-type-colors: (
+  normal: #9FA19F,
+  fire: #E62829,
+  water: #2980EF,
+  electric: #FAC000,
+  grass: #3FA129,
+  ice: #3DCEF3,
+  fighting: #FF8000,
+  poison: #9141CB,
+  ground: #915121,
+  flying: #81B9EF,
+  psychic: #EF4179,
+  bug: #91A119,
+  rock: #AFA981,
+  ghost: #704170,
+  dragon: #5060E1,
+  dark: #624D4E,
+  steel: #60A1B8,
+  fairy: #EF70EF,
+  stellar: #40B5A5,
+  tera: #40B5A5,
+);
+
+$button-background-color: #333;
+$button-background-color-light1: color.adjust($button-background-color, $lightness: 10%);
+$button-background-color-dark1: color.adjust($button-background-color, $lightness: -10%);
+$button-background-color-light2: color.adjust($button-background-color, $lightness: 20%);
+$button-background-color-light3: color.adjust($button-background-color, $lightness: 30%);
+
+$button-text-color: #f0f0f0;
+$button-text-color-dark1: color.adjust($button-text-color, $lightness: -10%);
+$button-text-color-dark2: color.adjust($button-text-color, $lightness: -20%);
+$button-text-color-dark3: color.adjust($button-text-color, $lightness: -30%);
+
+$button-text-shadow: 0 1px 0 black, 0 0 1px rgba(0, 0, 0, 0.6), 0 0 2px rgba(0, 0, 0, 0.7), 0 0 3px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.9);
+$button-text-shadow-inverse: 0 1px 0 $button-text-color, 0 0 1px rgba(240, 240, 240, 0.6), 0 0 2px rgba(240, 240, 240, 0.7), 0 0 3px rgba(240, 240, 240, 0.8), 0 0 4px rgba(240, 240, 240, 0.9);
+
+$focus-light: color.scale(map.get($base-type-colors, water), $alpha: -30%);
+$focus-dark: color.scale(map.get($base-type-colors, ice), $alpha: -30%);
+
+$reset-base: color.scale(map.get($base-type-colors, fire), $alpha: -30%);
+$reset-hover: color.scale(map.get($base-type-colors, fire), $alpha: -50%);
+$reset-active: color.scale(map.get($base-type-colors, fire), $alpha: -70%);
+
+$lighten: 10%;
+$darken: -15%;
+
+// $tera-bg: linear-gradient(40deg, rgba)
+
+$type-colors: ();
+
+@each $type, $base-color in $base-type-colors {
+  $type-colors: map.merge(
+    $type-colors,
+    (
+      $type: (
+        base: $base-color,
+        light: color.adjust($base-color, $lightness: $lighten),
+        dark: color.adjust($base-color, $lightness: $darken),
+      )
+    )
+  );
+}
+
+// CSS variable usage to allow light/dark mode switching beyond SCSS's single initial compile-time
+:root {
+  --bg-color: #333;
+  --bg-color-light1: #{color.adjust(#333, $lightness: 10%)};
+  --bg-color-dark1: #{color.adjust(#333, $lightness: -10%)};
+  --bg-color-light2: #{color.adjust(#333, $lightness: 20%)};
+  --bg-color-light3: #{color.adjust(#333, $lightness: 30%)};
+
+  --text-color: #f0f0f0;
+  --text-color-dark1: #{color.adjust(#f0f0f0, $lightness: -10%)};
+  --text-color-dark2: #{color.adjust(#f0f0f0, $lightness: -20%)};
+  --text-color-dark3: #{color.adjust(#f0f0f0, $lightness: -30%)};
+
+  --text-shadow: 0 1px 0 black, 0 0 1px rgba(0, 0, 0, 0.6), 0 0 2px rgba(0, 0, 0, 0.7), 0 0 3px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.9);
+  --text-shadow-inverse: 0 1px 0 #f0f0f0, 0 0 1px rgba(240, 240, 240, 0.6), 0 0 2px rgba(240, 240, 240, 0.7), 0 0 3px rgba(240, 240, 240, 0.8), 0 0 4px rgba(240, 240, 240, 0.9);
+
+  --focus-color: #{color.scale(map.get($base-type-colors, ice), $alpha: -30%)};
+}
+
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-color: #f2e2cd;
+    --bg-color-light1: #{color.adjust(#f2e2cd, $lightness: 10%)};
+    --bg-color-dark1: #{color.adjust(#f2e2cd, $lightness: -10%)};
+    --bg-color-light2: #{color.adjust(#f2e2cd, $lightness: 20%)};
+    --bg-color-light3: #{color.adjust(#f2e2cd, $lightness: 30%)};
+
+    --text-color: #333;
+    --text-color-dark1: #{color.adjust(#333, $lightness: -10%)};
+    --text-color-dark2: #{color.adjust(#333, $lightness: -20%)};
+    --text-color-dark3: #{color.adjust(#333, $lightness: -30%)};
+
+    --text-shadow: 0 1px 0 #f2e2cd, 0 0 1px rgba(240, 240, 240, 0.6), 0 0 2px rgba(240, 240, 240, 0.7), 0 0 3px rgba(240, 240, 240, 0.8), 0 0 4px rgba(240, 240, 240, 0.9);
+    --text-shadow-inverse: 0 1px 0 black, 0 0 1px rgba(0, 0, 0, 0.6), 0 0 2px rgba(0, 0, 0, 0.7), 0 0 3px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.9);
+    
+    --focus-color: #{color.scale(map.get($base-type-colors, water), $alpha: -30%)};
+  }
+}

@@ -1,0 +1,49 @@
+/* Defense page styles */
+.defense {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+
+  .selectable-d,
+  .effectiveness-results {
+    width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+.exceptions-d {
+
+}
+
+.select-container-d {
+  display: flex;
+  flex-direction: column;
+}
+
+.special-moves-d {
+
+}
+
+.tera-types {
+
+}
+
+@media (min-width: 768px) {
+  .defense {
+    flex-direction: row;
+    gap: 1rem;
+    align-items: flex-start;
+
+    .selectable-d,
+    .effectiveness-results {
+      width: unset;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+
+  .select-container-d {
+    flex-direction: row;
+  }
+}

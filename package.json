@@ -1,0 +1,27 @@
+{
+  "name": "ballmonster",
+  "version": "1.0.0",
+  "description": "BALL.MONSTER is a Pokémon type effectiveness calculator with support for all generations. Play around to find the type info you're seeking.",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gschussler/ballmonster.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/gschussler/ballmonster/issues"
+  },
+  "homepage": "https://github.com/gschussler/ballmonster#readme",
+  "devDependencies": {
+    "sass": "^1.89.2",
+    "terser": "^5.43.1",
+    "webpack": "^5.100.2",
+    "webpack-cli": "^6.0.1"
+  }
+}

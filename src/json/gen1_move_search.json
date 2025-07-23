@@ -1,0 +1,784 @@
+[
+  {
+    "n": "pound",
+    "d": "Pound",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "karate-chop",
+    "d": "Karate Chop",
+    "t": [
+      6
+    ],
+    "o": [
+      0
+    ],
+    "tc": 2
+  },
+  {
+    "n": "double-slap",
+    "d": "Double Slap",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "comet-punch",
+    "d": "Comet Punch",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "mega-punch",
+    "d": "Mega Punch",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "pay-day",
+    "d": "Pay Day",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "fire-punch",
+    "d": "Fire Punch",
+    "t": [
+      1
+    ]
+  },
+  {
+    "n": "ice-punch",
+    "d": "Ice Punch",
+    "t": [
+      5
+    ]
+  },
+  {
+    "n": "thunder-punch",
+    "d": "Thunder Punch",
+    "t": [
+      3
+    ]
+  },
+  {
+    "n": "scratch",
+    "d": "Scratch",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "vice-grip",
+    "d": "Vise Grip",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "guillotine",
+    "d": "Guillotine",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "razor-wind",
+    "d": "Razor Wind",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "cut",
+    "d": "Cut",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "gust",
+    "d": "Gust",
+    "t": [
+      9
+    ],
+    "o": [
+      0
+    ],
+    "tc": 2
+  },
+  {
+    "n": "wing-attack",
+    "d": "Wing Attack",
+    "t": [
+      9
+    ]
+  },
+  {
+    "n": "fly",
+    "d": "Fly",
+    "t": [
+      9
+    ]
+  },
+  {
+    "n": "bind",
+    "d": "Bind",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "slam",
+    "d": "Slam",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "vine-whip",
+    "d": "Vine Whip",
+    "t": [
+      4
+    ]
+  },
+  {
+    "n": "stomp",
+    "d": "Stomp",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "double-kick",
+    "d": "Double Kick",
+    "t": [
+      6
+    ]
+  },
+  {
+    "n": "mega-kick",
+    "d": "Mega Kick",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "jump-kick",
+    "d": "Jump Kick",
+    "t": [
+      6
+    ]
+  },
+  {
+    "n": "rolling-kick",
+    "d": "Rolling Kick",
+    "t": [
+      6
+    ]
+  },
+  {
+    "n": "headbutt",
+    "d": "Headbutt",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "horn-attack",
+    "d": "Horn Attack",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "fury-attack",
+    "d": "Fury Attack",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "horn-drill",
+    "d": "Horn Drill",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "tackle",
+    "d": "Tackle",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "body-slam",
+    "d": "Body Slam",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "wrap",
+    "d": "Wrap",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "take-down",
+    "d": "Take Down",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "thrash",
+    "d": "Thrash",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "double-edge",
+    "d": "Double-Edge",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "poison-sting",
+    "d": "Poison Sting",
+    "t": [
+      7
+    ]
+  },
+  {
+    "n": "twineedle",
+    "d": "Twineedle",
+    "t": [
+      11
+    ]
+  },
+  {
+    "n": "pin-missile",
+    "d": "Pin Missile",
+    "t": [
+      11
+    ]
+  },
+  {
+    "n": "bite",
+    "d": "Bite",
+    "t": [
+      15
+    ],
+    "o": [
+      0
+    ],
+    "tc": 2
+  },
+  {
+    "n": "sonic-boom",
+    "d": "Sonic Boom",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "acid",
+    "d": "Acid",
+    "t": [
+      7
+    ]
+  },
+  {
+    "n": "ember",
+    "d": "Ember",
+    "t": [
+      1
+    ]
+  },
+  {
+    "n": "flamethrower",
+    "d": "Flamethrower",
+    "t": [
+      1
+    ]
+  },
+  {
+    "n": "water-gun",
+    "d": "Water Gun",
+    "t": [
+      2
+    ]
+  },
+  {
+    "n": "hydro-pump",
+    "d": "Hydro Pump",
+    "t": [
+      2
+    ]
+  },
+  {
+    "n": "surf",
+    "d": "Surf",
+    "t": [
+      2
+    ]
+  },
+  {
+    "n": "ice-beam",
+    "d": "Ice Beam",
+    "t": [
+      5
+    ]
+  },
+  {
+    "n": "blizzard",
+    "d": "Blizzard",
+    "t": [
+      5
+    ]
+  },
+  {
+    "n": "psybeam",
+    "d": "Psybeam",
+    "t": [
+      10
+    ]
+  },
+  {
+    "n": "bubble-beam",
+    "d": "Bubble Beam",
+    "t": [
+      2
+    ]
+  },
+  {
+    "n": "aurora-beam",
+    "d": "Aurora Beam",
+    "t": [
+      5
+    ]
+  },
+  {
+    "n": "hyper-beam",
+    "d": "Hyper Beam",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "peck",
+    "d": "Peck",
+    "t": [
+      9
+    ]
+  },
+  {
+    "n": "drill-peck",
+    "d": "Drill Peck",
+    "t": [
+      9
+    ]
+  },
+  {
+    "n": "submission",
+    "d": "Submission",
+    "t": [
+      6
+    ]
+  },
+  {
+    "n": "low-kick",
+    "d": "Low Kick",
+    "t": [
+      6
+    ]
+  },
+  {
+    "n": "counter",
+    "d": "Counter",
+    "t": [
+      6
+    ]
+  },
+  {
+    "n": "seismic-toss",
+    "d": "Seismic Toss",
+    "t": [
+      6
+    ]
+  },
+  {
+    "n": "strength",
+    "d": "Strength",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "absorb",
+    "d": "Absorb",
+    "t": [
+      4
+    ]
+  },
+  {
+    "n": "mega-drain",
+    "d": "Mega Drain",
+    "t": [
+      4
+    ]
+  },
+  {
+    "n": "razor-leaf",
+    "d": "Razor Leaf",
+    "t": [
+      4
+    ]
+  },
+  {
+    "n": "solar-beam",
+    "d": "Solar Beam",
+    "t": [
+      4
+    ]
+  },
+  {
+    "n": "petal-dance",
+    "d": "Petal Dance",
+    "t": [
+      4
+    ]
+  },
+  {
+    "n": "dragon-rage",
+    "d": "Dragon Rage",
+    "t": [
+      14
+    ]
+  },
+  {
+    "n": "fire-spin",
+    "d": "Fire Spin",
+    "t": [
+      1
+    ]
+  },
+  {
+    "n": "thunder-shock",
+    "d": "Thunder Shock",
+    "t": [
+      3
+    ]
+  },
+  {
+    "n": "thunderbolt",
+    "d": "Thunderbolt",
+    "t": [
+      3
+    ]
+  },
+  {
+    "n": "thunder",
+    "d": "Thunder",
+    "t": [
+      3
+    ]
+  },
+  {
+    "n": "rock-throw",
+    "d": "Rock Throw",
+    "t": [
+      12
+    ]
+  },
+  {
+    "n": "earthquake",
+    "d": "Earthquake",
+    "t": [
+      8
+    ]
+  },
+  {
+    "n": "fissure",
+    "d": "Fissure",
+    "t": [
+      8
+    ]
+  },
+  {
+    "n": "dig",
+    "d": "Dig",
+    "t": [
+      8
+    ]
+  },
+  {
+    "n": "confusion",
+    "d": "Confusion",
+    "t": [
+      10
+    ]
+  },
+  {
+    "n": "psychic",
+    "d": "Psychic",
+    "t": [
+      10
+    ]
+  },
+  {
+    "n": "quick-attack",
+    "d": "Quick Attack",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "rage",
+    "d": "Rage",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "night-shade",
+    "d": "Night Shade",
+    "t": [
+      13
+    ]
+  },
+  {
+    "n": "bide",
+    "d": "Bide",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "self-destruct",
+    "d": "Self-Destruct",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "egg-bomb",
+    "d": "Egg Bomb",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "lick",
+    "d": "Lick",
+    "t": [
+      13
+    ]
+  },
+  {
+    "n": "smog",
+    "d": "Smog",
+    "t": [
+      7
+    ]
+  },
+  {
+    "n": "sludge",
+    "d": "Sludge",
+    "t": [
+      7
+    ]
+  },
+  {
+    "n": "bone-club",
+    "d": "Bone Club",
+    "t": [
+      8
+    ]
+  },
+  {
+    "n": "fire-blast",
+    "d": "Fire Blast",
+    "t": [
+      1
+    ]
+  },
+  {
+    "n": "waterfall",
+    "d": "Waterfall",
+    "t": [
+      2
+    ]
+  },
+  {
+    "n": "clamp",
+    "d": "Clamp",
+    "t": [
+      2
+    ]
+  },
+  {
+    "n": "swift",
+    "d": "Swift",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "skull-bash",
+    "d": "Skull Bash",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "spike-cannon",
+    "d": "Spike Cannon",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "constrict",
+    "d": "Constrict",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "high-jump-kick",
+    "d": "High Jump Kick",
+    "t": [
+      6
+    ]
+  },
+  {
+    "n": "dream-eater",
+    "d": "Dream Eater",
+    "t": [
+      10
+    ]
+  },
+  {
+    "n": "barrage",
+    "d": "Barrage",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "leech-life",
+    "d": "Leech Life",
+    "t": [
+      11
+    ]
+  },
+  {
+    "n": "sky-attack",
+    "d": "Sky Attack",
+    "t": [
+      9
+    ]
+  },
+  {
+    "n": "bubble",
+    "d": "Bubble",
+    "t": [
+      2
+    ]
+  },
+  {
+    "n": "dizzy-punch",
+    "d": "Dizzy Punch",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "psywave",
+    "d": "Psywave",
+    "t": [
+      10
+    ]
+  },
+  {
+    "n": "crabhammer",
+    "d": "Crabhammer",
+    "t": [
+      2
+    ]
+  },
+  {
+    "n": "explosion",
+    "d": "Explosion",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "fury-swipes",
+    "d": "Fury Swipes",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "bonemerang",
+    "d": "Bonemerang",
+    "t": [
+      8
+    ]
+  },
+  {
+    "n": "rock-slide",
+    "d": "Rock Slide",
+    "t": [
+      12
+    ]
+  },
+  {
+    "n": "hyper-fang",
+    "d": "Hyper Fang",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "tri-attack",
+    "d": "Tri Attack",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "super-fang",
+    "d": "Super Fang",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "slash",
+    "d": "Slash",
+    "t": [
+      0
+    ]
+  },
+  {
+    "n": "struggle",
+    "d": "Struggle",
+    "t": [
+      0
+    ]
+  }
+]

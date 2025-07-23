@@ -1,6 +1,6 @@
-# PokeTypeGG
+# BALL.MONSTER
 
-PokeTypeGG is a Pokémon type effectiveness calculator with support for all generations. Play around to find the type info you're seeking.
+BALL.MONSTER is a Pokémon type effectiveness calculator with support for all generations. Play around to find the type info you're seeking.
 
 ## Features
 ***Supports all generations***

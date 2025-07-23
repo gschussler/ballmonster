@@ -1,0 +1,61 @@
+@use "variables" as v;
+/* More/Settings page styling */
+.more {
+  display: flex;
+  flex-direction: column;
+  // gap: 2rem;
+}
+
+.gen-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+
+  h2 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .gen-radios {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  input[type="radio"] {
+    appearance: none;
+    opacity: 0;
+    position: absolute;
+  }
+
+  input[type="radio"] + label {
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+  }
+
+  input[type="radio"] + label::after {
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0.5rem;
+    height: 13px;
+    width: 13px;
+    border: 1px inset v.$button-background-color-light3;
+    border-radius: 50%;
+  }
+
+  input[type="radio"]:checked + label {
+    background-color: v.$button-text-color;
+    color: v.$button-background-color;
+    border-color: v.$button-background-color-light1;
+    text-shadow: v.$button-text-shadow-inverse;
+  }
+
+  input[type="radio"]:focus + label {
+    outline: 2px solid var(--focus-color);
+  }
+
+  input[type="radio"]:checked + label::after {
+    content: "";
+    background-color: var(--focus-color);
+  }
+}
