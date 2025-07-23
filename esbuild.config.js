@@ -1,4 +1,4 @@
-import { minify } from 'terser';
+import esbuild from 'esbuild';
 import * as sass from 'sass';
 import path from 'path';
 import fs from 'fs';
@@ -39,7 +39,7 @@ const copyAndHashAsset = async (relPath) => {
   const hashedName = await writeHashedFile(relPath, CONFIG.BUILD_DIR, content, path.extname(relPath));
   console.log(`Copied asset to ${hashedName}`);
   return hashedName;
-}
+};
 
 const rewriteAssetRefs = (content, assetMap, pathMap) => {
   for(const [relPath, hashedName] of Object.entries(assetMap)) {
@@ -48,8 +48,11 @@ const rewriteAssetRefs = (content, assetMap, pathMap) => {
 
     const regex = new RegExp(`(href|src)=["']${escapedOriginalPath}(#[^"']*)?["']`, 'g');
 
+    if(!pathMap[relPath]) {
+      console.log('No relative path, using root (`/`)');
+    }
     const dir = pathMap[relPath] || '/';
-    const rewrittenPath = path.posix.join(CONFIG.PUBLIC_PATH, dir, hashedName);
+    const rewrittenPath = path.posix.join(CONFIG.PUBLIC_PATH, dir, hashedName); //posix to prevent double slash in case of no relPath
 
     content = content.replace(regex, (_, attr, fragment = '') => {
       return `${attr}="${rewrittenPath}${fragment}"`;
@@ -112,10 +115,6 @@ for(const asset of Object.keys(pathMap)) {
   assetMap[asset] = hashed;
 };
 
-const scssResult = sass.compile(path.join(CONFIG.SRC_DIR, 'scss/index.scss'), { style: 'compressed' });
-const cssName = await writeHashedFile('index.scss', CONFIG.BUILD_DIR, scssResult.css, '.css');
-console.log(`SCSS compiled to CSS as '${cssName}'`);
-
 const jsPath = path.join(CONFIG.SRC_DIR, 'js/scripts.js');
 let jsSrc = await fsp.readFile(jsPath, 'utf-8');
 
@@ -136,23 +135,23 @@ for(const [relPath, hashedName] of Object.entries(assetMap)) {
 const tmpPath = path.join(CONFIG.SRC_DIR, 'js/tmp-scripts.js');
 await fsp.writeFile(tmpPath, jsSrc);
 
-const tmpJsContent = await fsp.readFile(tmpPath, 'utf-8');
-
-const minified = await minify(tmpJsContent, {
-  ecma: 2017,
-  compress: true,
-  mangle: true,
-  module: false,
+const jsRes = await esbuild.build({
+  entryPoints: [tmpPath],
+  bundle: true,
+  minify: true,
+  write: false, // replacing asset links with hashed versions before write
+  target: 'es2017',
 });
-
-if (!minified.code) {
-  throw new Error('Terser failed to produce output');
-}
 
 await fsp.unlink(tmpPath);
 
-const jsName = await writeHashedFile('js/scripts.js', CONFIG.BUILD_DIR, minified.code, '.js');
-console.log(`Minified JS to ${jsName}`);
+const jsOutput = jsRes.outputFiles[0];
+const jsName = await writeHashedFile('js/scripts.js', CONFIG.BUILD_DIR, jsOutput.contents, '.js');
+console.log(`Bundled JS to ${jsName}`);
+
+const scssResult = sass.compile(path.join(CONFIG.SRC_DIR, 'scss/index.scss'), { style: 'compressed' });
+const cssName = await writeHashedFile('index.scss', CONFIG.BUILD_DIR, scssResult.css, '.css');
+console.log(`SCSS compiled to CSS as '${cssName}'`);
 
 assetMap['scss/index.scss'] = cssName;
 assetMap['js/scripts.js'] = path.posix.join('js', jsName);
@@ -172,10 +171,11 @@ for (const file of htmlFiles) {
 
   const outputPath = path.join(CONFIG.BUILD_DIR, file);
   await fsp.mkdir(path.dirname(outputPath), { recursive: true }); // ensure directory exists for `offense.html` and `defense.html`
-
   await fsp.writeFile(outputPath, content);
   console.log(`Updated and wrote ${file}`);
 };
+
+console.log('Asset map output:', assetMap);
 
 
   // // Compare `manifest.json` with previous manifest. Persistence will enable content diffing between the two manifests for better cache-busting.

@@ -391,52 +391,35 @@ const loadExceptions = async () => {
   }
 };
 
-const loadPokemonSearchData = async (gen) => {
-  if(searchDataCache.defense[gen]) {
-    return searchDataCache.defense[gen];
+const loadSearchSlice = async (mode, gen) => {
+  const cache = searchDataCache[mode];
+
+  if(cache[gen]) {
+    return cache[gen];
   }
 
-  const genData = {
-    "1": "/json/gen1_mon_search.json",
-    "2-5": "/json/gen2-5_mon_search.json",
-    "6+": "/json/gen6+_mon_search.json"
+  const fileMap = {
+    offense: {
+      "1": "/json/gen1_move_search.json",
+      "2-5": "/json/gen2-5_move_search.json",
+      "6+": "/json/gen6+_move_search.json"
+    },
+    defense: {
+      "1": "/json/gen1_mon_search.json",
+      "2-5": "/json/gen2-5_mon_search.json",
+      "6+": "/json/gen6+_mon_search.json"
+    }
   };
 
   try {
-    const res = await fetch(genData[gen]);
-    if(!res.ok) throw new Error(`Failed to load Pokémon search data for gen ${gen}`);
+    const res = await fetch(fileMap[mode][gen]);
+    if (!res.ok) throw new Error(`Failed to load ${mode} search data for gen ${gen}`);
     const data = await res.json();
 
-    searchDataCache.defense[gen] = data;
-
+    cache[gen] = data;
     return data;
   } catch (error) {
-    console.error("Error loading Pokemon saerch data:", error);
-    return [];
-  }
-};
-
-const loadMoveSearchData = async (gen) => {
-  if(searchDataCache.offense[gen]) {
-    return searchDataCache.offense[gen];
-  }
-
-  const genData = {
-    "1": "/json/gen1_move_search.json",
-    "2-5": "/json/gen2-5_move_search.json",
-    "6+": "/json/gen6+_move_search.json"
-  };
-
-  try {
-    const res = await fetch(genData[gen]);
-    if(!res.ok) throw new Error(`Failed to load move search data for gen ${gen}`);
-    const data = await res.json();
-
-    searchDataCache.offense[gen] = data;
-
-    return data;
-  } catch (error) {
-    console.error("Error loading move search data:", error);
+    console.error(`Error loading ${mode} search data:`, error);
     return [];
   }
 };
@@ -926,20 +909,9 @@ const getRelevantData = (currGen) => {
 };
 
 const loadSearchData = async (mode, gen) => {
-  const cache = searchDataCache[mode];
-
-  if(cache[gen]) {
-    // console.log(`Using cached search data for ${mode} gen ${gen}`);
-    return cache[gen];
-  }
-
-  const loader = mode === "offense" ? loadMoveSearchData : loadPokemonSearchData;
   const genLoad = getRelevantData(gen);
-  const searchDataArrays = await Promise.all(genLoad.map(loader));
-  const flatData = searchDataArrays.flat();
-
-  cache[gen] = flatData;
-  return flatData;
+  const loadedSlices = await Promise.all(genLoad.map(g => loadSearchSlice(mode, g)));
+  return loadedSlices.flat();
 };
 
 /**
@@ -1732,7 +1704,7 @@ const monTypingByGen = (mon, gen) => {
 
 // control searchbar state
 const SearchController = (() => {
-  let fuse = null;
+  let currFuse = null;
   let searchData = null;
   let searchMode = null;
   let searchGen = null;
@@ -1741,6 +1713,8 @@ const SearchController = (() => {
   let listenerAttached = false;
   let primaryContainer = null;
   let secondaryContainer = null;
+
+  let lastInitToken = 0;
 
   const selectMove = (name, typeIndex) => {
     if(oMoveType[name]) {
@@ -1782,7 +1756,7 @@ const SearchController = (() => {
     if (e.target.value.length > 30) {
       e.target.value = e.target.value.slice(0, 30);
     }
-    const results = fuse?.search(e.target.value) ?? [];
+    const results = currFuse?.search(e.target.value) ?? [];
     // console.log(`[${searchMode}] Results:`, results);
     // console.log(results);
     if(searchMode === "offense") {
@@ -1835,7 +1809,7 @@ const SearchController = (() => {
   };
 
   const rebuild = (newMode, newGen) => {
-    return newMode !== searchMode || newGen !== searchGen || !fuse;
+    return newMode !== searchMode || newGen !== searchGen || !currFuse;
   };
 
   const init = async (newMode, newGen, containers = {}) => {
@@ -1854,16 +1828,34 @@ const SearchController = (() => {
     SearchResultsRenderer.clearResults(); // clear on mode/gen switch
     attachInputListener();
 
+    const currToken = ++lastInitToken;
+
     if(!rebuild(newMode, newGen)) {
-      // console.log("Reusing existing search instance.");
+      console.log("Reusing existing search instance.");
     } else {
-      console.log(`Rebuilding search for mode: ${newMode}, gen: ${newGen}`);
-      searchData = await loadSearchData(newMode, newGen);
-      fuse = new Fuse(searchData, {
+      // console.log(`Rebuilding search for mode: ${newMode}, gen: ${newGen}`);
+      loadedData = await loadSearchData(newMode, newGen);
+
+      if(currToken !== lastInitToken) return;
+      // console.log(`No Fuse build to interrupt. Building dictionary for ${newMode}, gen ${newGen}...`);
+
+      searchData = loadedData;
+      currFuse = new Fuse(searchData, {
         keys: ["n", "d"],
         threshold: 0.3,
         ignoreLocation: true,
       });
+
+      // console.log(`Built Fuse with ${searchData.length} entries`);
+      // const nameCounts = {};
+      // for (const entry of searchData) {
+      //   nameCounts[entry.n] = (nameCounts[entry.n] || 0) + 1;
+      // }
+      // for (const name in nameCounts) {
+      //   if (nameCounts[name] > 1) {
+      //     console.warn(`Duplicate found in searchData: ${name} x${nameCounts[name]}`);
+      //   }
+      // }
     }
 
     searchMode = newMode;
