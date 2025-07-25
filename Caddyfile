@@ -1,22 +1,19 @@
 # Serve from /srv (Caddy’s default root is /srv)
-:80 {
+:8080 {
+  root * /srv
   encode gzip zstd
 
-  # Match HTML requests
   @html {
     path *.html
   }
   header @html Cache-Control "no-cache"
 
-  # Match all other static assets (images, JS, CSS, fonts, etc.)
   @assets {
     not path *.html
   }
   header @assets Cache-Control "public, max-age=31536000, immutable"
 
-  # Try clean URLs, fallback to index.html (for SPA routing)
   try_files {path} /index.html
 
-  # Strip the Server header for security
   header -Server
 }
