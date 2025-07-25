@@ -1,24 +1,24 @@
-# PokeTypeGG
+# BALL.MONSTER
 
-PokeTypeGG is a Pokémon type effectiveness calculator with support for all generations. Play around to find the type info you're seeking.
+BALL.MONSTER is a Pokémon type effectiveness calculator with support for all generations. Quickly gather type matchup info.
+
+The site is here → [https://ball.monster](https://ball.monster)
 
 ## Features
-***Supports all generations***
-- View type effectiveness within the three relevant generation ranges (Gen 1, Gen 2-5, Gen 6+).
+- Three generation groups: Gen 1, Gen 2-5, Gen 6+
+- ATK calculations by move type
+- DEF calculations by single/dual Pokémon type
+- Fuzzy search for moves and Pokémon
+- Additional settings for edge-cases in type effectivity
 
-***Offense***
-- Select from move-types to see their effectiveness against all Pokémon types.
+## Roadmap
+- Team Mode - type coverage across multiple Pokémon
+- URL Parameters - quick sharing and bookmarking
+- Fuzzy search improvements
 
-***Defense***
-- Select up to two Pokémon types to analyze type weaknesses and resistances.
-
-***Additional features***
-- Adjust settings, change generations, and access additional information.
-
-## Planned features
-- Team Battle calculations
-- Pokédex support >>> more info beyond type effectiveness.
-- Fuzzy find >>> allow text-based input
-
-## License
-This project is licensed under the [MIT License](LICENSE).
+## Local Development
+Clone the repo and install `npm` before running the dev build.
+```code
+npm install
+npm run dev 
+```

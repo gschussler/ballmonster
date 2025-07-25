@@ -1,0 +1,47 @@
+@use "variables" as v;
+/* Offense page styles */
+.offense {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+
+  .selectable-o,
+  .effectiveness-results {
+    width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+.exceptions-o {
+
+}
+
+
+.special-moves-o {
+
+}
+
+.select-container-o {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .offense {
+    flex-direction: row;
+    gap: 1rem;
+    align-items: flex-start;
+
+    .selectable-o,
+    .effectiveness-results {
+      width: unset;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+
+  .select-container-o {
+    flex-direction: row;
+  }
+}

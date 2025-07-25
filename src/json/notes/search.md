@@ -1,0 +1,1 @@
+- Rotom and its alternate forms are introduced in Gen IV, but the alternate forms have different typing from Gen V on. This is a unique scenario in Pokemon typing, so Rotom's alternate forms have their original Gen IV typing omitted.
