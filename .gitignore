@@ -8,3 +8,5 @@
 /src/json/notes
 /src/json/exceptions_old.json
 /src/json/gen6default.json
+Dockerfile
+nginx.conf
