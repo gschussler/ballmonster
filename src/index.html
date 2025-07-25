@@ -30,9 +30,9 @@
   </header>
   <nav hx-boost="true">
     <div class="nav-links">
-      <a href="#" id="offense" hx-get="/pages/offense" hx-target="#content" hx-swap="innerHTML" class="page-link active" aria-label="Offense" preload="mouseover">Offense</a>
-      <a href="#" id="defense" hx-get="/pages/defense" hx-target="#content" hx-swap="innerHTML" class="page-link" aria-label="Defense" preload="mouseover">Defense</a>
-      <a href="#" id="more" hx-get="/pages/more" hx-target="#content" hx-swap="innerHTML" class="page-link" aria-label="More" preload="mouseover">More</a>
+      <a href="#" id="offense" hx-get="/pages/offense.html" hx-target="#content" hx-swap="innerHTML" class="page-link active" aria-label="Offense" preload="mouseover">Offense</a>
+      <a href="#" id="defense" hx-get="/pages/defense.html" hx-target="#content" hx-swap="innerHTML" class="page-link" aria-label="Defense" preload="mouseover">Defense</a>
+      <a href="#" id="more" hx-get="/pages/more.html" hx-target="#content" hx-swap="innerHTML" class="page-link" aria-label="More" preload="mouseover">More</a>
     </div>
     <div class="gen-display">
       <h4>Current Gen: </h4>
@@ -53,7 +53,7 @@
     </div>
   </div>
 
-  <main id="content" data-mode="offense" hx-get="/pages/offense" hx-trigger="load">
+  <main id="content" data-mode="offense" hx-get="/pages/offense.html" hx-trigger="load">
   </main>
   <script src="/js/scripts.js" defer></script>
 </body>
