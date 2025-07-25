@@ -27,6 +27,8 @@ document.addEventListener("htmx:afterSwap", async (e) => {
   } else {
     await initGenSelect();
     await SearchController.init(mode, gen);
+    restoreSummaryState();
+    initSummaryState();
   };
   // console.log('[HTMX] afterSwap:', e.detail);
 });
@@ -80,14 +82,15 @@ document.querySelector("nav").addEventListener("click", (e) => {
     link.classList.add("active");
 
     // console.log(`Mode updating from ${mode} to: ${newMode}`);
+    prevMode = mode;
     mode = newMode;
   }
 });
 
 // document.addEventListener('htmx:beforeSwap', (e) => {
-//   // let content = document.getElementById('content');
-//   // content.classList.remove('appear');
-//   console.log('[HTMX] beforeSwap:', e.detail);
+//   if(prevMode === "more") {
+//     saveSummaryState();
+//   }
 // });
 
 // const initDropdowns = (main = document) => {
@@ -118,6 +121,8 @@ let lastSpecialDisabled = null;
 let oAbility = "";
 let dAbility = "";
 let teraResult = false;
+
+const summaryState = 'summaryDropdownState';
 
 /**
  * Tracks currently selected Pokémon types.
@@ -685,6 +690,34 @@ const renderResults = (results) => {
 
   container.innerHTML = resultHTML;
   container.classList.remove("hidden");
+};
+
+const saveSummaryState = () => {
+  const state = {};
+  document.querySelectorAll('.info-sections details').forEach(detail => {
+    state[detail.id] = detail.open;
+  });
+  sessionStorage.setItem(summaryState, JSON.stringify(state));
+};
+
+const restoreSummaryState = () => {
+  const state = JSON.parse(sessionStorage.getItem(summaryState) || '{}');
+  document.querySelectorAll('.info-sections details').forEach(detail => {
+    const isOpen = state[detail.id];
+    const summaryIcon = detail.querySelector('summary svg use');
+
+    if (isOpen) {
+      detail.setAttribute('open', '');
+      if (summaryIcon) {
+        summaryIcon.setAttribute('href', '/svg/icons.svg#minus');
+      }
+    } else {
+      detail.removeAttribute('open');
+      if (summaryIcon) {
+        summaryIcon.setAttribute('href', '/svg/icons.svg#plus');
+      }
+    }
+  });
 };
 /* ---------------------------------------------------------------------------------------------------------------- */
 /* ----- CORE FUNCTIONS – Functions that centralize processes for UI rendering and type effectiveness calculation. ----- */
@@ -1681,7 +1714,7 @@ const initGenSelect = async () => {
       if(!genChange) {
         effectCache.clear();
         clearCache = true;
-        prevMode = null;
+        // prevMode = null;
       }
 
       genChange = true;
@@ -1691,6 +1724,26 @@ const initGenSelect = async () => {
       updateGenDisplay();
     });
   });
+};
+
+const initSummaryState = () => {
+  document.querySelectorAll('.info-sections details').forEach(detail => {
+    const icon = detail.querySelector('summary use');
+    const href = icon.getAttribute('href');
+
+    if(href.includes('#minus')) {
+      detail.setAttribute('open', '');
+    }
+
+    const updateIcon = () => {
+      icon.setAttribute('href',
+        detail.open ? '/svg/icons.svg#minus' : '/svg/icons.svg#plus'
+      );
+      saveSummaryState();
+    };
+    updateIcon();
+    detail.addEventListener('toggle', updateIcon);
+  })
 };
 
 // helper functions to determine whether to use current or original typing for moves/pokemon
@@ -1831,7 +1884,7 @@ const SearchController = (() => {
     const currToken = ++lastInitToken;
 
     if(!rebuild(newMode, newGen)) {
-      console.log("Reusing existing search instance.");
+      // console.log("Reusing existing search instance.");
     } else {
       // console.log(`Rebuilding search for mode: ${newMode}, gen: ${newGen}`);
       loadedData = await loadSearchData(newMode, newGen);

@@ -5,15 +5,15 @@
   "main": "index.html",
   "scripts": {
     "build": "node esbuild.config.js",
-    "dev": "http-server ./src"
+    "dev": "http-server -c-1 ./src"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gschussler/ballmonster.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Grant Schussler",
+  "license": "MIT",
   "type": "module",
   "bugs": {
     "url": "https://github.com/gschussler/ballmonster/issues"

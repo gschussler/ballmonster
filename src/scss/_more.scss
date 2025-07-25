@@ -1,8 +1,14 @@
 @use "variables" as v;
 /* More/Settings page styling */
+h2 {
+  font-size: 1.4rem;
+}
+
 .more {
   display: flex;
   flex-direction: column;
+  margin: 0 auto;
+  max-width: 32.5em;
   // gap: 2rem;
 }
 
@@ -10,11 +16,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 2rem;
+  margin-top: 1rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(
+    to right,
+    var(--bg-color) 0%,
+    var(--text-color-dark3) 49%,
+    var(--text-color-dark3) 51%,
+    var(--bg-color) 100%);
+  border-image-slice: 1;
 
   h2 {
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.5em;
   }
 
   .gen-radios {
@@ -57,5 +71,101 @@
   input[type="radio"]:checked + label::after {
     content: "";
     background-color: var(--focus-color);
+  }
+}
+
+.dropdown-content {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8em;
+  padding:  0 1rem 1rem 1rem;
+  gap: 1rem;
+
+  a {
+    position: relative;
+
+    &:focus {
+      outline: none;
+      box-shadow: none;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -0.5px;
+      left: -2px;
+      right: -1.5px;
+      bottom: -1.5px;
+      pointer-events: none;
+    }
+
+    &:focus-visible::before {
+      outline: 2px solid var(--focus-color);
+      border-radius: 2px;
+      box-shadow: none;
+    }
+  }
+}
+
+.info-sections {
+  details {
+    &:after {
+      content: "";
+      display: block;
+      width: 100%;
+      border: 1px solid transparent;
+      border-image: linear-gradient(
+        to right,
+        var(--bg-color) 0%,
+        var(--text-color-dark3) 49%,
+        var(--text-color-dark3) 51%,
+        var(--bg-color) 100%);
+      border-image-slice: 1;
+    }
+  }
+
+  details#legal {
+    &:after {
+      border-image: none;
+    }
+  }
+
+  summary {
+    display: flex;
+    cursor: pointer;
+    list-style: none;
+    font-weight: bold;
+    position: relative;
+    padding: 1rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::marker {
+      content: none;
+      display: none;
+    }
+
+    &:focus {
+      outline-offset: -.5em;
+      box-shadow: none;
+      border-radius: .75em;
+    }
+  }
+
+  .toggle-icon {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+}
+
+@media (min-width: 768px) {
+  .dropdown-content {
+    font-size: 1em;
   }
 }
