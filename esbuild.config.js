@@ -48,9 +48,9 @@ const rewriteAssetRefs = (content, assetMap, pathMap) => {
 
     const regex = new RegExp(`(href|src)=["']${escapedOriginalPath}(#[^"']*)?["']`, 'g');
 
-    if(!pathMap[relPath]) {
-      console.log('No relative path, using root (`/`)');
-    }
+    // if(!pathMap[relPath]) {
+    //   console.log('No relative path, using root (`/`)');
+    // }
     const dir = pathMap[relPath] || '/';
     const rewrittenPath = path.posix.join(CONFIG.PUBLIC_PATH, dir, hashedName); //posix to prevent double slash in case of no relPath
 
@@ -87,6 +87,7 @@ const pathMap = {
   'svg/ball_bm.min.svg': '/svg/',
   'svg/monster.min.svg': '/svg/',
   'svg/types-min.svg': '/svg/',
+  'svg/icons.svg': '/svg/',
   'json/exceptions.json': '/json/',
   'json/gen1_mon_search.json': '/json/',
   'json/gen1_move_search.json': '/json/',
