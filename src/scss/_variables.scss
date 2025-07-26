@@ -88,11 +88,11 @@ $type-colors: ();
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg-color: #f2e2cd;
-    --bg-color-light1: #{color.adjust(#f2e2cd, $lightness: 10%)};
-    --bg-color-dark1: #{color.adjust(#f2e2cd, $lightness: -10%)};
-    --bg-color-light2: #{color.adjust(#f2e2cd, $lightness: 20%)};
-    --bg-color-light3: #{color.adjust(#f2e2cd, $lightness: 30%)};
+    --bg-color: #d9c5ab;
+    --bg-color-light1: #{color.adjust(#d9c5ab, $lightness: 10%)};
+    --bg-color-dark1: #{color.adjust(#d9c5ab, $lightness: -10%)};
+    --bg-color-light2: #{color.adjust(#d9c5ab, $lightness: 20%)};
+    --bg-color-light3: #{color.adjust(#d9c5ab, $lightness: 30%)};
 
     --text-color: #333;
     --text-color-dark1: #{color.adjust(#333, $lightness: -10%)};

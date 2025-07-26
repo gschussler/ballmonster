@@ -64,7 +64,7 @@ h2 {
     text-shadow: v.$button-text-shadow-inverse;
   }
 
-  input[type="radio"]:focus + label {
+  input[type="radio"]:focus-visible + label {
     outline: 2px solid var(--focus-color);
   }
 
@@ -149,7 +149,7 @@ h2 {
       display: none;
     }
 
-    &:focus {
+    &:focus-visible {
       outline-offset: -.5em;
       box-shadow: none;
       border-radius: .75em;
