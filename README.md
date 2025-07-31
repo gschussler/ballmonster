@@ -20,5 +20,5 @@ The site is here → [https://ball.monster](https://ball.monster)
 Clone the repo and install `npm` before running the dev build.
 ```code
 npm install
-npm run dev 
+npm serve
 ```

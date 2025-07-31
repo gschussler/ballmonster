@@ -19,6 +19,9 @@
   padding: 0;
   scrollbar-gutter: stable;
   min-height: 100vh;
+  --fade-duration: 200ms;
+  --fade-in-ease: ease-out;
+  --fade-out-ease: ease-in;
 }
 
 *, *::before, *::after {
@@ -42,13 +45,22 @@ h3 {
   width: 1px;
 }
 
-.appear {
-  opacity: 1;
-}
-
 :focus-visible {
   outline: 2px solid var(--focus-color);
   box-shadow: 0 0 8px var(--focus-color);
+}
+
+html {
+  background-color: var(--bg-color);
+  transition: opacity 500ms var(--fade-in-ease);
+}
+
+html.preload {
+  opacity: 0;
+}
+
+html:not(.preload) {
+  opacity: 1;
 }
 
 /* Global styles */
@@ -63,8 +75,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: var(--text-color);
   user-select: none;
-  opacity: 0;
-  transition: opacity 2s cubic-bezier(.25, 1, .30, 1);
+  // opacity: 0;
+  // transition: opacity 300ms var(--fade-out-ease);
 }
 
 footer {
@@ -157,7 +169,7 @@ nav a {
   color: var(--text-color);
   text-shadow: var(--text-shadow);
   border-radius: 20px;
-  transition: background-color .2s color .2s;
+  transition: background-color 200ms color 200ms;
 
   &:hover {
     background-color: var(--bg-color-light2);
@@ -197,7 +209,7 @@ nav a.active {
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.4);
   z-index: 5;
-  transition: opacity 0.2s ease;
+  transition: opacity 200ms ease;
 
   &.hidden {
     opacity: 0;
@@ -220,6 +232,21 @@ nav a.active {
     border-radius: 4px;
     background-color: var(--bg-color-dark1);
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    visibility: visible;
+
+    &.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      // transition: opacity var(--fade-duration) var(--fade-out-ease), visibility var(--fade-duration) var(--fade-out-ease);
+    }
+
+    &.fade-in {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      // transition: opacity var(--fade-duration) var(--fade-in-ease), visibility var(--fade-duration) var(--fade-in-ease);
+    }
 
     &:focus {
       box-shadow: 0 0 4px var(--focus-color);
@@ -311,12 +338,61 @@ select {
   }
 }
 
-main {
+#content {
   // margin: 0 0 0 30px; // centering indentation to align with selectable-gutter
   // justify-self: center;
   padding: 0 0.5em;
   width: 100%;
   margin: auto;
+
+  &.fade-out {
+    opacity: 0;
+    // transition: opacity var(--fade-duration) var(--fade-out-ease);
+  }
+
+  &.fade-in {
+    opacity: 1;
+    // transition: opacity var(--fade-duration) var(--fade-in-ease);
+  }
+}
+
+#content.preload {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#content:not(.preload) {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity var(--fade-duration) var(--fade-in-ease);
+}
+
+@keyframes spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+#spinner {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  z-index: 999;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+.spinner-circle {
+  transform-origin: 50% 50%;
+  animation: spinner-rotate 1s linear infinite;
 }
 
 .button-grid {
@@ -335,7 +411,7 @@ main {
   border: 1px ridge v.$button-background-color-light3;
   border-radius: 2px;
   cursor: pointer;
-  transition: background-color .2s;
+  transition: background-color 200ms;
   text-shadow: v.$button-text-shadow;
   padding: .5rem;
 
@@ -347,7 +423,7 @@ main {
     height: 100%;
     stroke: v.$button-background-color;
     stroke-width: 2;
-    transition: fill .2s stroke .2s;
+    transition: fill 200ms stroke 200ms;
   }
 
   &:hover:not(:disabled):not(.selected) {
@@ -443,7 +519,7 @@ main {
   background-color: v.$button-background-color-light1;
   cursor: pointer;
   user-select: none;
-  transition: all .2s ease;
+  transition: all 200ms ease;
 
   &:hover {
     background-color: v.$button-background-color-light3;
@@ -508,7 +584,7 @@ main {
   color: v.$button-text-color;
   border-radius: 2px;
   cursor: pointer;
-  transition: background-color .2s;
+  transition: background-color 200ms;
   text-shadow: v.$button-text-shadow;
   padding: .5rem;
   background-color: v.$reset-base;
@@ -557,9 +633,9 @@ main {
   border-radius: 4px;
 }
 
-.result-group h3 {
+// .result-group h3 {
 
-}
+// }
 
 .result-group ul {
   display: grid;

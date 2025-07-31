@@ -4,9 +4,10 @@
 /old_dist
 /src/index.css
 /src/index.css.map
-/src/js/fuzzy-search.js
+/src/js/modules/fuzzy-search.js
+/src/js/third_party/class-tools.min.js
 /src/json/notes
 /src/json/exceptions_old.json
 /src/json/gen6default.json
-Dockerfile
-nginx.conf
+# Dockerfile
+# nginx.conf

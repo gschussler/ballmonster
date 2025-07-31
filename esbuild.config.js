@@ -1,3 +1,4 @@
+// Content-based filename hashing for cache-invalidation only of files that have undergone changes
 import esbuild from 'esbuild';
 import * as sass from 'sass';
 import path from 'path';
@@ -78,6 +79,7 @@ const htmlRewriteWithCSSandJS = (content) => {
   return content;
 };
 
+// Maps source filenames to output directories for hashed filename versions of files to be written
 // add assets as needed. one point of hardcoding is acceptable in a small codebase
 const pathMap = {
   'favicon.ico': '/',
@@ -98,10 +100,10 @@ const pathMap = {
   'json/gen6+_mon_search.json': '/json/',
   'json/gen6+_move_search.json': '/json/',
   'json/gen6+.json': '/json/',
-  'js/class-tools.min.js': '/js/',
-  'js/fuse.min.js': '/js/',
-  'js/htmx.min.js': '/js/',
-  'js/preload.min.js': '/js/',
+  // 'js/class-tools.min.js': '/js/',
+  'js/third_party/fuse.min.js': '/js/third_party/',
+  'js/third_party/htmx.min.js': '/js/third_party/',
+  'js/third_party/preload.min.js': '/js/third_party/',
 };
 
 const assetMap = {};
@@ -116,8 +118,17 @@ for(const asset of Object.keys(pathMap)) {
   assetMap[asset] = hashed;
 };
 
-const jsPath = path.join(CONFIG.SRC_DIR, 'js/scripts.js');
-let jsSrc = await fsp.readFile(jsPath, 'utf-8');
+const jsRes = await esbuild.build({
+  entryPoints: [path.join(CONFIG.SRC_DIR, '/js/scripts.js')],
+  bundle: true,
+  minify: true,
+  write: false, // replacing asset links with hashed versions before write
+  sourcemap: false,
+  target: 'es2017',
+});
+
+const jsFile = jsRes.outputFiles.find(f => f.path === '<stdout>');
+let jsOutput = jsFile.text;
 
 for(const [relPath, hashedName] of Object.entries(assetMap)) {
   const originalWebPath = '/' + relPath.replace(/\\/g, '/'); // normalize slashes
@@ -129,25 +140,11 @@ for(const [relPath, hashedName] of Object.entries(assetMap)) {
   const folder = pathMap[relPath] || '/';
   const finalHashedPath = path.posix.join(CONFIG.PUBLIC_PATH, folder, hashedName);
 
-  jsSrc = jsSrc.replace(regex, finalHashedPath);
-};
-
-// temp `scripts.js` to avoid overwriting source
-const tmpPath = path.join(CONFIG.SRC_DIR, 'js/tmp-scripts.js');
-await fsp.writeFile(tmpPath, jsSrc);
-
-const jsRes = await esbuild.build({
-  entryPoints: [tmpPath],
-  bundle: true,
-  minify: true,
-  write: false, // replacing asset links with hashed versions before write
-  target: 'es2017',
-});
-
-await fsp.unlink(tmpPath);
-
-const jsOutput = jsRes.outputFiles[0];
-const jsName = await writeHashedFile('js/scripts.js', CONFIG.BUILD_DIR, jsOutput.contents, '.js');
+  jsOutput = jsOutput.replace(regex, finalHashedPath);
+}
+// need to convert back to Buffer for JS case in writing hashed file
+const jsBuffer = Buffer.from(jsOutput);
+const jsName = await writeHashedFile('js/scripts.js', CONFIG.BUILD_DIR, jsBuffer, '.js');
 console.log(`Bundled JS to ${jsName}`);
 
 const scssResult = sass.compile(path.join(CONFIG.SRC_DIR, 'scss/index.scss'), { style: 'compressed' });
@@ -176,8 +173,4 @@ for (const file of htmlFiles) {
   console.log(`Updated and wrote ${file}`);
 };
 
-console.log('Asset map output:', assetMap);
-
-
-  // // Compare `manifest.json` with previous manifest. Persistence will enable content diffing between the two manifests for better cache-busting.
-  // manifest logic could be restored later
+// console.log('Asset map output:', assetMap);

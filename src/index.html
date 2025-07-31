@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="preload">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,16 +7,20 @@
   <meta name="description" content="A Pokémon type calculator with support for all generations.">
   <meta name="color-scheme" content="dark light">
   <meta name="darkreader-lock">
+  <style>
+    html.preload {
+      opacity: 0;
+    }
+  </style>
   <link rel="stylesheet" href="/index.css">
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" type="image/svg+xml" href="/icon.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <script src="/js/htmx.min.js"></script>
-  <script src="/js/class-tools.min.js"></script>
-  <script src="/js/preload.min.js"></script>
-  <script src="/js/fuse.min.js"></script>
+  <script src="/js/third_party/htmx.min.js"></script>
+  <script src="/js/third_party/preload.min.js"></script>
+  <script src="/js/third_party/fuse.min.js"></script>
 </head>
-<body classes="add appear" hx-ext="class-tools, preload" ondragstart="return false;">
+<body hx-ext="preload" ondragstart="return false;">
   <header>
     <!-- <img src="/svg/pokecalcgg.min.svg" alt="pokecalcgg"> -->
     <div class="banner-wrapper">
@@ -53,8 +57,24 @@
     </div>
   </div>
 
-  <main id="content" data-mode="offense" hx-get="/pages/offense.html" hx-trigger="load">
+  <div id="spinner" class="hidden" aria-label="Loading site...">
+    <svg width="60" height="60" viewBox="0 0 50 50">
+      <circle
+        class="spinner-circle"
+        cx="25"
+        cy="25"
+        r="20"
+        fill="none"
+        stroke="#cf980f"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-dasharray="60 120"
+      >
+    </svg>
+  </div>
+
+  <main id="content" class="preload" data-mode="offense" hx-get="/pages/offense.html" hx-trigger="load">
   </main>
-  <script src="/js/scripts.js" defer></script>
-</body>
+  <script type="module" src="/js/scripts.js" defer></script>
+  </body>
 </html>
