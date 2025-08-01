@@ -50,6 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.documentElement.classList.remove('preload');
 });
 
+// prevent body dragstart
+document.body.addEventListener('dragstart', function(e) {
+  e.preventDefault();
+});
+
 /**
  * Handles the `htmx:afterSwap` event to initialize relevant button functionality after an HTMX swap event occurs, based on the current page.
  * 
