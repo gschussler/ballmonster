@@ -4,8 +4,7 @@
   "description": "BALL.MONSTER is a Pokémon type effectiveness calculator with support for all generations. Play around to find the type info you're seeking.",
   "main": "index.html",
   "scripts": {
-    "build": "node esbuild.config.js",
-    "dev": "http-server -c-1 ./src"
+    "build": "node esbuild.config.js"
   },
   "repository": {
     "type": "git",
