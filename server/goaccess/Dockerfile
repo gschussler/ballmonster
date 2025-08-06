@@ -1,0 +1,26 @@
+FROM debian:bookworm-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    gnupg \
+    wget \
+    ca-certificates \
+    lsb-release \
+    nginx \
+    bash \
+    && wget -O - https://deb.goaccess.io/gnugpg.key | gpg --dearmor > /usr/share/keyrings/goaccess.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/goaccess.gpg arch=$(dpkg --print-architecture)] https://deb.goaccess.io/ $(lsb_release -cs) main" > /etc/apt/sources.list.d/goaccess.list \
+    && apt-get update && apt-get install -y goaccess \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /data/html /tmp /var/log/nginx /run/nginx
+
+COPY entrypoint-g.sh /entrypoint.sh
+COPY goaccess.conf /etc/goaccess/goaccess.conf
+COPY nginx-g.conf /etc/nginx/nginx.conf
+COPY default-g.conf /etc/nginx/conf.d/default.conf
+
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

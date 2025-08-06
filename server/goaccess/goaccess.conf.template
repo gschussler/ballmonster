@@ -1,0 +1,21 @@
+# goaccess.conf
+
+time-format %H:%M:%S
+date-format %d/%b/%Y
+log-format %h|%u|%dT%t%z|%r|%s|%b|%R
+
+# Set real-time output
+real-time-html true
+daemonize true
+
+# Output location
+output /data/html/index.html
+
+# Enable HTML and WebSocket server
+html-report-title "Site Analytics Dashboard"
+ws-url ${WS_URL}
+
+# Optional performance or filtering settings
+keep-last 2000
+num-tests 0
+no-progress true
