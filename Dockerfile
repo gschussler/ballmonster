@@ -37,6 +37,8 @@ RUN chmod +x /anonymize
 COPY server/prod/nginx.conf /etc/nginx/nginx.conf
 COPY server/prod/default.conf /etc/nginx/conf.d/default.conf
 
+RUN mkdir -p /data/logs
+
 # Not ready yet: Copy entrypoint script to set up access log piping
 COPY server/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
