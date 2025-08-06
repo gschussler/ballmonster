@@ -29,7 +29,7 @@ WORKDIR /usr/share/nginx/html
 COPY --from=site-builder /app/dist/ .
 
 # Not ready yet: copy the Go binary
-COPY --from=go-builder /app/anonymizer /usr/local/bin/anonymize
+COPY --from=go-builder /app/anonymize /usr/local/bin/anonymize
 
 # custom NGINX config
 COPY server/dev/nginx-dev.conf /etc/nginx/nginx.conf
