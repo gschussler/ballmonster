@@ -17,7 +17,10 @@ RUN apt-get update && apt-get install -y \
     && apt-get update && apt-get install -y goaccess \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /data/html /tmp /var/log/nginx /run/nginx
+# create nginx user and directories
+RUN adduser --system --no-create-home --group nginx \
+    && mkdir -p /data/html /tmp /var/log/nginx /run/nginx \
+    && chown -R nginx:nginx /var/log/nginx /run/nginx /data/html
 
 COPY entrypoint-g.sh /entrypoint.sh
 COPY nginx-g.conf /etc/nginx/nginx.conf
