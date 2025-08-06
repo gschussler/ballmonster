@@ -6,7 +6,7 @@ mkfifo /tmp/access.pipe
 echo "[entrypoint] Named pipe created at /tmp/access.pipe"
 
 # start anonymizer in background
-/usr/local/bin/anonymize &
+/anonymize &
 echo "[entrypoint] Anonymizer started"
 
 # brief buffer for anonymize attachment to pipe

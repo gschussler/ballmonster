@@ -29,7 +29,9 @@ WORKDIR /usr/share/nginx/html
 COPY --from=site-builder /app/dist/ .
 
 # Not ready yet: copy the Go binary
-COPY --from=go-builder /app/anonymize /usr/local/bin/anonymize
+# COPY --from=go-builder /app/anonymize /usr/local/bin/anonymize
+COPY --from=go-builder /app/anonymize /anonymize
+RUN chmod +x /anonymize
 
 # custom NGINX config
 COPY server/prod/nginx.conf /etc/nginx/nginx.conf
