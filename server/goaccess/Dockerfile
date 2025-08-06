@@ -17,9 +17,9 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir -p /data/html /tmp /var/log/nginx /run/nginx
 
 COPY entrypoint-g.sh /entrypoint.sh
-COPY goaccess.conf /etc/goaccess/goaccess.conf
 COPY nginx-g.conf /etc/nginx/nginx.conf
-COPY default-g.conf /etc/nginx/conf.d/default.conf
+COPY default-g.conf.template /etc/nginx/conf.d/default.conf.template
+COPY goaccess.conf.template /etc/goaccess/goaccess.conf.template
 
 RUN chmod +x /entrypoint.sh
 
