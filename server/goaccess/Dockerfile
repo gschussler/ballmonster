@@ -2,6 +2,8 @@ FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+RUN adduser --system --no-create-home --group nginx
+
 RUN apt-get update && apt-get install -y \
     gnupg \
     wget \
