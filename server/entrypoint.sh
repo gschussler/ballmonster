@@ -3,8 +3,14 @@
 rm -f /tmp/access.pipe
 mkfifo /tmp/access.pipe
 
+echo "[entrypoint] Named pipe created at /tmp/access.pipe"
+
 # start anonymizer in background
 /usr/local/bin/anonymize &
+echo "[entrypoint] Anonymizer started"
+
+# brief buffer for anonymize attachment to pipe
+sleep 1
 
 # start nginx in foreground
 nginx -g "daemon off;"
