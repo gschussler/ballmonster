@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     nginx \
     bash \
+    gettext \
     && wget -O - https://deb.goaccess.io/gnugpg.key | gpg --dearmor > /usr/share/keyrings/goaccess.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/goaccess.gpg arch=$(dpkg --print-architecture)] https://deb.goaccess.io/ $(lsb_release -cs) main" > /etc/apt/sources.list.d/goaccess.list \
     && apt-get update && apt-get install -y goaccess \
