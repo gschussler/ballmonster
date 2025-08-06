@@ -25,6 +25,7 @@ func dailySalt() string {
 	if salt == "" {
 		salt = "fallback-salt" // **** be sure to set `SALT` env in production ****
 	}
+	fmt.Fprintf(os.Stderr, "Using SALT: %s\n", salt)
 	dateStr := time.Now().Format("2006-01-02")
 	return fmt.Sprintf("%s-%s", dateStr, salt)
 }
