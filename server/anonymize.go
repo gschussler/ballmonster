@@ -52,8 +52,8 @@ func formatForGoAccess(hash, timestamp, request, status, bytes, referer, ua stri
 
 func main() {
 	// open and read named pipe
-	// pipe, err := os.Open("/tmp/access.pipe")
-	pipe, err := os.Open("server/input-test.log") // >>UNCOMMENT<< for read in local testing (no pipe locally)
+	pipe, err := os.Open("/tmp/access.pipe")
+	// pipe, err := os.Open("server/input-test.log") // >>UNCOMMENT<< for read in local testing (no pipe locally)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error opening pipe: %v\n", err)
 		os.Exit(1)
@@ -63,10 +63,10 @@ func main() {
 	// open output
 	outputPath := "/data/logs/goaccess.log"
 
-	if _, err := os.Stat("/data/logs"); os.IsNotExist(err) { // >>UNCOMMENT<< for creating `outputPath` in local testing
-		outputPath = "./server/output-test.log"
-		fmt.Println("Test mode: writing to ./server/output-test.log")
-	}
+	// if _, err := os.Stat("/data/logs"); os.IsNotExist(err) { // >>UNCOMMENT<< for creating `outputPath` in local testing
+	// 	outputPath = "./server/output-test.log"
+	// 	fmt.Println("Test mode: writing to ./server/output-test.log")
+	// }
 
 	outFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
