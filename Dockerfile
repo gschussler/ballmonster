@@ -35,7 +35,7 @@ COPY --from=site-builder /app/dist/ .
 # custom NGINX config
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 # COPY nginx/mime.types /etc/nginx/mime.types
-# COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 
 # Not ready yet: Copy entrypoint script to set up access log piping
 # COPY entrypoint.sh /entrypoint.sh
