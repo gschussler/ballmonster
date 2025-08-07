@@ -7,6 +7,7 @@ RUN adduser --system --no-create-home --group nginx
 RUN apt-get update && apt-get install -y \
     gnupg \
     wget \
+    curl \
     ca-certificates \
     lsb-release \
     nginx \
@@ -28,5 +29,7 @@ COPY default-g.conf.template /etc/nginx/conf.d/default.conf.template
 COPY goaccess.conf.template /etc/goaccess/goaccess.conf.template
 
 RUN chmod +x /entrypoint.sh
+
+EXPOSE 8094
 
 ENTRYPOINT ["/entrypoint.sh"]
