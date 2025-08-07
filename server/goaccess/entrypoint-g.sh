@@ -18,6 +18,13 @@ chmod -R 755 /data/html
 echo "[entrypoint] Starting daily logrotate runner..."
 /usr/local/bin/run-logrotate.sh &
 
+if [ -f /data/logs/goaccess.log ]; then
+  echo "[entrypoint] Triggering immediate logrotate..."
+  /usr/sbin/logrotate /etc/logrotate.d/goaccess
+else
+  echo "[entrypoint] Skipping immediate logrotate — no log file found."
+fi
+
 # start NGINX in foreground
 echo "[entrypoint] Starting NGINX..."
 nginx -g "daemon off;"

@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Starting daily logrotate runner..."
+echo "[logrotate-runner] Started loop (PID $$)..."
 while true; do
   echo "[logrotate] Running at $(date)"
   /usr/sbin/logrotate /etc/logrotate.d/goaccess
