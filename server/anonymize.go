@@ -17,6 +17,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"net/url"
 )
 
 // get daily salt from environment variable + date
@@ -49,6 +50,16 @@ func parseLogLine(line string) (string, string, string, string, string, string, 
 func formatForGoAccess(hash, timestamp, request, status, bytes, referer, ua string) string {
 	return fmt.Sprintf("%s - - [%s] %s %s %s %s \"%s\"",
 		hash, timestamp, request, status, bytes, referer, ua)
+}
+
+// keep only scheme + host (e.g., https://example.com)
+func sanitizeReferrer(ref string) string {
+	ref = strings.Trim(ref, `"`)
+	u, err := url.Parse(ref) // Trim quotes, e.g. from ""https://site.com/path""
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return "-"
+	}
+	return u.Scheme + "://" + u.Host
 }
 
 func main() {
@@ -84,6 +95,8 @@ func main() {
 		if err != nil {
 			continue // skip malformed lines
 		}
+
+		referer = sanitizeReferrer(referer)
 
 		hash := anonymize(ip, ua)
 		goaccessLine := formatForGoAccess(hash, timestamp, request, status, bytes, referer, ua)
