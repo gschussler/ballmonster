@@ -4,10 +4,10 @@ server {
     server_name  localhost;
 
     root /data/html;
-    index index.html;
+    index report.html;
 
     location / {
-        try_files $uri $uri.html $uri/index.html $uri/ /index.html =404;
+        try_files $uri $uri.html $uri/report.html $uri/ /report.html =404;
     }
 
     error_page   500 502 503 504  /50x.html;

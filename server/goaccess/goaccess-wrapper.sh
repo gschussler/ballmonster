@@ -2,20 +2,24 @@
 set -eu
 
 LOGFILE="/data/logs/goaccess.log"
-OUTFILE="/data/html/index.html"
+OUTFILE="/data/html/report.html"
+DBDIR="/data/goaccess-db"
 
 mkdir -p "$(dirname "$OUTFILE")"
+mkdir -p "$DBDIR"
 
 if [ ! -f "$LOGFILE" ]; then
     echo "Log file not found: $LOGFILE"
     exit 0  # don't fail if no logs yet
 fi
 
-echo "Running GoAccess on $LOGFILE..."
+echo "Running GoAccess on $LOGFILE with persistent DB..."
 
 goaccess \
-  --log-format=COMBINED \
-  --anonymize-ip \
+  --config-file=/etc/goaccess/goaccess.conf \
+  --restore \
+  --persist \
+  --db-path="$DBDIR" \
   --output="$OUTFILE" \
   "$LOGFILE"
 

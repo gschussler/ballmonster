@@ -10,20 +10,17 @@ env
 echo "[entrypoint] Rendering NGINX config..."
 envsubst '${NGINX_PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
-# rreate necessary directories
-mkdir -p /data/html /data/logs
-chmod -R 755 /data/html
+# create necessary directories and grant write permissions for html & db
+mkdir -p /data/html /data/logs /data/goaccess-db
+chmod -R 755 /data/html /data/goaccess-db
 
 # start logrotate runner in background
 echo "[entrypoint] Starting daily logrotate runner..."
 /usr/local/bin/run-logrotate.sh &
 
-if [ -f /data/logs/goaccess.log ]; then
-  echo "[entrypoint] Triggering immediate logrotate..."
-  /usr/sbin/logrotate /etc/logrotate.d/goaccess
-else
-  echo "[entrypoint] Skipping immediate logrotate — no log file found."
-fi
+# start GoAccess update loop in background
+echo "[entrypoint] Starting GoAccess update loop..."
+/usr/local/bin/run-goaccess-loop.sh &
 
 # start NGINX in foreground
 echo "[entrypoint] Starting NGINX..."
