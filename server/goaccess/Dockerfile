@@ -28,7 +28,12 @@ COPY nginx-g.conf /etc/nginx/nginx.conf
 COPY default-g.conf.template /etc/nginx/conf.d/default.conf.template
 COPY goaccess.conf.template /etc/goaccess/goaccess.conf.template
 
-RUN chmod +x /entrypoint.sh
+COPY goaccess-wrapper.sh /usr/local/bin/goaccess-wrapper.sh
+COPY run-logrotate.sh /usr/local/bin/run-logrotate.sh
+COPY logrotate.d/goaccess /etc/logrotate.d/goaccess
+COPY httpd-prerotate/goaccess /etc/logrotate.d/httpd-prerotate/goaccess
+
+RUN chmod +x /entrypoint.sh /usr/local/bin/goaccess-wrapper.sh /usr/local/bin/run-logrotate.sh /etc/logrotate.d/httpd-prerotate/goaccess
 
 EXPOSE 8094
 
