@@ -47,7 +47,7 @@ func parseLogLine(line string) (string, string, string, string, string, string, 
 }
 
 func formatForGoAccess(hash, timestamp, request, status, bytes, referer, ua string) string {
-	return fmt.Sprintf("%s - - [%s] %s %s %s \"%s\" \"%s\"",
+	return fmt.Sprintf("%s - - [%s] %s %s %s %s \"%s\"",
 		hash, timestamp, request, status, bytes, referer, ua)
 }
 
