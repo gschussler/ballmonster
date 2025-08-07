@@ -36,6 +36,6 @@ COPY run-goaccess-loop.sh /usr/local/bin/run-goaccess-loop.sh
 
 RUN chmod +x /entrypoint.sh /usr/local/bin/goaccess-wrapper.sh /usr/local/bin/run-logrotate.sh /usr/local/bin/run-goaccess-loop.sh 
 
-EXPOSE 8084
+EXPOSE 8094
 
 ENTRYPOINT ["/entrypoint.sh"]

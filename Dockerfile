@@ -34,8 +34,8 @@ COPY --from=go-builder /app/anonymize /anonymize
 RUN chmod +x /anonymize
 
 # custom NGINX config
-COPY server/prod/nginx.conf /etc/nginx/nginx.conf
-COPY server/prod/default.conf /etc/nginx/conf.d/default.conf
+COPY server/prod/nginx-prod.conf /etc/nginx/nginx.conf
+COPY server/prod/default-prod.conf /etc/nginx/conf.d/default.conf
 
 RUN mkdir -p /data/logs
 
