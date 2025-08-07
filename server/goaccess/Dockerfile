@@ -27,7 +27,7 @@ RUN adduser --system --no-create-home --group nginx \
 COPY entrypoint-g.sh /entrypoint.sh
 COPY nginx-g.conf /etc/nginx/nginx.conf
 COPY default-g.conf.template /etc/nginx/conf.d/default.conf.template
-COPY goaccess.conf.template /etc/goaccess/goaccess.conf.template
+COPY goaccess.conf /etc/goaccess/goaccess.conf
 
 COPY goaccess-wrapper.sh /usr/local/bin/goaccess-wrapper.sh
 COPY run-logrotate.sh /usr/local/bin/run-logrotate.sh

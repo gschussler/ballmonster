@@ -8,11 +8,7 @@ env
 
 # render NGINX config
 echo "[entrypoint] Rendering NGINX config..."
-envsubst '${NGINX_PORT} ${WS_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
-
-# render GoAccess config
-echo "[entrypoint] Rendering GoAccess config..."
-envsubst '${WS_URL}' < /etc/goaccess/goaccess.conf.template > /etc/goaccess/goaccess.conf
+envsubst '${NGINX_PORT}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
 # rreate necessary directories
 mkdir -p /data/html /data/logs
