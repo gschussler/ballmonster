@@ -54,8 +54,10 @@ func formatForGoAccess(hash, timestamp, request, status, bytes, referer, ua stri
 
 // keep only scheme + host (e.g., https://example.com)
 func sanitizeReferrer(ref string) string {
-	ref = strings.Trim(ref, `"`)
-	u, err := url.Parse(ref) // Trim quotes, e.g. from ""https://site.com/path""
+	ref = strings.TrimSpace(ref)
+	ref = strings.Trim(ref, `"`) // trim leading and trailing quotes, e.g. from ""https://site.com/path""
+
+	u, err := url.Parse(ref)
 	if err != nil || u.Scheme == "" || u.Host == "" {
 		return "-"
 	}
