@@ -34,7 +34,7 @@ COPY run-logrotate.sh /usr/local/bin/run-logrotate.sh
 COPY logrotate.d/goaccess /etc/logrotate.d/goaccess
 COPY run-goaccess-loop.sh /usr/local/bin/run-goaccess-loop.sh
 
-RUN chmod +x /entrypoint.sh /usr/local/bin/goaccess-wrapper.sh /usr/local/bin/run-logrotate.sh /usr/local/bin/run-goaccess-loop.sh /etc/logrotate.d/httpd-prerotate/goaccess
+RUN chmod +x /entrypoint.sh /usr/local/bin/goaccess-wrapper.sh /usr/local/bin/run-logrotate.sh /usr/local/bin/run-goaccess-loop.sh 
 
 EXPOSE 8094
 
