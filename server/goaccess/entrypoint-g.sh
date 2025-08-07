@@ -1,23 +1,54 @@
 #!/bin/sh
 
-# substitute environment variables into the output config files
-envsubst '${NGINX_PORT} ${WS_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
-envsubst '${WS_URL}' < /etc/goaccess/goaccess.conf.template > /etc/goaccess/goaccess.conf
+set -e  # exit on error
+set -x  # print commands
 
-# make script executable (might not work if Coolify has bind mount restrictions)
-chmod +x "$0"
+# print all env vars
+echo "[entrypoint] Environment Variables:"
+env
 
-# create named pipe with the same label as project repo resource
-rm -f /tmp/access.pipe
-mkfifo /tmp/access.pipe
+# make sure templates are rendered
+echo "[entrypoint] Rendering NGINX config..."
+envsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
-# start GoAccess in the background
-goaccess /tmp/access.pipe \
+echo "[entrypoint] Rendering GoAccess config..."
+envsubst < /etc/goaccess/goaccess.conf.template > /etc/goaccess/goaccess.conf
+
+# debug output: show rendered configs
+echo "[entrypoint] Rendered NGINX config:"
+cat /etc/nginx/conf.d/default.conf
+
+echo "[entrypoint] Rendered GoAccess config:"
+cat /etc/goaccess/goaccess.conf
+
+# prepare named pipe
+PIPE=/tmp/access.pipe
+echo "[entrypoint] Creating named pipe at $PIPE..."
+rm -f "$PIPE"
+mkfifo "$PIPE"
+chmod 666 "$PIPE"
+
+# ensure output directory exists
+mkdir -p /data/html
+chmod -R 755 /data/html
+
+# start GoAccess
+echo "[entrypoint] Starting GoAccess..."
+goaccess "$PIPE" \
   --log-format=COMBINED \
   --output=/data/html/index.html \
   --real-time-html \
   --daemonize \
   --config-file=/etc/goaccess/goaccess.conf
 
-# start NGINX in the foreground
+# ensure GoAccess is writing
+echo "[entrypoint] Waiting for GoAccess output..."
+sleep 2
+if [ -f /data/html/index.html ]; then
+  echo "[entrypoint] GoAccess generated /data/html/index.html"
+else
+  echo "[entrypoint] GoAccess has not yet written to /data/html/index.html"
+fi
+
+echo "[entrypoint] Starting NGINX..."
 nginx -g "daemon off;"
