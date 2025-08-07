@@ -11,3 +11,6 @@
 /src/json/gen6default.json
 # Dockerfile
 # nginx.conf
+/server/input-test.log
+/server/output-test.log
+anonymize

@@ -1,0 +1,48 @@
+# STAGE 1: build Node static site
+FROM node:22-slim AS site-builder
+
+WORKDIR /app
+
+# install deps and build
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+# STAGE 2 (not ready yet): build Go anonymizer
+FROM golang:alpine AS go-builder
+
+WORKDIR /app
+
+COPY server/anonymize.go .
+
+RUN go build -o anonymize ./anonymize.go
+
+# STAGE 3: final image with NGINX + anonymizer
+FROM nginx:alpine
+
+# set working directory (nginx default)
+WORKDIR /usr/share/nginx/html
+
+# copy built static site from site-builder
+COPY --from=site-builder /app/dist/ .
+
+# Not ready yet: copy the Go binary
+# COPY --from=go-builder /app/anonymize /usr/local/bin/anonymize
+COPY --from=go-builder /app/anonymize /anonymize
+RUN chmod +x /anonymize
+
+# custom NGINX config
+COPY server/prod/nginx-prod.conf /etc/nginx/nginx.conf
+COPY server/prod/default-prod.conf /etc/nginx/conf.d/default.conf
+
+RUN mkdir -p /data/logs
+
+# Not ready yet: Copy entrypoint script to set up access log piping
+COPY server/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
+# # default nginx foreground behavior being handled by entrypoint script
+# CMD ["nginx", "-g", "daemon off;"]

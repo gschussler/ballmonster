@@ -1,0 +1,17 @@
+server {
+    listen       ${NGINX_PORT};
+    listen       [::]:${NGINX_PORT};
+    server_name  localhost;
+
+    root /data/html;
+    index report.html;
+
+    location / {
+        try_files $uri $uri.html $uri/report.html $uri/ /report.html =404;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /data/html;
+    }
+}
