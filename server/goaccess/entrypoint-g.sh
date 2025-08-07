@@ -9,10 +9,10 @@ env
 
 # make sure templates are rendered
 echo "[entrypoint] Rendering NGINX config..."
-envsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
+envsubst '${NGINX_PORT} ${WS_URL}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
 echo "[entrypoint] Rendering GoAccess config..."
-envsubst < /etc/goaccess/goaccess.conf.template > /etc/goaccess/goaccess.conf
+envsubst '${WS_URL}' < /etc/goaccess/goaccess.conf.template > /etc/goaccess/goaccess.conf
 
 # debug output: show rendered configs
 echo "[entrypoint] Rendered NGINX config:"
