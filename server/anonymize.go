@@ -57,10 +57,17 @@ func sanitizeReferrer(ref string) string {
 	ref = strings.TrimSpace(ref)
 	ref = strings.Trim(ref, `"`) // trim leading and trailing quotes, e.g. from ""https://site.com/path""
 
+	if ref == "-" {
+		log.Println("No referrer sent.")
+		return ""
+	}
+	
 	u, err := url.Parse(ref)
 	if err != nil || u.Scheme == "" || u.Host == "" {
-		return "-"
+		log.Printf("Malformed referrer detected: %s", ref)
+		return ""
 	}
+
 	return u.Scheme + "://" + u.Host
 }
 
