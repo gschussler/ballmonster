@@ -27,6 +27,7 @@ WORKDIR /usr/share/nginx/html
 
 # copy built static site from site-builder
 COPY --from=site-builder /app/dist/ .
+COPY robots.txt /user/share/nginx/html/robots.txt
 
 # Not ready yet: copy the Go binary
 # COPY --from=go-builder /app/anonymize /usr/local/bin/anonymize

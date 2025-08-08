@@ -58,7 +58,8 @@ func sanitizeReferrer(ref string) string {
 	ref = strings.Trim(ref, `"`) // trim leading and trailing quotes, e.g. from ""https://site.com/path""
 
 	if ref == "-" { // no referrer
-		return ref
+		fmt.Printf("No referrer sent.")
+		return ""
 	}
 	
 	u, err := url.Parse(ref)
@@ -111,15 +112,16 @@ func main() {
 			continue // skip malformed lines
 		}
 
-		referer = sanitizeReferrer(referer)
-		hash := anonymize(ip, ua)
-		goaccessLine := formatForGoAccess(hash, timestamp, request, status, bytes, referer, ua)
-
-		if referer == "" || referer == "-" {
-			// log malformed/no referrer to untracked file
-			fmt.Fprintln(untrackedFile, goaccessLine)
+		if ip == "127.0.0.1" || ip == "::1" {
+			// handle as internal / healthcheck request
+			fmt.Fprintln(untrackedFile, line) // skip logging to GoAccess
 			untrackedFile.Sync()
+			continue
 		} else {
+			referer = sanitizeReferrer(referer)
+			hash := anonymize(ip, ua)
+			goaccessLine := formatForGoAccess(hash, timestamp, request, status, bytes, referer, ua)
+			
 			// log valid entries to GoAccess
 			fmt.Fprintln(outFile, goaccessLine)
 			outFile.Sync()
