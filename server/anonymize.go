@@ -57,14 +57,13 @@ func sanitizeReferrer(ref string) string {
 	ref = strings.TrimSpace(ref)
 	ref = strings.Trim(ref, `"`) // trim leading and trailing quotes, e.g. from ""https://site.com/path""
 
-	if ref == "-" {
-		fmt.Println("No referrer sent.")
-		return ""
+	if ref == "-" { // no referrer
+		return ref
 	}
 	
 	u, err := url.Parse(ref)
-	if err != nil || u.Scheme == "" || u.Host == "" {
-		fmt.Printf("Malformed referrer detected: %s", ref)
+	if err != nil || u.Scheme == "" || u.Host == "" { // malformed referrer
+		fmt.Printf("Malformed referrer detected: %q\n", ref)
 		return ""
 	}
 
@@ -81,20 +80,27 @@ func main() {
 	}
 	defer pipe.Close()
 
-	// open output
-	outputPath := "/data/logs/goaccess.log"
-
 	// if _, err := os.Stat("/data/logs"); os.IsNotExist(err) { // >>UNCOMMENT<< for creating `outputPath` in local testing
 	// 	outputPath = "./server/output-test.log"
 	// 	fmt.Println("Test mode: writing to ./server/output-test.log")
 	// }
 
-	outFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	// open output file for GoAccess logs
+	outFile, err := os.OpenFile("/data/logs/goaccess.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error opening output file: %v\n", err)
 		os.Exit(1)
 	}
 	defer outFile.Close()
+
+	// open untracked output file for skipped/malformed referrers
+	untrackedFile, err := os.OpenFile("/data/logs/untracked.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error opening untracked output file: %v\n", err)
+		os.Exit(1)
+	}
+	defer untrackedFile.Close()
+
 
 	scanner := bufio.NewScanner(pipe)
 	for scanner.Scan() {
@@ -106,12 +112,17 @@ func main() {
 		}
 
 		referer = sanitizeReferrer(referer)
-
 		hash := anonymize(ip, ua)
 		goaccessLine := formatForGoAccess(hash, timestamp, request, status, bytes, referer, ua)
 
-		// immediate write to shared volume
-		fmt.Fprintln(outFile, goaccessLine)
-		outFile.Sync()
+		if referer == "" || referer == "-" {
+			// log malformed/no referrer to untracked file
+			fmt.Fprintln(untrackedFile, goaccessLine)
+			untrackedFile.Sync()
+		} else {
+			// log valid entries to GoAccess
+			fmt.Fprintln(outFile, goaccessLine)
+			outFile.Sync()
+		}
 	}
 }
