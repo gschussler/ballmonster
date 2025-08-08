@@ -21,14 +21,14 @@ This project uses **[GoAccess](https://goaccess.io/)** for privacy-respecting, c
 
 Instead of asking for your trust, here is what you should know:
 - **No cookies** are used for tracking.
-- **No IP addresses** or **user agents** are stored. Instead, a daily hash is generated from IP + UA using a rotating salt. so any data is only linked within the same day. *Note: this is technically ***pseudonymization*** rather than full ***anonymization***.
+- **No IP addresses** or **user agents** are stored. Instead, a daily hash is generated from IP + UA using a rotating salt. So any data is only linked within the same day. *Note: this is technically ***pseudonymization*** rather than full ***anonymization***.
 - **Referrers are sanitized**:
   - Only the scheme and host are kept (e.g., `https://example.com`).
   - URL paths and query parameters are discarded.
   - Self-referrals (like from `ball.monster`) are excluded from analytics.
 - All analytics data is stored locally on the server. No third-party services are involved.
 
-The [dashboard](https://dash.ball.monster) is public and read-only for transparency.
+The **[dashboard](https://dash.ball.monster)** is public and read-only for transparency.
 
 ## Local Development
 Clone the repo and install `npm` before running the dev build.
