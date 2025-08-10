@@ -15,6 +15,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
 	"time"
 	"net/url"
