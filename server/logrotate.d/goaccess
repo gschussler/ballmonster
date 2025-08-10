@@ -1,7 +1,7 @@
 /data/logs/goaccess.log {
     daily
     missingok
-    rotate 7
+    rotate 3
     compress
     delaycompress
     notifempty
