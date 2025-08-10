@@ -18,17 +18,16 @@
   <link rel="icon" type="image/svg+xml" href="/icon.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <script src="/js/third_party/htmx.min.js"></script>
-  <script src="/js/third_party/preload.min.js"></script>
-  <script src="/js/third_party/fuse.min.js"></script>
+  <script src="/js/third_party/preload.min.js" defer></script>
+  <script src="/js/third_party/fuse.min.js" defer></script>
 </head>
 <body hx-ext="preload">
   <header>
-    <!-- <img src="/svg/pokecalcgg.min.svg" alt="pokecalcgg"> -->
     <div class="banner-wrapper">
-      <div class="banner">
-        <img src="/svg/ball.min.svg"></img>
-        <img src="/svg/ball_bm.min.svg"></img>
-        <img src="/svg/monster.min.svg"></img>
+      <div class="banner" role="img" aria-label="ball.monster logo">
+        <img src="/svg/ball.min.svg" alt="" aria-hidden="true"/>
+        <img src="/svg/ball_bm.min.svg" alt="" aria-hidden="true"/>
+        <img src="/svg/monster.min.svg" fetchpriority="high" alt="" aria-hidden="true"/>
       </div>
     </div>
     <p>...a Pokémon type calculator.</p>
