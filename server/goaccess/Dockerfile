@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y \
     nginx \
     bash \
     gettext \
-    logrotate \
     && wget -O - https://deb.goaccess.io/gnugpg.key | gpg --dearmor > /usr/share/keyrings/goaccess.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/goaccess.gpg arch=$(dpkg --print-architecture)] https://deb.goaccess.io/ $(lsb_release -cs) main" > /etc/apt/sources.list.d/goaccess.list \
     && apt-get update && apt-get install -y goaccess \
@@ -32,7 +31,7 @@ COPY goaccess.conf /etc/goaccess/goaccess.conf
 COPY goaccess-wrapper.sh /usr/local/bin/goaccess-wrapper.sh
 COPY run-goaccess-loop.sh /usr/local/bin/run-goaccess-loop.sh
 
-RUN chmod +x /entrypoint.sh /usr/local/bin/goaccess-wrapper.sh /usr/local/bin/run-logrotate.sh /usr/local/bin/run-goaccess-loop.sh 
+RUN chmod +x /entrypoint.sh /usr/local/bin/goaccess-wrapper.sh /usr/local/bin/run-goaccess-loop.sh 
 
 EXPOSE 8084
 
