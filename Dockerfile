@@ -10,29 +10,31 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# STAGE 2 (not ready yet): build Go anonymizer
+# STAGE 2: build Go pseudonymizer
 FROM golang:alpine AS go-builder
 
 WORKDIR /app
 
-COPY server/anonymize.go .
+COPY server/pseudonymize.go .
 
-RUN go build -o anonymize ./anonymize.go
+RUN go build -o pseudonymize ./pseudonymize.go
 
-# STAGE 3: final image with NGINX + anonymizer
+# STAGE 3: final image with NGINX + pseudonymizer
 FROM nginx:alpine
+
+RUN apk add --no-cache logrotate
 
 # set working directory (nginx default)
 WORKDIR /usr/share/nginx/html
 
 # copy built static site from site-builder
 COPY --from=site-builder /app/dist/ .
-COPY robots.txt /user/share/nginx/html/robots.txt
+COPY robots.txt .
 
-# Not ready yet: copy the Go binary
-# COPY --from=go-builder /app/anonymize /usr/local/bin/anonymize
-COPY --from=go-builder /app/anonymize /anonymize
-RUN chmod +x /anonymize
+# copy the Go binary
+# COPY --from=go-builder /app/pseudonymize /usr/local/bin/pseudonymize
+COPY --from=go-builder /app/pseudonymize /pseudonymize
+RUN chmod +x /pseudonymize
 
 # custom NGINX config
 COPY server/prod/nginx-prod.conf /etc/nginx/nginx.conf
@@ -40,7 +42,12 @@ COPY server/prod/default-prod.conf /etc/nginx/conf.d/default.conf
 
 RUN mkdir -p /data/logs
 
-# Not ready yet: Copy entrypoint script to set up access log piping
+# copy logrotate config & script
+COPY server/logrotate.d/goaccess /etc/logrotate.d/goaccess
+COPY server/run-logrotate.sh /usr/local/bin/run-logrotate.sh
+RUN chmod +x /usr/local/bin/run-logrotate.sh
+
+# copy entrypoint script to set up access log piping
 COPY server/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

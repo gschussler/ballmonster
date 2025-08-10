@@ -7,4 +7,8 @@
     notifempty
     create 0644 root root
     sharedscripts
+    postrotate
+        # signal pseudonymizer to reopen log
+        kill -HUP $(pidof pseudonymize) || true
+    endscript
 }

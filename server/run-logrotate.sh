@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 echo "[logrotate-runner] Started loop (PID $$)..."
 while true; do
   echo "[logrotate] Running at $(date)"

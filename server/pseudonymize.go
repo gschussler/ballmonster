@@ -1,10 +1,10 @@
-// Anonymize info piped from server and write to shared folder
+// Pseudonymize info piped from server and write to shared folder
 
 /*
 For testing:
 - Uncomment relevant blocks
-- Build binary: `go build -o anonymize ./server/anonymize.go`
-- Run test: `./server/anonymize.go`
+- Build binary: `go build -o pseudonymize ./server/pseudonymize.go`
+- Run test: `./server/pseudonymize.go`
 */
 
 package main
@@ -23,16 +23,12 @@ import (
 // get daily salt from environment variable + date
 func dailySalt() string {
 	salt := os.Getenv("SALT")
-	if salt == "" {
-		salt = "fallback-salt" // **** be sure to set `SALT` env in production ****
-	}
-
 	dateStr := time.Now().Format("2006-01-02")
 	return fmt.Sprintf("%s-%s", dateStr, salt)
 }
 
 // creates 16 char hash from salt + ip + user agent
-func anonymize(ip, ua string) string {
+func pseudonymize(ip, ua string) string {
 	input := fmt.Sprintf("%s%s%s", dailySalt(), ip, ua)
 	hash := sha256.Sum256([]byte(input))
 	return hex.EncodeToString(hash[:])[:16]
@@ -72,7 +68,12 @@ func sanitizeReferrer(ref string) string {
 }
 
 func main() {
-	// open and read named pipe
+	// prevent run if a salt hasn't been properly set
+	if os.Getenv("SALT") == "" {
+		fmt.Fprintln(os.Stderr, "FATAL: SALT environment variable not set, aborting")
+		os.Exit(1)
+	}
+
 	pipe, err := os.Open("/tmp/access.pipe")
 	// pipe, err := os.Open("server/input-test.log") // >>UNCOMMENT<< for read in local testing (no pipe locally)
 	if err != nil {
@@ -86,23 +87,59 @@ func main() {
 	// 	fmt.Println("Test mode: writing to ./server/output-test.log")
 	// }
 
-	// open output file for GoAccess logs
-	outFile, err := os.OpenFile("/data/logs/goaccess.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	openOutputFiles := func() (*os.File, *os.File, error) {
+		outFile, err := os.OpenFile("/data/logs/goaccess.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			return nil, nil, err
+		}
+		untrackedFile, err := os.OpenFile("/data/logs/untracked.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			outFile.Close()
+			return nil, nil, err
+		}
+		return outFile, untrackedFile, nil
+	}
+
+	// open output files for GoAccess logs and untracked logs (healthchecks, etc.)
+	outFile, untrackedFile, err := openOutputFiles()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error opening output file: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error opening output files: %v\n", err)
 		os.Exit(1)
 	}
 	defer outFile.Close()
-
-	// open untracked output file for skipped/malformed referrers
-	untrackedFile, err := os.OpenFile("/data/logs/untracked.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error opening untracked output file: %v\n", err)
-		os.Exit(1)
-	}
 	defer untrackedFile.Close()
 
+	// chan for SIGHUP signals from logrotate
+	sighupChan := make(chan os.Signal, 1)
+	signal.Notify(sighupChan, syscall.SIGHUP)
 
+	// chan to reopen files rotated in
+	reopenChan := make(chan bool)
+
+	// use the channels in goroutine to handle file resync upon logrotate
+	go func() {
+		for {
+			<-sighupChan
+			fmt.Println("[signal] Received SIGHUP, reopening output files...")
+
+			outFile.Close()
+			untrackedFile.Close()
+
+			newOutFile, newUntrackedFile, err := openOutputFiles()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error reopening files on SIGHUP: %v\n", err)
+				continue
+			}
+
+			// file pointer swap is thread-safe in this context (channel synchronization and minimal usage based on a logrotate event)
+			outFile = newOutFile
+			untrackedFile = newUntrackedFile
+
+			reopenChan <- true
+		}
+	}()
+
+	// scan requests from access pipe
 	scanner := bufio.NewScanner(pipe)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -112,19 +149,29 @@ func main() {
 			continue // skip malformed lines
 		}
 
+		// skip processing for GoAccess logs if the request is internal
 		if ip == "127.0.0.1" || ip == "::1" {
-			// handle as internal / healthcheck request
-			fmt.Fprintln(untrackedFile, line) // skip logging to GoAccess
+			fmt.Fprintln(untrackedFile, line)
 			untrackedFile.Sync()
 			continue
 		} else {
 			referer = sanitizeReferrer(referer)
-			hash := anonymize(ip, ua)
+			hash := pseudonymize(ip, ua)
 			goaccessLine := formatForGoAccess(hash, timestamp, request, status, bytes, referer, ua)
 			
 			// log valid entries to GoAccess
 			fmt.Fprintln(outFile, goaccessLine)
 			outFile.Sync()
 		}
+
+		// prevent race conditions between main loop and reopen operations
+		select {
+			case <-reopenChan:
+			default:
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading from pipe: %v\n", err)
 	}
 }
