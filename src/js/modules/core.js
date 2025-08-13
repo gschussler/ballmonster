@@ -510,8 +510,8 @@ const handleDefenseException = (source, typeVar, primaryContainer, secondaryCont
     } else {
       // if default selected, renable all buttons as long as not interfering with special moves. lastPrimarySelected should keep its reference, so update lastSecondaryDisabled after re-enabling other buttons
       allButtons.forEach(button => button.disabled = false);
-      state.lastSecondaryDisabled = secondaryContainer.querySelector(`button[data-type=${lastPrimarySelected.dataset.type}]`);
-      lastSecondaryDisabled.disabled = true;
+      state.lastSecondaryDisabled = secondaryContainer.querySelector(`button[data-type=${state.lastPrimarySelected.dataset.type}]`);
+      state.lastSecondaryDisabled.disabled = true;
       if(state.lastMoveSelected) {
         const lastMoveType = typeByMove.get(state.lastMoveSelected.dataset.move);
         moveTypeDisable(primaryContainer, secondaryContainer, lastMoveType, true);
