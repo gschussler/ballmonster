@@ -133,7 +133,9 @@ document.querySelector("nav").addEventListener("click", (e) => {
     link.classList.add("active");
 
     // console.log(`Mode updating from ${mode} to: ${newMode}`);
-    state.prevMode = state.mode;
+    if(state.mode !== "more") {
+      state.prevMode = state.mode;
+    }
     state.mode = newMode;
   }
 });
