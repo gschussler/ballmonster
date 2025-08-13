@@ -73,10 +73,18 @@ const toggleDefSpecialMoves = (pToggleType, sToggleType) => {
 
   if(dTypeMove[pToggleType]) moveDisabledP = moveByType.get(pToggleType);
   if(dTypeMove[sToggleType]) moveDisabledS = moveByType.get(sToggleType);
-  
-  if(moveDisabledP) document.querySelector(`button[data-move="${moveDisabledP}"]`).disabled = true;
 
-  if(moveDisabledS) document.querySelector(`button[data-move="${moveDisabledS}"]`).disabled = true;
+  if(moveDisabledP) {
+    const disabledByP = document.querySelector(`button[data-move="${moveDisabledP}"]`);
+    disabledByP.disabled = true;
+    // console.log(`moveDisabledP (${moveDisabledP}) disabled state is -- ${disabledByP.disabled}`);
+  }
+
+  if(moveDisabledS) {
+    const disabledByS = document.querySelector(`button[data-move="${moveDisabledS}"]`);
+    disabledByS.disabled = true;
+    // console.log(`moveDisabledS (${moveDisabledS}) disabled state is -- ${disabledByS.disabled}`);
+  }
 
   document.querySelectorAll("button[data-move]").forEach(btn => {
     const move = btn.dataset.move;

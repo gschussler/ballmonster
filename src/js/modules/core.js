@@ -399,10 +399,10 @@ const handleDefenseException = (source, typeVar, primaryContainer, secondaryCont
     let pTypeDisabled;
     let sTypeDisabled;
 
+    let lastType;
+
     if(exceptions.has(move)) {
       exceptions.delete(move);
-      
-      let lastType;
 
       if(state.lastMoveSelected) {
         const lastMoveName = state.lastMoveSelected.dataset.move;

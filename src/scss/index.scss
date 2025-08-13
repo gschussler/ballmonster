@@ -519,7 +519,7 @@ select {
   background-color: v.$button-background-color-light1;
   cursor: pointer;
   user-select: none;
-  transition: all 200ms ease;
+  // transition: all 200ms ease;
 
   &:hover {
     background-color: v.$button-background-color-light3;
@@ -543,6 +543,13 @@ select {
   flex: 0 1 auto;
   white-space: nowrap;
   padding: 0.5rem 1rem 0.5rem 2.5rem;
+
+  &:disabled {
+    color: var(--bg-color);
+    text-shadow: none;
+    pointer-events: none;
+    cursor: default;
+  }
 }
 
 .move-grid button.selected {
