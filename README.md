@@ -36,6 +36,7 @@ Clone the repo and install `npm`.
 npm install
 ```
 Locally serve the source directory.
+- If you don't want to use port 3000, replace it in the `dev` script within `package.json`.
 ```code
-serve ./src
+npm run dev
 ```
