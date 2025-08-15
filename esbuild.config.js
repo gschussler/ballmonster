@@ -81,6 +81,11 @@ const htmlRewriteWithCSSandJS = (content) => {
     `<script src="${CONFIG.PUBLIC_PATH}${jsName}" defer></script>`
   );
 
+  content = content.replace(
+    /<link rel="stylesheet" href="\/not-found\.css">/g,
+    `<link rel="stylesheet" href="${CONFIG.PUBLIC_PATH}${notFoundCssName}">`
+  )
+
   return content;
 };
 
@@ -177,9 +182,14 @@ console.log(`Bundled JS to ${jsName}`);
 
 const scssResult = sass.compile(path.join(CONFIG.SRC_DIR, 'scss/index.scss'), { style: 'compressed' });
 const cssName = await writeHashedFile('index.scss', CONFIG.BUILD_DIR, scssResult.css, '.css');
-console.log(`SCSS compiled to CSS as '${cssName}'`);
+console.log(`Main SCSS compiled to CSS as '${cssName}'`);
+
+const notFoundScssResult = sass.compile(path.join(CONFIG.SRC_DIR, 'scss/not-found.scss'), { style: 'compressed' });
+const notFoundCssName = await writeHashedFile('not-found.scss', CONFIG.BUILD_DIR, notFoundScssResult.css, '.css');
+console.log(`'not-found' SCSS compiled to CSS as '${notFoundCssName}'`);
 
 assetMap['scss/index.scss'] = cssName;
+assetMap['scss/not-found.scss'] = notFoundCssName;
 assetMap['js/scripts.js'] = path.posix.join('js', jsName);
 
 // add `more.html` later when assets are added to it

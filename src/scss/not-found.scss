@@ -1,8 +1,21 @@
 @use "variables" as v;
 
-body.not-found {
+:root {
+  color-scheme: dark light;
   background-color: var(--bg-color);
   color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body.not-found {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
@@ -20,3 +33,11 @@ body.not-found {
   justify-content: center;
   align-items: center;
 }
+
+// .not-found-container h1 {
+
+// }
+
+// .not-found-container p {
+
+// }
