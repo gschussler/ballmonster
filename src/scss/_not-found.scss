@@ -3,8 +3,19 @@
 body.not-found {
   background-color: var(--bg-color);
   color: var(--text-color);
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  font-family: "Lato", system-ui, sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-color);
+  user-select: none;
 }
 
 .not-found-container {
-  
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
