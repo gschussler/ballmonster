@@ -1,10 +1,14 @@
-// Content-based filename hashing for cache-invalidation only of files that have undergone changes
+/* Node build-step for site content
+- Content-based filename hashing for cache-invalidation only of files that have undergone changes
+- Pre-compression of assets is reasonable due to the project being a small, static site. Not currently implemented.
+*/
 import esbuild from 'esbuild';
 import * as sass from 'sass';
 import path from 'path';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import crypto from 'crypto';
+import zlib from 'zlib';
 
 const CONFIG = {
   PUBLIC_PATH: '/',
@@ -31,6 +35,7 @@ const writeHashedFile = async (inputPath, outputDir, content, ext) => {
 
   const outputPath = path.join(fullOutputDir, hashedName);
   await fsp.writeFile(outputPath, content);
+  // await writeCompressedVariants(outputPath);
   return hashedName;
 };
 
@@ -78,6 +83,29 @@ const htmlRewriteWithCSSandJS = (content) => {
 
   return content;
 };
+
+// Pre-compression to relieve server load. Not necessary at this point
+// const writeCompressedVariants = async (filePath) => {
+//   const data = await fsp.readFile(filePath);
+
+//   const gz = zlib.gzipSync(data, { level: 9 });
+//   await fsp.writeFile(filePath + '.gz', gz);
+
+//   const br = zlib.brotliCompressSync(data, {
+//     params: {
+//       [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
+//     }
+//   });
+//   await fsp.writeFile(filePath + '.br', br);
+
+//   // zstd compress is still experimental in zlib as of Node 24.5.0
+//   const zst = zlib.zstdCompressSync(data, {
+//     params: {
+//       [zlib.constants.ZSTD_c_compressionLevel]: 22,
+//     }
+//   });
+//   await fsp.writeFile(filePath + '.zst', zst);
+// };
 
 // Maps source filenames to output directories for hashed filename versions of files to be written
 // add assets as needed. one point of hardcoding is acceptable in a small codebase
