@@ -1,0 +1,10 @@
+@use "variables" as v;
+
+body.not-found {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.not-found-container {
+  
+}

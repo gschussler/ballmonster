@@ -187,7 +187,8 @@ const htmlFiles = [
   'index.html',
   'pages/offense.html',
   'pages/defense.html',
-  'pages/more.html'
+  'pages/more.html',
+  '404.html'
 ];
 
 for (const file of htmlFiles) {
