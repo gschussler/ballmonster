@@ -8,7 +8,7 @@ import path from 'path';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import crypto from 'crypto';
-import zlib from 'zlib';
+// import zlib from 'zlib';
 
 const CONFIG = {
   PUBLIC_PATH: '/',

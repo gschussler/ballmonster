@@ -9,3 +9,4 @@ import './modules/load.js';
 import './modules/ui.js';
 import './modules/core.js';
 import './modules/init.js';
+import './modules/search.js';
