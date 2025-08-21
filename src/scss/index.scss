@@ -171,6 +171,7 @@ nav a {
   text-shadow: var(--text-shadow);
   border-radius: 20px;
   transition: background-color 200ms color 200ms;
+  touch-action: manipulation;
 
   &:hover {
     background-color: var(--bg-color-light2);

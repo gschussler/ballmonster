@@ -256,13 +256,13 @@ const SearchResultsRenderer = (() => {
   }
 
   const handleResultClick = (e) => {
-    console.log('=== SEARCH RESULT EVENT ===');
-    console.log('Event type:', e.type);
-    console.log('Event timestamp:', e.timeStamp);
-    console.log('Event target:', e.target);
-    console.log('Event currentTarget:', e.currentTarget);
-    console.log('Pointer type:', e.pointerType); // Should show 'touch' on mobile
-    console.log('===============================');
+    // console.log('=== SEARCH RESULT EVENT ===');
+    // console.log('Event type:', e.type);
+    // console.log('Event timestamp:', e.timeStamp);
+    // console.log('Event target:', e.target);
+    // console.log('Event currentTarget:', e.currentTarget);
+    // console.log('Pointer type:', e.pointerType); // Should show 'touch' on mobile
+    // console.log('===============================');
   
     if(!clickByMode) {
       console.warn("Click handler not configured");

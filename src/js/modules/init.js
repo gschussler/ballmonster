@@ -104,13 +104,13 @@ export const refreshTypeResults = (primaryContainer, secondaryContainer = null) 
  */
 const initTypeButtons = (primaryContainer, secondaryContainer) => {
   primaryContainer.addEventListener("click", async (e) => {
-      console.log('=== BUTTON EVENT ===');
-      console.log('Event type:', e.type);
-      console.log('Event timestamp:', e.timeStamp);
-      console.log('Event target:', e.target);
-      console.log('Search disabled?', primaryContainer.classList.contains('search-disabled'));
-      console.log('Pointer events style:', getComputedStyle(primaryContainer).pointerEvents);
-      console.log('====================');
+      // console.log('=== BUTTON EVENT ===');
+      // console.log('Event type:', e.type);
+      // console.log('Event timestamp:', e.timeStamp);
+      // console.log('Event target:', e.target);
+      // console.log('Search disabled?', primaryContainer.classList.contains('search-disabled'));
+      // console.log('Pointer events style:', getComputedStyle(primaryContainer).pointerEvents);
+      // console.log('====================');
       const button = e.target.closest("button");
       if(!button || !button.dataset.type) return;
       selectType("primary", button, primaryContainer, secondaryContainer);
