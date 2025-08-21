@@ -22,6 +22,8 @@ RUN go build -o pseudonymize ./pseudonymize.go
 # STAGE 3: final image with NGINX + pseudonymizer
 FROM nginx:alpine
 
+RUN apk add --no-cache logrotate
+
 # set working directory (nginx default)
 WORKDIR /usr/share/nginx/html
 

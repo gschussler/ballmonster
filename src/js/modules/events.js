@@ -9,13 +9,15 @@ import {
   initInput,
   initGenSelect,
   initSummaryState,
-  SearchController
 } from './init.js';
 import {
   typeVisibility,
   updateGenDisplay,
   restoreSummaryState
 } from './ui.js';
+import {
+  SearchController
+} from './search.js';
 
 let spinnerTimeout;
 let spinnerShown = false;
@@ -133,7 +135,9 @@ document.querySelector("nav").addEventListener("click", (e) => {
     link.classList.add("active");
 
     // console.log(`Mode updating from ${mode} to: ${newMode}`);
-    state.prevMode = state.mode;
+    if(state.mode !== "more") {
+      state.prevMode = state.mode;
+    }
     state.mode = newMode;
   }
 });

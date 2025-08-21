@@ -31,8 +31,12 @@ Instead of asking for your trust, here is what you should know:
 The **[dashboard](https://dash.ball.monster)** is public and read-only for transparency.
 
 ## Local Development
-Clone the repo and install `npm` before running the dev build.
+Clone the repo and install `npm`.
 ```code
 npm install
-npm serve
+```
+Locally serve the source directory.
+- If you don't want to use port 3000, replace it in the `dev` script within `package.json`.
+```code
+npm run dev
 ```
