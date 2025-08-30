@@ -14,12 +14,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
-	"net/url"
 )
 
 // get daily salt from environment variable + date
@@ -55,14 +55,20 @@ func sanitizeReferrer(ref string) string {
 	ref = strings.TrimSpace(ref)
 	ref = strings.Trim(ref, `"`) // trim leading and trailing quotes, e.g. from ""https://site.com/path""
 
-	if ref == "-" { // no referrer
+	if ref == "-" || ref == "" { // no referrer
 		fmt.Printf("No referrer sent.")
 		return ""
 	}
-	
+
 	u, err := url.Parse(ref)
 	if err != nil || u.Scheme == "" || u.Host == "" { // malformed referrer
 		fmt.Printf("Malformed referrer detected: %q\n", ref)
+		return ""
+	}
+
+	// drop if referrer matches server
+	serverIP := os.Getenv("SERVER_IP")
+	if u.Host == serverIP {
 		return ""
 	}
 
@@ -160,7 +166,7 @@ func main() {
 			referer = sanitizeReferrer(referer)
 			hash := pseudonymize(ip, ua)
 			goaccessLine := formatForGoAccess(hash, timestamp, request, status, bytes, referer, ua)
-			
+
 			// log valid entries to GoAccess
 			fmt.Fprintln(outFile, goaccessLine)
 			outFile.Sync()
@@ -168,8 +174,8 @@ func main() {
 
 		// prevent race conditions between main loop and reopen operations
 		select {
-			case <-reopenChan:
-			default:
+		case <-reopenChan:
+		default:
 		}
 	}
 
