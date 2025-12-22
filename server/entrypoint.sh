@@ -17,12 +17,8 @@ echo "[entrypoint] 'pseudonymize' started"
 /usr/local/bin/run-logrotate.sh &
 echo "[entrypoint] logrotate loop started"
 
-# wait for preprocess service to be ready; also gives a brief buffer for pseudonymize attachment to pipe
-echo "[entrypoint] Waiting for preprocess service..."
-until wget -q -0 /dev/null http://127.0.0.1:8787/ 2>dev/null; do
-  sleep 0.5
-done
-echo "[entrypoint] preprocess service is ready"
+# wait for preprocess service to be ready; also gives a brief buffer for pseudonymize attachment to pipe (inaccurate approach)
+sleep 3
 
 # start nginx in foreground
 nginx -g "daemon off;"
