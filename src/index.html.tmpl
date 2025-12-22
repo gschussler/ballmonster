@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" class="preload">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BALL MONSTER</title>
+  <meta name="description" content="A Pokémon type calculator with support for all generations.">
+  <meta name="color-scheme" content="dark light">
+  <meta name="darkreader-lock">
+  <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
+  <style>
+    html.preload {
+      opacity: 0;
+    }
+  </style>
+  <link rel="stylesheet" href="/index.css">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <script src="/js/third_party/htmx.min.js"></script>
+  <script src="/js/third_party/preload.min.js" defer></script>
+  <script src="/js/third_party/fuse.min.js" defer></script>
+</head>
+<body hx-ext="preload">
+  <header>
+    <div class="banner-wrapper">
+      <div class="banner" role="img" aria-label="ball.monster logo">
+        <img src="/svg/ball.min.svg" alt="" aria-hidden="true"/>
+        <img src="/svg/ball_bm.min.svg" alt="" aria-hidden="true"/>
+        <img src="/svg/monster.min.svg" fetchpriority="high" alt="" aria-hidden="true"/>
+      </div>
+    </div>
+    <p>...a Pokémon type calculator.</p>
+  </header>
+  <nav hx-boost="true">
+    <div class="nav-links">
+      <a href="/offense" id="offense" hx-get="/pages/offense.html" hx-target="#content" hx-swap="innerHTML" class="page-link{{if eq .Page "offense"}} active{{end}}" aria-label="Offense" preload="mouseover" hx-push-url="true">Offense</a>
+      <a href="/defense" id="defense" hx-get="/pages/defense.html" hx-target="#content" hx-swap="innerHTML" class="page-link{{if eq .Page "defense"}} active{{end}}" aria-label="Defense" preload="mouseover" hx-push-url="true">Defense</a>
+      <a href="/more" id="more" hx-get="/pages/more.html" hx-target="#content" hx-swap="innerHTML" class="page-link{{if eq .Page "more"}} active{{end}}" aria-label="More" preload="mouseover" hx-push-url="true">More</a>
+    </div>
+    <div class="gen-display">
+      <h4>Current Gen: </h4>
+      <span id="gen"></span>
+    </div>
+  </nav>
+  <div id="search-layer">
+    <div id="search-backdrop" class="search-backdrop hidden"></div>
+    <div id="search-container" class="search-container">
+      <input
+        type="search"
+        id="search"
+        name="search"
+        autocomplete="off"
+        maxlength="30"
+      />
+      <div id="search-results" class="search-results hidden"></div>
+    </div>
+  </div>
+
+  <div id="spinner" class="hidden" aria-label="Loading site...">
+    <svg width="60" height="60" viewBox="0 0 50 50">
+      <circle
+        class="spinner-circle"
+        cx="25"
+        cy="25"
+        r="20"
+        fill="none"
+        stroke="#cf980f"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-dasharray="60 120"
+      >
+    </svg>
+  </div>
+
+  <main id="content" class="preload" data-mode="{{.Page}}">
+    {{.Fragment}}
+  </main>
+  <script>
+    window.__INIT_STATE__ = {{.State}};
+  </script>
+  <script type="module" src="/js/scripts.js" defer></script>
+  </body>
+</html>

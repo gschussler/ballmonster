@@ -5,6 +5,10 @@ rm -f /tmp/access.pipe
 mkfifo /tmp/access.pipe
 echo "[entrypoint] Named pipe created at /tmp/access.pipe"
 
+# start preprocessor in background
+/preprocess &
+echo "[entrypoint] 'preprocess' started"
+
 # start pseudonymizer in background
 /pseudonymize &
 echo "[entrypoint] 'pseudonymize' started"

@@ -168,7 +168,7 @@ const state = {
   lastSecondarySelected: null,
   lastMoveSelected: null,
   lastSecondaryDisabled: null,
-  lastSpecialDisabled: null,
+  lastMoveDisabled: null,
   oAbility: "",
   dAbility: "",
   teraResult: false,

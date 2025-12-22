@@ -19,8 +19,110 @@ import {
   updateSelections,
   moveTypeDisable,
   updateGenDisplay,
-  saveSummaryState
+  saveSummaryState,
+  restoreSummaryState
 } from './ui.js';
+
+/**
+ * Reads window.__INIT_STATE__ and applies URL parameters to application state. Should be called before any calculations or UI initialization.
+ * 
+ * @returns {boolean} - True if URL state was applied, false otherwise.
+ */
+export const applyURLState = () => {
+  const urlState = window.__INIT_STATE__;
+
+  if(!urlState) {
+    return false;
+  }
+
+  // set mode flags to treat URL state as "cached" state
+  if(urlState.mode) {
+    state.prevMode = urlState.mode;
+  }
+
+  if(urlState.gen) {
+    state.gen = urlState.gen;
+    localStorage.setItem("selectedGen", urlState.gen);
+  }
+
+  if(urlState.types) {
+    selectedTypes.clear();
+    urlState.types.forEach(type => {
+      if(typeMap.hasOwnProperty(type)) {
+        selectedTypes.add(type);
+      }
+    });
+  }
+
+  if(urlState.mode === 'offense') {
+    if(urlState.move) {
+      state.lastMoveSelected = urlState.move;
+      exceptions.add(urlState.move);
+    }
+
+    if(urlState.ability) {
+      state.oAbility = urlState.ability;
+      exceptions.add(urlState.ability);
+    }
+
+  } else if (urlState.mode === 'defense') {
+    if(urlState.move) {
+      state.lastMoveSelected = urlState.move;
+      exceptions.add(urlState.move);
+    }
+
+    if(urlState.ability) {
+      state.dAbility = urlState.ability;
+      exceptions.add(urlState.ability);
+    }
+
+    if(urlState.tera) {
+      if(typeMap.hasOwnProperty(urlState.tera)) {
+        selectedTypes.clear();
+        selectedTypes.add(urlState.tera);
+        state.teraResult = true;
+      }
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Cleans URL params after state has been applied, leaving only the clean path (e.g. `/defense`)
+ * 
+ * @returns {void}
+ */
+export const cleanURL = () => {
+  const cleanPath = `/${state.mode}`;
+  window.history.replaceState({}, '', cleanPath);
+};
+
+/**
+ * Initializes the current "mode", represented by the content swapped into `main`.
+ * 
+ * @returns {Promise<void>} Resolves after initializing the appropriate application state and client-side logic.
+ */
+export const initCurrentMode = async () => {
+  updateGenDisplay();
+  if(state.mode !== "more") {
+    // clear effectMults and multOrder entirely if destination is "offense" or "defense"
+    effectMults.clear();
+    state.multOrder = new LinkedList();
+    typeVisibility();
+    const { primaryContainer, secondaryContainer } = await initInput();
+    await SearchController.init(state.mode, state.gen, {
+      primaryContainer,
+      secondaryContainer
+    });
+  } else {
+    restoreSummaryState();
+    initSummaryState();
+    await initGenSelect();
+    await SearchController.init(state.mode, state.gen);
+  };
+  revealInitialContent();
+};
 
 /**
  * Initializes event listeners for various user input buttons, dropdowns, and searchbar. Manages type visibility, selection logic for primary and secondary types, and updates the application state based on user interactions.
@@ -154,8 +256,8 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
         moveTypeDisable(primaryContainer, secondaryContainer, type, true);
 
         // primaryContainer.querySelector(`button[data-type="${type}"]`).disabled = true;
-        // state.lastSpecialDisabled = secondaryContainer.querySelector(`button[data-type="${type}"]`)
-        // state.lastSpecialDisabled.disabled = true;
+        // state.lastMoveDisabled = secondaryContainer.querySelector(`button[data-type="${type}"]`)
+        // state.lastMoveDisabled.disabled = true;
       } else if(state.teraResult && type !== "stellar") {
         // if a tera type had been selected before navigating away, reselect the relevant monotype
         // console.log("tera type found, selecting monotype...");

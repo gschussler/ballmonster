@@ -108,8 +108,8 @@ export const moveTypeDisable = (container1, container2, moveType, special = fals
     state.lastSecondaryDisabled = container2.querySelector(`button[data-type="${moveType}"]`);
     state.lastSecondaryDisabled.disabled = true;
   } else {
-    state.lastSpecialDisabled = container2.querySelector(`button[data-type="${moveType}"]`);
-    state.lastSpecialDisabled.disabled = true;
+    state.lastMoveDisabled = container2.querySelector(`button[data-type="${moveType}"]`);
+    state.lastMoveDisabled.disabled = true;
   }
 };
 
@@ -129,8 +129,8 @@ export const moveTypeEnable = (container1, container2, moveType, special = false
     }
     state.lastSecondaryDisabled = null;
   } else {
-    state.lastSpecialDisabled.disabled = false;
-    state.lastSpecialDisabled = null;
+    state.lastMoveDisabled.disabled = false;
+    state.lastMoveDisabled = null;
   }
 };
 

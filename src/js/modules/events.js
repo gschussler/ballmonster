@@ -6,9 +6,12 @@ import {
   LinkedList
 } from './globals.js';
 import {
+  applyURLState,
+  cleanURL,
   initInput,
   initGenSelect,
   initSummaryState,
+  initCurrentMode,
 } from './init.js';
 import {
   typeVisibility,
@@ -23,30 +26,40 @@ let spinnerTimeout;
 let spinnerShown = false;
 
 /**
- * Handles initial setup when the DOM is fully loaded but before the site should be revealed (before initial HTMX swap).
+ * Handles initial setup when the DOM is fully loaded but before the site should be revealed (before preloaded content or initial HTMX swap).
  *
  * @listens DOMContentLoaded
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  applyURLState();
+
   // display generation before reveal
   updateGenDisplay();
   
   // initialize the search input placeholder
   const searchInput = document.getElementById("search");
-  if (!searchInput) return;
-
-  if (state.mode === "offense") {
-    searchInput.placeholder = "Search by move name...";
-  } else if (state.mode === "defense") {
-    searchInput.placeholder = "Search by Pokémon name...";
+  if(searchInput) {
+    if(state.mode === "offense") {
+      searchInput.placeholder = "Search by move name...";
+    } else if (state.mode === "defense") {
+      searchInput.placeholder = "Search by Pokémon name...";
+    }
   }
 
-  // slight delay before showing spinner to account for fast and slow connections
-  spinnerTimeout = setTimeout(() => {
-    const spinner = document.getElementById('spinner');
-    spinner?.classList.remove('hidden');
-    spinnerShown = true;
-  }, 500);
+  const content = document.getElementById('content');
+  const fragmentPreloaded = content && content.children.length > 0;
+
+  if(fragmentPreloaded) {
+    await initCurrentMode();
+    cleanURL();
+  } else {
+    // slight delay before showing spinner to account for fast and slow connections
+    spinnerTimeout = setTimeout(() => {
+      const spinner = document.getElementById('spinner');
+      spinner?.classList.remove('hidden');
+      spinnerShown = true;
+    }, 500);
+  }
 
   // remove preload class from html
   document.documentElement.classList.remove('preload');
@@ -65,24 +78,7 @@ document.body.addEventListener('dragstart', function(e) {
  * @returns {Promise<void>} Resolves after initializing the appropriate buttons.
  */
 document.addEventListener("htmx:afterSwap", async (e) => {
-  updateGenDisplay();
-  if(state.mode !== "more") {
-    // clear effectMults and multOrder entirely if destination is "offense" or "defense"
-    effectMults.clear();
-    state.multOrder = new LinkedList();
-    typeVisibility();
-    const { primaryContainer, secondaryContainer } = await initInput();
-    await SearchController.init(state.mode, state.gen, {
-      primaryContainer,
-      secondaryContainer
-    });
-  } else {
-    restoreSummaryState();
-    initSummaryState();
-    await initGenSelect();
-    await SearchController.init(state.mode, state.gen);
-  };
-  revealInitialContent();
+  await initCurrentMode();
   // console.log('[HTMX] afterSwap:', e.detail);
 });
 
