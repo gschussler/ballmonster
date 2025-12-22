@@ -10,17 +10,19 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# STAGE 2: build Go pseudonymizer
+# STAGE 2: build Go pseudonymizer (run `go mod tidy` before commit if Go dependencies change)
 FROM golang:alpine AS go-builder
 
 # build pseudonymizer
 WORKDIR /app/pseudonymize
 COPY server/pseudonymize/ .
+RUN go mod download
 RUN go build -o pseudonymize .
 
 # build preprocessor
 WORKDIR /app/preprocess
 COPY server/preprocess/ .
+RUN go mod download
 RUN go build -o preprocess .
 
 # STAGE 3: final image with NGINX + pseudonymizer
