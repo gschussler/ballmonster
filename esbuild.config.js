@@ -195,6 +195,7 @@ assetMap['js/scripts.js'] = path.posix.join('js', jsName);
 // add `more.html` later when assets are added to it
 const htmlFiles = [
   'index.html',
+  'index.html.tmpl',
   'pages/offense.html',
   'pages/defense.html',
   'pages/more.html',
