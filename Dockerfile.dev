@@ -39,8 +39,8 @@ COPY robots.txt .
 
 # copy the Go binary
 # COPY --from=go-builder /app/pseudonymize /usr/local/bin/pseudonymize
-COPY --from=go-builder /app/pseudonymize /pseudonymize
-COPY --from=go-builder /app/preprocess /preprocess
+COPY --from=go-builder /app/pseudonymize/pseudonymize /pseudonymize
+COPY --from=go-builder /app/preprocess/preprocess /preprocess
 RUN chmod +x /pseudonymize /preprocess
 
 # custom NGINX config
