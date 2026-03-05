@@ -6,13 +6,17 @@ import {
   moveByType,
   effectCache,
   effectMults,
-  LinkedList
+  LinkedList,
+  typeMap
 } from './globals.js';
 import {
   getTypeRelationship,
   selectType,
   initReset,
 } from './core.js';
+import {
+  revealInitialContent
+} from './events.js'
 import {
   loadGenerationData,
   loadExceptions
@@ -22,7 +26,8 @@ import {
   moveTypeDisable,
   updateGenDisplay,
   saveSummaryState,
-  restoreSummaryState
+  restoreSummaryState,
+  typeVisibility
 } from './ui.js';
 import {
   SearchController

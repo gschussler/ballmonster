@@ -217,7 +217,7 @@ const once = (fn) => {
   };
 };
 
-const revealInitialContent = once(() => {
+export const revealInitialContent = once(() => {
   const content = htmx.find('#content');
   const spinner = document.getElementById('spinner');
   
