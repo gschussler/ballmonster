@@ -5,11 +5,12 @@ import {
   exceptions,
   moveByType,
   effectCache,
+  effectMults
 } from './globals.js';
 import {
   getTypeRelationship,
   selectType,
-  initReset
+  initReset,
 } from './core.js';
 import {
   loadGenerationData,
