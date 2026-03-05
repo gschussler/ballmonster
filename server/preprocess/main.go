@@ -1,14 +1,28 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
 )
 
+func generateNonce() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return base64.StdEncoding.EncodeToString(b)
+}
+
 func handler(tmpl *template.Template, basePath string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		nonce := generateNonce()
+
+		csp := fmt.Sprintf("default-src 'self'; style-src 'self; 'nonce-%s'; object-src 'none'; base-uri 'none'; frame-ancestors 'none';", nonce)
+		w.Header().Set("Content-Security-Policy", csp)
+
 		data, err := BuildTemplateData(r, tmpl, basePath)
 		if err != nil {
 			if err == http.ErrNotSupported {
@@ -19,6 +33,8 @@ func handler(tmpl *template.Template, basePath string) http.HandlerFunc {
 			}
 			return
 		}
+
+		data.Nonce = nonce
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := tmpl.Execute(w, data); err != nil {

@@ -17,6 +17,7 @@ type TemplateData struct {
 	Page     string        // "offense", "defense", or "more"
 	Fragment template.HTML // HTML content of the relevant fragment
 	State    template.JS   // JSON-encoded initial state for client JS
+	Nonce    string        // generate CSP header upon page load
 }
 
 // map URL path to Page key
