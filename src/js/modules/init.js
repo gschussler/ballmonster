@@ -5,7 +5,8 @@ import {
   exceptions,
   moveByType,
   effectCache,
-  effectMults
+  effectMults,
+  LinkedList
 } from './globals.js';
 import {
   getTypeRelationship,
@@ -23,6 +24,9 @@ import {
   saveSummaryState,
   restoreSummaryState
 } from './ui.js';
+import {
+  SearchController
+} from './search.js';
 
 /**
  * Reads window.__INIT_STATE__ and applies URL parameters to application state. Should be called before any calculations or UI initialization.
