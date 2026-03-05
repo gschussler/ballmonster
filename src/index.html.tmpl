@@ -8,18 +8,18 @@
   <meta name="color-scheme" content="dark light">
   <meta name="darkreader-lock">
   <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
-  <style nonce="{{.Nonce}}>
+  <style nonce="{{.Nonce}}">
     html.preload {
       opacity: 0;
     }
   </style>
   <link rel="stylesheet" href="/{{.Assets.CSS}}">
   <link rel="icon" href="/{{.Assets.FaviconICO}}" sizes="32x32">
-  <link rel="icon" type="image/svg+xml" href="{{.Assets.IconSVG}}">
-  <link rel="apple-touch-icon" href="{{.Assets.AppleTouchIcon}}">
-  <script src="{{.Assets.HtmxJS}}"></script>
-  <script src="{{.Assets.PreloadJS}}" defer></script>
-  <script src="{{.Assets.FuseJS}}" defer></script>
+  <link rel="icon" type="image/svg+xml" href="/{{.Assets.IconSVG}}">
+  <link rel="apple-touch-icon" href="/{{.Assets.AppleTouchIcon}}">
+  <script src="/{{.Assets.HtmxJS}}"></script>
+  <script src="/{{.Assets.PreloadJS}}" defer></script>
+  <script src="/{{.Assets.FuseJS}}" defer></script>
 </head>
 <body hx-ext="preload">
   <header>
@@ -79,6 +79,6 @@
   <script>
     window.__INIT_STATE__ = {{.State}};
   </script>
-  <script type="module" src="{{.Assets.ScriptsJS}}" defer></script>
+  <script type="module" src="/{{.Assets.ScriptsJS}}" defer></script>
   </body>
 </html>
