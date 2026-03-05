@@ -231,7 +231,10 @@ const manifest = {
   htmxJs: path.posix.join('js/third_party', assetMap['js/third_party/htmx.min.js']),
   preloadJs: path.posix.join('js/third_party', assetMap['js/third_party/preload.min.js']),
   fuseJs: path.posix.join('js/third_party', assetMap['js/third_party/fuse.min.js']),
-  scriptsJs: assetMap['js/scripts.js']
+  scriptsJs: assetMap['js/scripts.js'],
+  ballSvg: path.posix.join('svg', assetMap['svg/ball.min.svg']),
+  ballBmSvg: path.posix.join('svg', assetMap['svg/ball_bm.min.svg']),
+  monsterSvg: path.posix.join('svg', assetMap['svg/monster.min.svg']),
 };
 
 await fsp.writeFile(

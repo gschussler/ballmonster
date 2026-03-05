@@ -22,7 +22,7 @@ func handler(tmpl *template.Template, basePath string, manifest AssetManifest) h
 	return func(w http.ResponseWriter, r *http.Request) {
 		nonce := generateNonce()
 
-		csp := fmt.Sprintf("default-src 'self'; style-src 'self' 'nonce-%s'; object-src 'none'; base-uri 'none'; frame-ancestors 'none';", nonce)
+		csp := fmt.Sprintf("default-src 'self'; style-src 'self' 'nonce-%s'; script-src 'self' 'nonce-%s'; object-src 'none'; base-uri 'none'; frame-ancestors 'none';", nonce, nonce)
 		w.Header().Set("Content-Security-Policy", csp)
 
 		data, err := BuildTemplateData(r, tmpl, basePath)

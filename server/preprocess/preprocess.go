@@ -21,6 +21,9 @@ type AssetManifest struct {
 	PreloadJS      string `json:"preloadJs"`
 	FuseJS         string `json:"fuseJs"`
 	ScriptsJS      string `json:"scriptsJs"`
+	BallSVG        string `json:"ballSvg"`
+	BallBmSVG      string `json:"ballBmSvg"`
+	MonsterSVG     string `json:"monsterSvg"`
 }
 
 // values to populate index.html template for initial page load

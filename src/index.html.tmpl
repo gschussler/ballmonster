@@ -25,9 +25,9 @@
   <header>
     <div class="banner-wrapper">
       <div class="banner" role="img" aria-label="ball.monster logo">
-        <img src="/svg/ball.min.svg" alt="" aria-hidden="true"/>
-        <img src="/svg/ball_bm.min.svg" alt="" aria-hidden="true"/>
-        <img src="/svg/monster.min.svg" fetchpriority="high" alt="" aria-hidden="true"/>
+        <img src="/{{.Assets.BallSVG}}" alt="" aria-hidden="true"/>
+        <img src="/{{.Assets.BallBmSVG}}" alt="" aria-hidden="true"/>
+        <img src="/{{.Assets.MonsterSVG}}" fetchpriority="high" alt="" aria-hidden="true"/>
       </div>
     </div>
     <p>...a Pokémon type calculator.</p>
@@ -76,7 +76,7 @@
   <main id="content" class="preload" data-mode="{{.Page}}">
     {{.Fragment}}
   </main>
-  <script>
+  <script nonce="{{.Nonce}}">
     window.__INIT_STATE__ = {{.State}};
   </script>
   <script type="module" src="/{{.Assets.ScriptsJS}}" defer></script>
