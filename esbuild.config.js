@@ -195,12 +195,19 @@ assetMap['js/scripts.js'] = path.posix.join('js', jsName);
 // add `more.html` later when assets are added to it
 const htmlFiles = [
   'index.html',
-  'index.html.tmpl',
+  // 'index.html.tmpl',
   'pages/offense.html',
   'pages/defense.html',
   'pages/more.html',
   '404.html'
 ];
+
+// removed html template from array so that Go preprocessor receives original
+await fsp.copyFile(
+  path.join(CONFIG.SRC_DIR, 'index.html.tmpl'),
+  path.join(CONFIG.BUILD_DIR, 'index.html.tmpl')
+);
+console.log('Copied index.html.tmpl (unmodified)');
 
 for (const file of htmlFiles) {
   const fullPath = path.join(CONFIG.SRC_DIR, file);
