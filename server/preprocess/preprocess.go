@@ -12,12 +12,24 @@ import (
 	"strings"
 )
 
+type AssetManifest struct {
+	CSS            string `json:"css"`
+	FaviconICO     string `json:"faviconIco"`
+	IconSVG        string `json:"iconSvg"`
+	AppleTouchIcon string `json:"appleTouchIcon"`
+	HtmxJS         string `json:"htmxJs"`
+	PreloadJS      string `json:"preloadJs"`
+	FuseJS         string `json:"fuseJs"`
+	ScriptsJS      string `json:"scriptsJs"`
+}
+
 // values to populate index.html template for initial page load
 type TemplateData struct {
 	Page     string        // "offense", "defense", or "more"
 	Fragment template.HTML // HTML content of the relevant fragment
 	State    template.JS   // JSON-encoded initial state for client JS
 	Nonce    string        // generate CSP header upon page load
+	Assets   AssetManifest // need to inform preprocessing of hashed filenames
 }
 
 // map URL path to Page key

@@ -214,3 +214,21 @@ for (const file of htmlFiles) {
 };
 
 // console.log('Asset map output:', assetMap);
+
+// Need manifest to pass hashed filenames to the template built in Go
+const manifest = {
+  css: cssName,
+  faviconIco: assetMap['favicon.ico'],
+  iconSvg: assetMap['icon.svg'],
+  appleTouchIcon: assetMap['apple-touch-icon.png'],
+  htmxJs: path.posix.join('js/third_party', assetMap['js/third_party/htmx.min.js']),
+  preloadJs: path.posix.join('js/third_party', assetMap['js/third_party/preload.min.js']),
+  fuseJs: path.posix.join('js/third_party', assetMap['js/third_party/fuse.min.js']),
+  scriptsJs: assetMap['js/scripts.js']
+};
+
+await fsp.writeFile(
+  path.join(CONFIG.BUILD_DIR, 'asset-manifest.json'),
+  JSON.stringify(manifest, null, 2)
+);
+console.log('wrote asset manifest');

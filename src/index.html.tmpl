@@ -13,13 +13,13 @@
       opacity: 0;
     }
   </style>
-  <link rel="stylesheet" href="/index.css">
-  <link rel="icon" href="/favicon.ico" sizes="32x32">
-  <link rel="icon" type="image/svg+xml" href="/icon.svg">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <script src="/js/third_party/htmx.min.js"></script>
-  <script src="/js/third_party/preload.min.js" defer></script>
-  <script src="/js/third_party/fuse.min.js" defer></script>
+  <link rel="stylesheet" href="/{{.Assets.CSS}}">
+  <link rel="icon" href="/{{.Assets.FaviconICO}}" sizes="32x32">
+  <link rel="icon" type="image/svg+xml" href="{{.Assets.IconSVG}}">
+  <link rel="apple-touch-icon" href="{{.Assets.AppleTouchIcon}}">
+  <script src="{{.Assets.HtmxJS}}"></script>
+  <script src="{{.Assets.PreloadJS}}" defer></script>
+  <script src="{{.Assets.FuseJS}}" defer></script>
 </head>
 <body hx-ext="preload">
   <header>
@@ -79,6 +79,6 @@
   <script>
     window.__INIT_STATE__ = {{.State}};
   </script>
-  <script type="module" src="/js/scripts.js" defer></script>
+  <script type="module" src="{{.Assets.ScriptsJS}}" defer></script>
   </body>
 </html>

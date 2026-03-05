@@ -3,10 +3,12 @@ package main
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 )
 
@@ -16,11 +18,11 @@ func generateNonce() string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-func handler(tmpl *template.Template, basePath string) http.HandlerFunc {
+func handler(tmpl *template.Template, basePath string, manifest AssetManifest) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		nonce := generateNonce()
 
-		csp := fmt.Sprintf("default-src 'self'; style-src 'self; 'nonce-%s'; object-src 'none'; base-uri 'none'; frame-ancestors 'none';", nonce)
+		csp := fmt.Sprintf("default-src 'self'; style-src 'self'; 'nonce-%s'; object-src 'none'; base-uri 'none'; frame-ancestors 'none';", nonce)
 		w.Header().Set("Content-Security-Policy", csp)
 
 		data, err := BuildTemplateData(r, tmpl, basePath)
@@ -35,6 +37,7 @@ func handler(tmpl *template.Template, basePath string) http.HandlerFunc {
 		}
 
 		data.Nonce = nonce
+		data.Assets = manifest
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := tmpl.Execute(w, data); err != nil {
@@ -47,13 +50,26 @@ func handler(tmpl *template.Template, basePath string) http.HandlerFunc {
 func main() {
 	basePath := "/usr/share/nginx/html"
 
+	// load asset manifest
+	manifestPath := filepath.Join(basePath, "asset-manifest.json")
+	manifestData, err := os.ReadFile(manifestPath)
+	if err != nil {
+		log.Fatalf("Failed to read asset manifest: %v", err)
+	}
+
+	var manifest AssetManifest
+	if err := json.Unmarshal(manifestData, &manifest); err != nil {
+		log.Fatalf("Failed to parse asset manifest: %v", err)
+	}
+	log.Printf("Loaded asset manifest successfully")
+
 	tmplPath := filepath.Join(basePath, "index.html.tmpl")
 	tmpl, err := template.ParseFiles(tmplPath)
 	if err != nil {
 		log.Fatalf("Failed to parse template: %v", err)
 	}
 
-	http.HandleFunc("/", handler(tmpl, basePath))
+	http.HandleFunc("/", handler(tmpl, basePath, manifest))
 
 	port := ":8787"
 	log.Printf("Preprocessor listening on %s", port)
