@@ -162,7 +162,9 @@ export const SearchController = (() => {
   const init = async (newMode, newGen, containers = {}) => {
     if(newMode === "more") {
       // console.log(`${newMode} gen ${newGen}, skipping search init...`);
-      // hide();
+      if(!searchInput.classList.contains("fade-out")) {
+        hide();
+      }
       return;
     }
 

@@ -1,5 +1,5 @@
 /* ----- INITIALIZATION FUNCTIONS – Functions that combine all of the above to provide interactivity for users and help determine application state. ----- */
-import state from './globals.js';
+import state, { typeByMove } from './globals.js';
 import {
   selectedTypes,
   exceptions,
@@ -51,7 +51,8 @@ export const applyURLState = () => {
   }
 
   if(urlState.gen) {
-    state.gen = urlState.gen;
+    const gen = urlState.gen === "6plus" ? "6+" : urlState.gen;
+    state.gen = gen;
     localStorage.setItem("selectedGen", urlState.gen);
   }
 
@@ -66,8 +67,12 @@ export const applyURLState = () => {
 
   if(urlState.mode === 'offense') {
     if(urlState.move) {
-      state.lastMoveSelected = urlState.move;
+      // state.lastMoveSelected needs to be urlState.move;
       exceptions.add(urlState.move);
+      const moveType = typeByMove.get(urlState.move);
+      if(moveType) {
+        selectedTypes.add(moveType);
+      }
     }
 
     if(urlState.ability) {
@@ -77,8 +82,12 @@ export const applyURLState = () => {
 
   } else if (urlState.mode === 'defense') {
     if(urlState.move) {
-      state.lastMoveSelected = urlState.move;
+      // state.lastMoveSelected needs to be urlState.move;
       exceptions.add(urlState.move);
+      const moveType = typeByMove.get(urlState.move);
+      if(moveType) {
+        selectedTypes.add(moveType);
+      }
     }
 
     if(urlState.ability) {

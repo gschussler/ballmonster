@@ -109,7 +109,7 @@ func BuildTemplateData(r *http.Request, tmpl *template.Template, basePath string
 		return nil, err
 	}
 
-	validParams := make(map[string]interface{})
+	validParams := make(map[string]any)
 
 	for key, rules := range paramWhitelist {
 		queryVals := r.URL.Query()[key]
@@ -157,7 +157,7 @@ func BuildTemplateData(r *http.Request, tmpl *template.Template, basePath string
 
 	// construct INIT_STATE
 	// validParams may return `nil` if no value provided
-	stateObj := map[string]interface{}{
+	stateObj := map[string]any{
 		"mode":    pageKey,
 		"gen":     validParams["gen"],
 		"types":   validParams["types"],
