@@ -5,7 +5,7 @@
  * Defaults to "normal" type.
  * @type {Set<string>}
  */
-export const selectedTypes = new Set(["normal"]);
+export const selectedTypes = new Set([]);
 
 /**
  * Tracks currently selected exceptions.

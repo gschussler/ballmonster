@@ -175,6 +175,9 @@ export const initInput = async () => {
     exceptions.clear();
   } else {
     // Otherwise the cache hasn't been cleared, so the proper reassignments need to occur for this page render
+    if(selectedTypes.size === 0) { // case of URL query without 'types'
+      selectedTypes.add("normal");
+    }
     if(state.mode === "defense") {
       await initCachedResults(primaryContainer, secondaryContainer);
     } else {
