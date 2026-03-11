@@ -69,9 +69,12 @@ export const applyURLState = () => {
     if(urlState.move) {
       // state.lastMoveSelected needs to be urlState.move;
       exceptions.add(urlState.move);
+      console.log(`exceptions: ${exceptions}`);
       const moveType = typeByMove.get(urlState.move);
+      console.log(`moveType: ${moveType}`);
       if(moveType) {
         selectedTypes.add(moveType);
+        console.log(`selectedTypes: ${selectedTypes}`)
       }
     }
 
