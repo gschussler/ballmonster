@@ -48,6 +48,7 @@ export const applyURLState = () => {
   // set mode flags to treat URL state as "cached" state
   if(urlState.mode) {
     state.prevMode = urlState.mode;
+    state.mode = urlState.mode;
   }
 
   if(urlState.gen) {

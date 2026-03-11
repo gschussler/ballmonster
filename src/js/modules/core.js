@@ -396,8 +396,6 @@ const handleDefenseException = (source, typeVar, primaryContainer, secondaryCont
     const move = typeVar.dataset.move;
     const mType = typeByMove.get(move);
 
-    console.log(container, move, mType);
-
     let pTypeDisabled;
     let sTypeDisabled;
 
