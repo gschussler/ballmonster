@@ -48,7 +48,6 @@ export const applyURLState = () => {
   // set mode flags to treat URL state as "cached" state
   if(urlState.mode) {
     state.prevMode = urlState.mode;
-    state.mode = urlState.mode;
   }
 
   if(urlState.gen) {
@@ -274,6 +273,7 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
       if(sdMove && exceptions.has(sdMove)) {
         // console.log("special defensive move found in initialization")
         state.lastMoveSelected = document.querySelector(`button[data-move="${sdMove}"]`);
+        console.log(state.lastMoveSelected);
         state.lastMoveSelected.classList.add("selected");
 
         moveTypeDisable(primaryContainer, secondaryContainer, type, true);
