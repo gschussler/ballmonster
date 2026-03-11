@@ -69,13 +69,6 @@ export const applyURLState = () => {
     if(urlState.move) {
       // state.lastMoveSelected needs to be urlState.move;
       exceptions.add(urlState.move);
-      console.log(`exceptions: ${exceptions}`);
-      const moveType = typeByMove.get(urlState.move);
-      console.log(`moveType: ${moveType}`);
-      if(moveType) {
-        selectedTypes.add(moveType);
-        console.log(`selectedTypes: ${selectedTypes}`)
-      }
     }
 
     if(urlState.ability) {
@@ -87,10 +80,6 @@ export const applyURLState = () => {
     if(urlState.move) {
       // state.lastMoveSelected needs to be urlState.move;
       exceptions.add(urlState.move);
-      const moveType = typeByMove.get(urlState.move);
-      if(moveType) {
-        selectedTypes.add(moveType);
-      }
     }
 
     if(urlState.ability) {
@@ -253,6 +242,15 @@ const initTypeButtons = (primaryContainer, secondaryContainer) => {
 const initCachedResults = async (primaryContainer, secondaryContainer = null) => {
   // Handle non-move exceptions first (applies to both offense and defense)
   if(exceptions.size > 0) {
+    // add moves' types to selectedTypes. needed atm for URL query params
+    for(const entry of exceptions) {
+      if(typeByMove.has(entry)) {
+          const moveType = typeByMove.get(entry);
+          if(!selectedTypes.has(moveType)) {
+              selectedTypes.add(moveType);
+          }
+      }
+    }
     // update ability if the currentAbility is a value other than "" in the cache
     const onDefense = state.mode === "defense";
     let abilitySelect;
