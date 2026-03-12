@@ -167,9 +167,6 @@ export const initInput = async () => {
     exceptions.clear();
   } else {
     // Otherwise the cache hasn't been cleared, so the proper reassignments need to occur for this page render
-    if(selectedTypes.size === 0) { // case of URL query without 'types'
-      selectedTypes.add("normal");
-    }
     if(state.mode === "defense") {
       await initCachedResults(primaryContainer, secondaryContainer);
     } else {
@@ -252,10 +249,9 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
       }
     }
     // update ability if the currentAbility is a value other than "" in the cache
-    const onDefense = state.mode === "defense";
     let abilitySelect;
     let currentAbility;
-    if(onDefense) {
+    if(secondaryContainer) {
       abilitySelect = document.getElementById("def-ability-select");
       currentAbility = state.dAbility;
     } else {
@@ -267,6 +263,12 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
       abilitySelect.value = currentAbility;
     }
   }
+
+  // if there are no selected types at this point, default case needed
+  if(selectedTypes.size === 0) {
+    selectedTypes.add("normal");
+  }
+
   if(secondaryContainer) {
     for(const type of selectedTypes) {
       // if type has an association with a special move and the move is currently in exceptions, treat as if the move is being selected now
