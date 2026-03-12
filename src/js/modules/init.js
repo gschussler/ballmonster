@@ -252,9 +252,17 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
     let abilitySelect;
     let currentAbility;
     if(secondaryContainer) {
+      // need default case if query params would not result in a selected type upon initialization
+      const hasUserTypes = window.__INIT_STATE__.types && window.__INIT_STATE__.types.length > 0;
+      if(!hasUserTypes && !selectedTypes.has("normal")) {
+        selectedTypes.add("normal");
+      }
       abilitySelect = document.getElementById("def-ability-select");
       currentAbility = state.dAbility;
     } else {
+      if(selectedTypes.size === 0) {
+        selectedTypes.add("normal");
+      }
       abilitySelect = document.getElementById("atk-ability-select");
       currentAbility = state.oAbility;
     }
@@ -264,21 +272,13 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
     }
   }
 
-  // if there are no selected types at this point, default case needed
-  if(selectedTypes.size === 0) {
-    selectedTypes.add("normal");
-  }
-
   if(secondaryContainer) {
     for(const type of selectedTypes) {
       // if type has an association with a special move and the move is currently in exceptions, treat as if the move is being selected now
       const sdMove = moveByType.get(type);
-      console.log(type);
-      console.log(`move ${sdMove}`);
       if(sdMove && exceptions.has(sdMove)) {
         // console.log("special defensive move found in initialization")
         state.lastMoveSelected = document.querySelector(`button[data-move="${sdMove}"]`);
-        console.log(state.lastMoveSelected);
         state.lastMoveSelected.classList.add("selected");
 
         moveTypeDisable(primaryContainer, secondaryContainer, type, true);
