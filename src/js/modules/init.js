@@ -272,6 +272,10 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
     }
   }
 
+  if(selectedTypes.size === 0) {
+        selectedTypes.add("normal");
+  }
+
   if(secondaryContainer) {
     for(const type of selectedTypes) {
       // if type has an association with a special move and the move is currently in exceptions, treat as if the move is being selected now
