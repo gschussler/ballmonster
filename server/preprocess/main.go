@@ -25,7 +25,7 @@ func handler(tmpl *template.Template, basePath string, manifest AssetManifest) h
 		csp := fmt.Sprintf("default-src 'self'; style-src 'self' 'nonce-%s'; script-src 'self' 'nonce-%s'; object-src 'none'; base-uri 'none'; frame-ancestors 'none';", nonce, nonce)
 		w.Header().Set("Content-Security-Policy", csp)
 
-		data, err := BuildTemplateData(r, tmpl, basePath)
+		data, hasConflict, err := BuildTemplateData(r, tmpl, basePath)
 		if err != nil {
 			if err == http.ErrNotSupported {
 				http.NotFound(w, r)
@@ -33,6 +33,12 @@ func handler(tmpl *template.Template, basePath string, manifest AssetManifest) h
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 				log.Printf("Error building template data: %v", err)
 			}
+			return
+		}
+
+		if hasConflict {
+			cleanURL := r.URL.Path
+			http.Redirect(w, r, cleanURL, http.StatusSeeOther)
 			return
 		}
 

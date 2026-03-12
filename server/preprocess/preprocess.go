@@ -95,18 +95,18 @@ var paramWhitelist = map[string]ParamRules{
 }
 
 // validate path/query params and return template data
-func BuildTemplateData(r *http.Request, tmpl *template.Template, basePath string) (*TemplateData, error) {
+func BuildTemplateData(r *http.Request, tmpl *template.Template, basePath string) (*TemplateData, bool, error) {
 	// validate path and select fragment
 	pageKey, ok := pageMap[r.URL.Path]
 	if !ok {
-		return nil, http.ErrNotSupported
+		return nil, false, http.ErrNotSupported
 	}
 
 	// load the corresponding HTML fragment
 	fragmentPath := filepath.Join(basePath, "pages", pageKey+".html")
 	fragmentBytes, err := os.ReadFile(fragmentPath)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	validParams := make(map[string]any)
@@ -155,6 +155,12 @@ func BuildTemplateData(r *http.Request, tmpl *template.Template, basePath string
 		}
 	}
 
+	// clear validParams if a conflict exists
+	hasConflict := hasParamConflict(validParams, pageKey)
+	if hasConflict {
+		validParams = make(map[string]any)
+	}
+
 	// construct INIT_STATE
 	// validParams may return `nil` if no value provided
 	stateObj := map[string]any{
@@ -168,7 +174,7 @@ func BuildTemplateData(r *http.Request, tmpl *template.Template, basePath string
 
 	stateJSON, err := json.Marshal(stateObj)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	data := &TemplateData{
@@ -177,5 +183,5 @@ func BuildTemplateData(r *http.Request, tmpl *template.Template, basePath string
 		State:    template.JS(stateJSON),
 	}
 
-	return data, nil
+	return data, hasConflict, nil
 }
