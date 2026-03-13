@@ -17,6 +17,12 @@ func hasParamConflict(validParams map[string]any, pageKey string) bool {
 
 	switch pageKey {
 	case "offense":
+		if types != nil {
+			typeList := types.([]string)
+			if len(typeList) > 1 {
+				return true // 1 type for offense
+			}
+		}
 		if move != nil {
 			moveName := move.(string)
 			if types != nil {
@@ -39,8 +45,13 @@ func hasParamConflict(validParams map[string]any, pageKey string) bool {
 		}
 
 	case "defense":
-		if tera != nil {
-			if gen == "2-5" || gen == "1" {
+		if tera != nil { // default to 6plus like client-side, allowing tera param without needing gen
+			genValue := "6plus"
+			if gen != nil {
+				genValue = gen.(string)
+			}
+
+			if genValue == "2-5" || genValue == "1" {
 				return true
 			}
 		}
