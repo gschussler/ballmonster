@@ -10,19 +10,47 @@ func hasParamConflict(validParams map[string]any, pageKey string) bool {
 	ability := validParams["ability"]
 	tera := validParams["tera"]
 
-	// cover edge-cases where foundational logic is conflicting
+	// default to gen 6+ if no gen query is given
+	effectiveGen := "6plus"
+	if gen != nil {
+		effectiveGen = gen.(string)
+	}
+
+	// cover edge-cases where foundational logic is conflicting (type out of valid gen, trying to use types and tera)
+
+	// validate types against gen before considering mode
+	if types != nil {
+		typeList := types.([]string)
+		requiredGen := getMinGenForTypes(typeList, pageKey)
+
+		if requiredGen == "invalid" {
+			return true // stellar in def mode
+		}
+
+		if gen != nil {
+			if !isGenCompatible(effectiveGen, requiredGen) {
+				return true
+			}
+		} else if requiredGen == "6plus" {
+			validParams["gen"] = "6plus"
+			effectiveGen = "6plus"
+		}
+	}
+
 	if types != nil && tera != nil {
-		return true // can't have both types and tera
+		return true
 	}
 
 	switch pageKey {
 	case "offense":
 		if types != nil {
 			typeList := types.([]string)
+
 			if len(typeList) > 1 {
-				return true // 1 type for offense
+				return true
 			}
 		}
+
 		if move != nil {
 			moveName := move.(string)
 			if types != nil {
@@ -46,12 +74,11 @@ func hasParamConflict(validParams map[string]any, pageKey string) bool {
 
 	case "defense":
 		if tera != nil { // default to 6plus like client-side, allowing tera param without needing gen
-			genValue := "6plus"
-			if gen != nil {
-				genValue = gen.(string)
+			if gen == nil {
+				validParams["gen"] = "6plus"
 			}
 
-			if genValue == "2-5" || genValue == "1" {
+			if effectiveGen == "2-5" || effectiveGen == "1" {
 				return true
 			}
 		}
@@ -149,4 +176,48 @@ func getMoveType(moveName string) string {
 		"trick-or-treat":  "ghost",
 	}
 	return moveTypes[moveName]
+}
+
+func getMinGenForTypes(types []string, mode string) string {
+	hasFairy := false
+	hasDarkOrSteel := false
+	hasStellar := false
+
+	for _, t := range types {
+		if t == "fairy" {
+			hasFairy = true
+		}
+		if t == "dark" || t == "steel" {
+			hasDarkOrSteel = true
+		}
+		if t == "stellar" {
+			hasStellar = true
+		}
+	}
+
+	if hasStellar && mode != "offense" {
+		return "invalid"
+	}
+
+	if hasFairy || hasStellar {
+		return "6plus"
+	}
+
+	if hasDarkOrSteel {
+		return "2-5"
+	}
+
+	return ""
+}
+
+func isGenCompatible(actualGen string, requiredGen string) bool {
+	if requiredGen == "invalid" {
+		return false
+	}
+	if requiredGen == "" {
+		return true
+	}
+
+	genOrder := map[string]int{"1": 1, "2-5": 2, "6plus": 3}
+	return genOrder[actualGen] >= genOrder[requiredGen]
 }
