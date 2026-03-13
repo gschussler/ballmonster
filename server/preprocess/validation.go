@@ -27,13 +27,12 @@ func hasParamConflict(validParams map[string]any, pageKey string) bool {
 			return true // stellar in def mode
 		}
 
-		if gen != nil {
-			if !isGenCompatible(effectiveGen, requiredGen) {
-				return true
-			}
-		} else if requiredGen == "6plus" {
+		if !isGenCompatible(effectiveGen, requiredGen) {
+			return true
+		}
+
+		if gen == nil && requiredGen == "6plus" {
 			validParams["gen"] = "6plus"
-			effectiveGen = "6plus"
 		}
 	}
 
