@@ -20,7 +20,7 @@ export const applyURLState = () => {
   if(urlState.gen) {
     const gen = urlState.gen === "6plus" ? "6+" : urlState.gen;
     state.gen = gen;
-    localStorage.setItem("selectedGen", urlState.gen);
+    localStorage.setItem("selectedGen", gen);
   }
 
   if(urlState.types) {
