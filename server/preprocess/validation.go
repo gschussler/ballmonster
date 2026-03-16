@@ -32,7 +32,7 @@ func hasParamConflict(validParams map[string]any, pageKey string) bool {
 		}
 
 		// force minimum requiredGen if no gen is provided in URL
-		if gen == nil && requiredGen == "" {
+		if gen == nil && requiredGen != "" {
 			validParams["gen"] = requiredGen
 		}
 	}
