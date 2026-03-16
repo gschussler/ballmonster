@@ -1,23 +1,18 @@
 /* ----- DOM EVENT LISTENERS - handle page navigation and UI initialization. ----- */
 import state from './globals.js';
 import {
-  effectMults,
   effectCache,
-  LinkedList
 } from './globals.js';
 import {
-  applyURLState,
-  cleanURL,
-  initInput,
-  initGenSelect,
-  initSummaryState,
   initCurrentMode,
 } from './init.js';
 import {
-  typeVisibility,
   updateGenDisplay,
-  restoreSummaryState
 } from './ui.js';
+import {
+  applyURLState,
+  cleanURL,
+} from 'url.js'
 import {
   SearchController
 } from './search.js';
