@@ -7,7 +7,6 @@ import {
   effectCache,
   effectMults,
   LinkedList,
-  typeMap
 } from './globals.js';
 import {
   getTypeRelationship,

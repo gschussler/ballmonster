@@ -1,5 +1,5 @@
+import state from './globals.js';
 import {
-  state,
   typeMap,
   selectedTypes,
   exceptions
