@@ -12,7 +12,7 @@ import {
 import {
   applyURLState,
   cleanURL,
-} from 'url.js'
+} from './url.js'
 import {
   SearchController
 } from './search.js';
