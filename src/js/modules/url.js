@@ -3,7 +3,7 @@ import {
   typeMap,
   selectedTypes,
   exceptions
-} from 'globals.js'
+} from './globals.js'
 
 export const applyURLState = () => {
   const urlState = window.__INIT_STATE__;
