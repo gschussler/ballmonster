@@ -12,6 +12,7 @@ import {
   getTypeRelationship,
   selectType,
   initReset,
+  initCopyLink
 } from './core.js';
 import {
   revealInitialContent
