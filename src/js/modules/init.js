@@ -123,6 +123,8 @@ export const initInput = async () => {
     initReset(primaryContainer);
   }
 
+  initCopyLink();
+
   // Currently 'normal' type is selected upon initialization, display relevant results
   // console.log(`Getting initial type relationships on ${mode} for gen ${gen}...`);
   refreshTypeResults(primaryContainer, secondaryContainer);

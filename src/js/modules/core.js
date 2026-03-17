@@ -19,6 +19,7 @@ import {
   moveTypeEnable,
   updateEffectiveness
 } from './ui.js';
+import { copyURLToClipboard } from './url.js';
 
 /**
  * Maps exception names to numerical indices.
@@ -688,6 +689,8 @@ export const selectType = (source, typeVar, primaryContainer, secondaryContainer
 // clear selected types and reset globals
 export const initReset = (primaryContainer, secondaryContainer = null) => {
   const resetButton = document.getElementById("reset-button");
+  if (!resetButton) return;
+
   resetButton.addEventListener("click", () => {
     window.scrollTo(0, 0);
 
@@ -731,3 +734,18 @@ export const initReset = (primaryContainer, secondaryContainer = null) => {
     selectType("primary", defaultBtn, primaryContainer, secondaryContainer);
   });
 };
+
+export const initCopyLink = () => {
+  const copyButton = document.getElementById('copy-button');
+  if (!copyButton) return;
+
+  copyButton.addEventListener('click', async () => {
+    const success = await copyURLToClipboard();
+    // visual feedback based on result
+    if (success) {
+      console.log('successful copy');
+    } else {
+      console.log(`couldn't copy!`);
+    }
+  })
+}
