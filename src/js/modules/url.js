@@ -101,11 +101,19 @@ export const generateShareableURL = () => {
       if (typesToShare.length === 1 && typesToShare[0] === "normal") {
         typesToShare = [];
       }
+
+      if (state.lastMoveSelected) {
+        const moveName = state.lastMoveSelected.dataset.move;
+        const moveType = typeByMove.get(moveName);
+      }
       
       // if there's a selected move on offense, don't include types (move selects its own type)
-      if (state.mode === "offense" && state.lastMoveSelected) {
-        typesToShare = [];
-      }
+      if (state.mode === "offense") {
+          typesToShare = [];
+        } else {
+          // on def: filter out the move's type but keep other selected types
+          typesToShare = typesToShare.filter(t => t !== moveType);
+        }
       
       if (typesToShare.length > 0) {
         params.set('types', typesToShare.join(','));
