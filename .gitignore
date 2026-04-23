@@ -9,6 +9,8 @@
 /src/json/notes
 /src/json/exceptions_old.json
 /src/json/gen6default.json
+/src/svg/arrow-down.svg
+/src/svg/arrow-up.svg
 # Dockerfile
 # nginx.conf
 /server/input-test.log

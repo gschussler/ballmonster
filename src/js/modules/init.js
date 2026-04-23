@@ -27,7 +27,8 @@ import {
   updateGenDisplay,
   saveSummaryState,
   restoreSummaryState,
-  typeVisibility
+  typeVisibility,
+  initToggleIcons
 } from './ui.js';
 import {
   SearchController
@@ -125,6 +126,7 @@ export const initInput = async () => {
   }
 
   initCopyLink();
+  initToggleIcons();
 
   // Currently 'normal' type is selected upon initialization, display relevant results
   // console.log(`Getting initial type relationships on ${mode} for gen ${gen}...`);

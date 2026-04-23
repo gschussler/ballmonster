@@ -35,9 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const searchInput = document.getElementById("search");
   if(searchInput) {
     if(state.mode === "offense") {
-      searchInput.placeholder = "Search by move name...";
+      searchInput.placeholder = "Fire Spin, Psychic, etc.";
     } else if (state.mode === "defense") {
-      searchInput.placeholder = "Search by Pokémon name...";
+      searchInput.placeholder = "Alakazam, Starmie, etc.";
     }
   }
 

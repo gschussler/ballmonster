@@ -17,7 +17,7 @@ import {
   clearSelections,
   moveTypeDisable,
   moveTypeEnable,
-  updateEffectiveness
+  updateEffectiveness,
 } from './ui.js';
 import { copyURLToClipboard } from './url.js';
 

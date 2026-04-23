@@ -46,6 +46,10 @@ $reset-base: color.scale(map.get($base-type-colors, fire), $alpha: -30%);
 $reset-hover: color.scale(map.get($base-type-colors, fire), $alpha: -50%);
 $reset-active: color.scale(map.get($base-type-colors, fire), $alpha: -70%);
 
+$copy-base: color.scale(map.get($base-type-colors, water), $alpha: -30%);
+$copy-hover: color.scale(map.get($base-type-colors, water), $alpha: -50%);
+$copy-active: color.scale(map.get($base-type-colors, water), $alpha: -70%);
+
 $lighten: 10%;
 $darken: -15%;
 

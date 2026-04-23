@@ -3,123 +3,137 @@
   <div class="selectable-o">
     <!-- Type Buttons -->
     <div class="primary-types" role="group" aria-labelledby="primary-types-label">
-      <h2 id="primary-types-label">Choose type</h2>
-      <div class="button-grid">
-        <button type="button" class="normal" data-type="normal">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#normal"></use>
+      <!-- <h2 id="primary-types-label">Choose type</h2> -->
+      <details class="type-dropdown">
+        <summary>
+          <h2>Primary Type:</h2>
+          <span class="display-type normal" aria-hidden="true">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#normal"></use>
+            </svg>
+            Normal
+          </span>
+          <svg class="toggle-icon" aria-hidden="true">
+            <use href="/svg/icons.svg#arrowdown"></use>
           </svg>
-          Normal
-        </button>
-        <button type="button" class="fire" data-type="fire">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#fire"></use>
-          </svg>
-          Fire
-        </button>
-        <button type="button" class="water" data-type="water">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#water"></use>
-          </svg>
-          Water
-        </button>
-        <button type="button" class="electric" data-type="electric">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#electric"></use>
-          </svg>
-          Electric
-        </button>
-        <button type="button" class="grass" data-type="grass">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#grass"></use>
-          </svg>
-          Grass
-        </button>
-        <button type="button" class="ice" data-type="ice">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#ice"></use>
-          </svg>
-          Ice
-        </button>
-        <button type="button" class="fighting" data-type="fighting">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#fighting"></use>
-          </svg>
-          Fighting
-        </button>
-        <button type="button" class="poison" data-type="poison">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#poison"></use>
-          </svg>
-          Poison
-        </button>
-        <button type="button" class="ground" data-type="ground">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#ground"></use>
-          </svg>
-          Ground
-        </button>
-        <button type="button" class="flying" data-type="flying">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#flying"></use>
-          </svg>
-          Flying
-        </button>
-        <button type="button" class="psychic" data-type="psychic">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#psychic"></use>
-          </svg>
-          Psychic
-        </button>
-        <button type="button" class="bug" data-type="bug">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#bug"></use>
-          </svg>
-          Bug
-        </button>
-        <button type="button" class="rock" data-type="rock">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#rock"></use>
-          </svg>
-          Rock
-        </button>
-        <button type="button" class="ghost" data-type="ghost">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#ghost"></use>
-          </svg>
-          Ghost
-        </button>
-        <button type="button" class="dragon" data-type="dragon">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#dragon"></use>
-          </svg>
-          Dragon
-        </button>
-        <button type="button" class="dark" data-type="dark">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#dark"></use>
-          </svg>
-          Dark
-        </button>
-        <button type="button" class="steel" data-type="steel">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#steel"></use>
-          </svg>
-          Steel
-        </button>
-        <button type="button" class="fairy" data-type="fairy">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#fairy"></use>
-          </svg>
-          Fairy
-        </button>
-        <button type="button" class="stellar" data-type="stellar">
-          <svg class="icon">
-            <use href="/svg/types-min.svg#stellar"></use>
-          </svg>
-          Stellar
-        </button>
-      </div>
+        </summary>
+        <div class="button-grid">
+          <button type="button" class="normal" data-type="normal">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#normal"></use>
+            </svg>
+            Normal
+          </button>
+          <button type="button" class="fire" data-type="fire">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#fire"></use>
+            </svg>
+            Fire
+          </button>
+          <button type="button" class="water" data-type="water">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#water"></use>
+            </svg>
+            Water
+          </button>
+          <button type="button" class="electric" data-type="electric">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#electric"></use>
+            </svg>
+            Electric
+          </button>
+          <button type="button" class="grass" data-type="grass">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#grass"></use>
+            </svg>
+            Grass
+          </button>
+          <button type="button" class="ice" data-type="ice">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#ice"></use>
+            </svg>
+            Ice
+          </button>
+          <button type="button" class="fighting" data-type="fighting">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#fighting"></use>
+            </svg>
+            Fighting
+          </button>
+          <button type="button" class="poison" data-type="poison">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#poison"></use>
+            </svg>
+            Poison
+          </button>
+          <button type="button" class="ground" data-type="ground">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#ground"></use>
+            </svg>
+            Ground
+          </button>
+          <button type="button" class="flying" data-type="flying">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#flying"></use>
+            </svg>
+            Flying
+          </button>
+          <button type="button" class="psychic" data-type="psychic">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#psychic"></use>
+            </svg>
+            Psychic
+          </button>
+          <button type="button" class="bug" data-type="bug">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#bug"></use>
+            </svg>
+            Bug
+          </button>
+          <button type="button" class="rock" data-type="rock">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#rock"></use>
+            </svg>
+            Rock
+          </button>
+          <button type="button" class="ghost" data-type="ghost">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#ghost"></use>
+            </svg>
+            Ghost
+          </button>
+          <button type="button" class="dragon" data-type="dragon">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#dragon"></use>
+            </svg>
+            Dragon
+          </button>
+          <button type="button" class="dark" data-type="dark">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#dark"></use>
+            </svg>
+            Dark
+          </button>
+          <button type="button" class="steel" data-type="steel">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#steel"></use>
+            </svg>
+            Steel
+          </button>
+          <button type="button" class="fairy" data-type="fairy">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#fairy"></use>
+            </svg>
+            Fairy
+          </button>
+          <button type="button" class="stellar" data-type="stellar">
+            <svg class="icon">
+              <use href="/svg/types-min.svg#stellar"></use>
+            </svg>
+            Stellar
+          </button>
+        </div>
+      </details>
     </div>
     <!-- Exceptions to Type Effectivity -->
     <div class="exceptions-o">
@@ -154,8 +168,10 @@
       </div>
     </div>
     <div class="selectable-extra">
-      <button id="reset-button" class="reset-button">Reset</button>
-      <button id="copy-button" class="copy-button">Copy Link</button>
+      <div class="selectable-extra-buttons">
+        <button id="reset-button" class="reset-button">Reset</button>
+        <button id="copy-button" class="copy-button">Copy Link</button>
+      </div>
     </div>
   </div>
 

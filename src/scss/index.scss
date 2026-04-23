@@ -70,7 +70,7 @@ body {
   margin: 0 0 0 6px; // slight right-shift to account for scrollbar-gutter
   // margin: 0;
   padding: 0;
-  font-family: "Lato", system-ui, sans-serif;
+  font-family: "DM Sans", "Lato", system-ui, sans-serif;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -227,29 +227,38 @@ nav a.active {
   align-items: center;
   z-index: 30;
 
-  input {
-    // width: 100%;
-    // max-width: 300px;
-    padding: .25rem .4rem;
-    border: 1px solid var(--text-color-dark3);
-    border-radius: 4px;
-    background-color: var(--bg-color-dark1);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    visibility: visible;
-
-    &.fade-out {
+  &.fade-out {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
       // transition: opacity var(--fade-duration) var(--fade-out-ease), visibility var(--fade-duration) var(--fade-out-ease);
     }
 
-    &.fade-in {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      // transition: opacity var(--fade-duration) var(--fade-in-ease), visibility var(--fade-duration) var(--fade-in-ease);
-    }
+  &.fade-in {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    // transition: opacity var(--fade-duration) var(--fade-in-ease), visibility var(--fade-duration) var(--fade-in-ease);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    fill: var(--text-color-dark2);
+  }
+
+  input {
+    // width: 100%;
+    // max-width: 300px;
+    padding: .25rem .125rem .25rem 2rem;
+    border: 1px solid var(--text-color-dark3);
+    border-radius: 4px;
+    background-color: var(--bg-color-dark1);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    visibility: visible;
+    font-family: inherit;
 
     &:focus {
       box-shadow: 0 0 4px var(--focus-color);
@@ -336,6 +345,7 @@ select {
   background-color: var(--bg-color-dark1);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
   cursor: pointer;
+  font-family: inherit;
 
   &:focus-visible {
     box-shadow: 0 0 4px var(--focus-color);
@@ -399,10 +409,107 @@ select {
   animation: spinner-rotate 1s linear infinite;
 }
 
+summary {
+  display: flex;
+  cursor: pointer;
+  list-style: none;
+  font-weight: bold;
+  position: relative;
+  padding: 1rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::marker {
+    content: none;
+    display: none;
+  }
+
+  &:focus-visible {
+    outline-offset: -.5em;
+    box-shadow: none;
+    border-radius: .75em;
+  }
+}
+
+.toggle-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.type-dropdown {
+  margin: 4px 8px 0 0;
+
+  summary {
+    display: grid;
+    grid-template-columns: minmax(min-content, 150px) minmax(135px, auto) 1fr;
+    gap: 10px;
+    align-items: center;
+    border: 2px outset var(--bg-color-dark1);
+    box-shadow: 0 1px 13px var(--bg-color-dark1);
+    border-radius: 10px 0;
+
+    h2 {
+      white-space: nowrap;
+      text-shadow: v.$button-text-shadow;
+      // margin-right: 1em;
+    }
+
+    .display-type {
+      display: block;
+      position: relative;
+      border-radius: 20px;
+      // text-align: end;
+      padding: .5rem 1rem .5rem 3.5rem;
+    }
+
+    .icon {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 35%;
+      height: 100%;
+      stroke-width: 3px;
+    }
+
+    .toggle-icon {
+      fill: currentColor;
+      justify-self: right;
+    }
+  }
+
+  summary:hover {
+    background-color: var(--bg-color-light1);
+
+    .toggle-icon {
+      scale: 1.1;
+    }
+  }
+}
+
+.type-dropdown[open] {
+  .display-type {
+    visibility: hidden;
+  }
+
+  summary {
+    // margin-bottom: 8px;
+    border-bottom-right-radius: 0;
+    border: 2px inset var(--bg-color-dark1);
+    box-shadow: 0 1px 13px var(--bg-color-dark1) inset;
+  }
+}
+
 .button-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 8px;
+  padding: 8px;
+  background-color: var(--bg-color-dark1);
+  border-radius: 0 0 10px 10px;
 }
 
 .button-grid button, .gen-grid button {
@@ -460,6 +567,18 @@ select {
   $base-color: clr($type);
   $hover-color: clr($type, light);
   $selected-color: clr($type, dark);
+
+  .display-type.#{$type} {
+    background-color: $selected-color;
+    border-color: v.$button-text-color-dark1;
+    color: v.$button-text-color;
+    text-shadow: v.$button-text-shadow;
+
+    .icon {
+      fill: v.$button-background-color;
+      stroke: $base-color
+    }
+  }
   
   .button-grid button.#{$type} {
     padding-left: 35%;
@@ -493,15 +612,19 @@ select {
       background-color: $selected-color;
       border: 3px ridge $hover-color;
     } 
-  } else {
+  } @else {
+    .result-group .tera-list {
+      grid-template-columns: 1fr;
+    }
+
     .result-group ul li[data-type="#{$type}"] {
-      background: v.$button-background-color;
+      background: v.$button-background-color-light1;
       border: 3px ridge $hover-color;
     } 
   }
 };
 
-.move-grid {
+.move-grid, .selectable-extra-buttons {
   display: flex;
   flex-flow: row wrap;
   gap: 8px;
@@ -610,6 +733,30 @@ select {
   }
 }
 
+#copy-button {
+  display: block;
+  position: relative;
+  width: fit-content;
+  overflow: hidden;
+  align-items: center;
+  color: v.$button-text-color;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background-color 200ms;
+  text-shadow: v.$button-text-shadow;
+  padding: .5rem;
+  background-color: v.$button-background-color-light1;
+  border: 1px ridge v.$button-background-color-light3;
+
+  &:hover {
+    background-color: v.$button-background-color-light3;
+  }
+
+  &:active {
+    background-color: v.$button-background-color-light2;
+  }
+}
+
 .abilities, .tera-select {
   display: inline-block;
   position: relative;
@@ -684,6 +831,22 @@ select {
 //   font-style: normal;
 //   font-display: swap;
 // }
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('DMSans-Subset-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('DMSans-Subset-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
 
 @media (min-width: 768px) {
   main {

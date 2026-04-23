@@ -140,19 +140,25 @@ export const SearchController = (() => {
     }
   };
 
+  const searchContainer = document.getElementById("search-container");
+  if(!searchContainer) {
+    console.warn("Search container not found.");
+    return;
+  }
+
   const hide = () => {
-    searchInput.classList.remove("fade-in");
-    searchInput.classList.add("fade-out");
+    searchContainer.classList.remove("fade-in");
+    searchContainer.classList.add("fade-out");
     SearchResultsRenderer.clearResults();
   };
 
   const show = () => {
-    searchInput.classList.remove("fade-out");
-    searchInput.classList.add("fade-in");
+    searchContainer.classList.remove("fade-out");
+    searchContainer.classList.add("fade-in");
     searchInput.placeholder =
       state.mode === "offense"
-        ? "Search by move name..."
-        : "Search by Pokémon name...";
+        ? "Fire Spin, Psychic, etc."
+        : "Alakazam, Starmie, etc.";
   };
 
   const rebuild = (newMode, newGen) => {
@@ -162,7 +168,7 @@ export const SearchController = (() => {
   const init = async (newMode, newGen, containers = {}) => {
     if(newMode === "more") {
       // console.log(`${newMode} gen ${newGen}, skipping search init...`);
-      if(!searchInput.classList.contains("fade-out")) {
+      if(!searchContainer.classList.contains("fade-out")) {
         hide();
       }
       return;

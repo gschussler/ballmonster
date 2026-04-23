@@ -115,7 +115,6 @@ export const generateShareableURL = () => {
           typesToShare = typesToShare.filter(t => t !== moveType);
         }
       }
-    
       
       if (typesToShare.length > 0) {
         params.set('types', typesToShare.join(','));

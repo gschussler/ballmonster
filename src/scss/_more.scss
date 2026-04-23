@@ -131,35 +131,7 @@ h2 {
     }
   }
 
-  summary {
-    display: flex;
-    cursor: pointer;
-    list-style: none;
-    font-weight: bold;
-    position: relative;
-    padding: 1rem 1rem;
-    align-items: center;
-    justify-content: space-between;
-
-    &::-webkit-details-marker {
-      display: none;
-    }
-
-    &::marker {
-      content: none;
-      display: none;
-    }
-
-    &:focus-visible {
-      outline-offset: -.5em;
-      box-shadow: none;
-      border-radius: .75em;
-    }
-  }
-
   .toggle-icon {
-    width: 20px;
-    height: 20px;
     stroke: currentColor;
     stroke-width: 2;
   }

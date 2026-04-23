@@ -59,6 +59,11 @@ export const updateSelections = (primaryContainer, secondaryContainer = null) =>
     const sToggleType = state.lastSecondarySelected?.dataset.type;
     toggleDefSpecialMoves(pToggleType, sToggleType);
   }
+
+  updateDisplayType(state.lastPrimarySelected.dataset.type, "primary");
+  if(state.lastSecondarySelected) {
+    updateDisplayType(state.lastSecondarySelected.dataset.type, "secondary");
+  }
 };
 
 /**
@@ -247,6 +252,35 @@ export const updateGenDisplay = () => {
   if(genDisplay) {
     genDisplay.textContent = state.gen;
   }
+};
+
+// update summary type(s)
+const updateDisplayType = (type, container) => {
+  const typesContainer = document.querySelector(`.${container}-types`);
+  const displayType = typesContainer.querySelector(".display-type");
+
+  if (displayType.classList.contains(type)) return;
+
+  const capitalType = type[0].toUpperCase() + type.slice(1);
+
+  displayType.className = `display-type ${type}`;
+  displayType.innerHTML = `
+    <svg class="icon">
+      <use href="/svg/types-min.svg#${type}"></use>
+    </svg>
+    ${capitalType}
+  `;
+};
+
+export const initToggleIcons = () => {
+  document.querySelectorAll('summary').forEach(summary => {
+    summary.addEventListener('click', () => {
+      const toggleIcon = summary.querySelector('.toggle-icon use');
+      const isDown = toggleIcon.getAttribute('href').includes('arrowdown');
+
+      toggleIcon.setAttribute('href', isDown ? "/svg/icons.svg#arrowup" : "/svg/icons.svg#arrowdown")
+    })
+  });
 };
 
 // const renderResults = (results) => {
