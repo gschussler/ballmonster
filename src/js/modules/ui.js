@@ -63,6 +63,8 @@ export const updateSelections = (primaryContainer, secondaryContainer = null) =>
   updateDisplayType(state.lastPrimarySelected.dataset.type, "primary");
   if(state.lastSecondarySelected) {
     updateDisplayType(state.lastSecondarySelected.dataset.type, "secondary");
+  } else if(state.mode === "defense") {
+    updateDisplayType(null, "secondary");
   }
 };
 
@@ -259,17 +261,21 @@ const updateDisplayType = (type, container) => {
   const typesContainer = document.querySelector(`.${container}-types`);
   const displayType = typesContainer.querySelector(".display-type");
 
-  if (displayType.classList.contains(type)) return;
+  if(type !== null) {
+    if(displayType.classList.contains(type)) return;
+    const capitalType = type[0].toUpperCase() + type.slice(1);
 
-  const capitalType = type[0].toUpperCase() + type.slice(1);
-
-  displayType.className = `display-type ${type}`;
-  displayType.innerHTML = `
-    <svg class="icon">
-      <use href="/svg/types-min.svg#${type}"></use>
-    </svg>
-    ${capitalType}
-  `;
+    displayType.className = `display-type ${type}`;
+    displayType.innerHTML = `
+      <svg class="icon">
+        <use href="/svg/types-min.svg#${type}"></use>
+      </svg>
+      ${capitalType}
+    `;
+  } else {
+    displayType.className = `display-type`;
+    displayType.innerHTML = "---";
+  }
 };
 
 export const initToggleIcons = () => {
