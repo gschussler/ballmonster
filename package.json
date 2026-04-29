@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "build": "node esbuild.config.js",
-    "dev": "concurrently -n \"SASS,SERVE\" -c \"yellow,cyan\" \"sass --watch src/scss/index.scss:src/index.css --style compressed\" \"serve src -p 3000\""
+    "dev": "node esbuild.dev.js && concurrently -n \"SASS,ESBUILD,PREPROCESS,DEV\" -c \"magenta,yellow,blue,cyan\" \"sass --watch src/scss/index.scss:dist/index.css\" \"node esbuild.watch.js\" \"cd server/preprocess && BASE_PATH=../../dist air\" \"cd server/dev && air\""
   },
   "repository": {
     "type": "git",

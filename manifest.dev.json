@@ -1,0 +1,13 @@
+{
+  "css": "index.css",
+  "faviconIco": "favicon.ico",
+  "iconSvg": "icon.svg",
+  "appleTouchIcon": "apple-touch-icon.png",
+  "htmxJs": "js/third_party/htmx.min.js",
+  "preloadJs": "js/third_party/preload.min.js",
+  "fuseJs": "js/third_party/fuse.min.js",
+  "scriptsJs": "scripts.js",
+  "ballSvg": "svg/ball.min.svg",
+  "ballBmSvg": "svg/ball_bm.min.svg",
+  "monsterSvg": "svg/monster.min.svg"
+}

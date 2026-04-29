@@ -54,9 +54,11 @@ func handler(tmpl *template.Template, basePath string, manifest AssetManifest) h
 }
 
 func main() {
-	basePath := "/usr/share/nginx/html"
+	basePath := os.Getenv("BASE_PATH")
+	if basePath == "" {
+		basePath = "/usr/share/nginx/html" // prod default
+	}
 
-	// load asset manifest
 	manifestPath := filepath.Join(basePath, "asset-manifest.json")
 	manifestData, err := os.ReadFile(manifestPath)
 	if err != nil {
@@ -67,7 +69,7 @@ func main() {
 	if err := json.Unmarshal(manifestData, &manifest); err != nil {
 		log.Fatalf("Failed to parse asset manifest: %v", err)
 	}
-	log.Printf("Loaded asset manifest successfully")
+	// fmt.Printf("Loaded asset manifest successfully")
 
 	tmplPath := filepath.Join(basePath, "index.html.tmpl")
 	tmpl, err := template.ParseFiles(tmplPath)
@@ -78,7 +80,7 @@ func main() {
 	http.HandleFunc("/", handler(tmpl, basePath, manifest))
 
 	port := ":8787"
-	log.Printf("Preprocessor listening on %s", port)
+	fmt.Printf("Preprocessor listening on %s", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatal(err)
 	}
