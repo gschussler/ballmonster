@@ -7,13 +7,33 @@ import {
   typeByMove,
 } from './globals.js';
 
+/**
+ * Cache for generation type chart data, keyed by generation string. 
+ * @type {Object}
+ */
 const generationDataCache = {};
+
+/**
+ * Cache for exception data. `null` until first loaded.
+ * @type {Object|null} 
+ */
 let exceptionDataCache = null;
+
+/**
+ * Cache for search data, keyed by mode string.
+ * @type {{offense: Object, defense: Object}}
+ */
 const searchDataCache = {
   offense: {},
   defense: {},
 };
 
+/**
+ * Populates `moveByType` and `typeByMove` maps with move-type pairings loaded from exception data, enabling quick bidirectional lookups between move names and their types.
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
 const populateMoveMaps = async () => {
   state.exceptJSON = await loadExceptions();
   const exceptArr = state.exceptJSON.e;
@@ -94,6 +114,14 @@ export const loadExceptions = async () => {
   }
 };
 
+/**
+ * Loads and caches the generation-specific search data for the given mode.
+ *
+ * @async
+ * @param {string} mode - The current calculation mode.
+ * @param {string} gen - The generation to load search data for.
+ * @returns {Promise<Array>} A promise resolving to the search data array.
+ */
 export const loadSearchSlice = async (mode, gen) => {
   const cache = searchDataCache[mode];
 

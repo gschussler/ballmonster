@@ -12,8 +12,8 @@ import {
  * @param {HTMLElement} container - The container element holding the type buttons
  */
 export const typeVisibility = () => {
-  const primaryContainer = document.querySelector(".primary-types");
-  const secondaryContainer = document.querySelector(".secondary-types");
+  const primaryContainer = document.getElementById("details-primary");
+  const secondaryContainer = document.getElementById("details-secondary");
   
   const btns = primaryContainer.querySelector(".button-grid").children;
 
@@ -63,7 +63,7 @@ export const updateSelections = (primaryContainer, secondaryContainer = null) =>
   updateDisplayType(state.lastPrimarySelected.dataset.type, "primary");
   if(state.lastSecondarySelected) {
     updateDisplayType(state.lastSecondarySelected.dataset.type, "secondary");
-  } else if(state.mode === "defense") {
+  } else if(state.mode !== "offense") {
     updateDisplayType(null, "secondary");
   }
 };
@@ -249,6 +249,9 @@ const updateDOM = (mult, typeSet) => {
   resGroup.style.display = typeSet.size > 0 ? "grid" : "none";
 };
 
+/**
+ * Updates DOM to reflect Gen selection changes
+ */
 export const updateGenDisplay = () => {
   let genDisplay = document.getElementById("gen");
   if(genDisplay) {
@@ -256,38 +259,158 @@ export const updateGenDisplay = () => {
   }
 };
 
-// update summary type(s)
+/**
+ * Updates DOM to reflect type selection changes
+ * 
+ * @param {string|null} type - The selected type name, or `null` if the slot is being cleared
+ * @param {string} container - The container of a selected type. Denotes the slot to update.
+ * @returns {void}
+ */
 const updateDisplayType = (type, container) => {
-  const typesContainer = document.querySelector(`.${container}-types`);
-  const displayType = typesContainer.querySelector(".display-type");
-
+  const displayType = container === "primary" ? document.getElementById("type1") : document.getElementById("type2");
+  const displayTypeBtn = displayType.querySelector("button");
+  const typeDetails = container === "primary" ? document.getElementById("details-primary") : document.getElementById("details-secondary");
+  
   if(type !== null) {
-    if(displayType.classList.contains(type)) return;
+    if(displayTypeBtn.classList.contains(type)) return;
     const capitalType = type[0].toUpperCase() + type.slice(1);
+    const appendedClass = typeDetails.open === true ? `${type} active` : `${type}`;
 
-    displayType.className = `display-type ${type}`;
-    displayType.innerHTML = `
+    displayTypeBtn.className = `display-type ${appendedClass}`;
+    displayTypeBtn.innerHTML = `
       <svg class="icon">
         <use href="/svg/types-min.svg#${type}"></use>
       </svg>
       ${capitalType}
     `;
+    return;
+  }
+
+  displayTypeBtn.innerHTML = `
+    <svg class="add-icon" aria-hidden="true">
+      <use href="/svg/icons.svg#plus"></use>
+    </svg>
+  `;
+  
+  // account for secondary grid deselection
+  if (displayTypeBtn.classList.contains("active")) {
+    displayTypeBtn.className = `display-type empty active`;
   } else {
-    displayType.className = `display-type`;
-    displayType.innerHTML = "---";
+    displayTypeBtn.className = `display-type empty`;
   }
 };
 
-export const initToggleIcons = () => {
-  document.querySelectorAll('summary').forEach(summary => {
-    summary.addEventListener('click', () => {
-      const toggleIcon = summary.querySelector('.toggle-icon use');
-      const isDown = toggleIcon.getAttribute('href').includes('arrowdown');
+/**
+ * Toggles a details element open/close state, closing the other if both are present.
+ *
+ * @param {HTMLDetailsElement} target - The details element to toggle.
+ * @param {HTMLDetailsElement|null} other - The other details element to close when toggling. `null` if only one is present.
+ * @returns {void}
+ */
+export const toggleDetails = (target, other = null) => {
+  const opening = !target.hasAttribute('open');
+  
+  if(other) {
+    other.removeAttribute('open');
+    target.toggleAttribute('open', opening);
+  } else {
+    target.toggleAttribute('open', opening);
+  }
+}
 
-      toggleIcon.setAttribute('href', isDown ? "/svg/icons.svg#arrowup" : "/svg/icons.svg#arrowdown")
-    })
-  });
+/**
+ * Toggles the arrow indicator on the target details element, resetting the other's arrow to down if both are present.
+ *
+ * @param {HTMLDetailsElement} type - The details element whose arrow indicator is being toggled.
+ * @param {HTMLDetailsElement|null} other - The other details element whose arrow is reset to down. `null` if only one is present.
+ * @returns {void}
+ */
+export const toggleArrow = (type, other = null) => {
+  const symbolPath = "/svg/icons.svg";
+  const down = (el) => {
+    return el.getAttribute("href") === `${symbolPath}#arrowdown` ? true : false;
+  }
+
+  // const typeBtn = type.querySelector('.display-type');
+  const otherBtn = other?.querySelector('.display-type');
+  const arrow = type.querySelector(".toggle-icon use");
+
+  if(other) {
+    const otherArrow = other.querySelector(".toggle-icon use");
+    if(!down(other)) {
+      if(otherBtn.classList[1] !== "empty") {
+        otherArrow.setAttribute("href", `${symbolPath}#arrowdown`);
+      }
+    }
+  }
+
+  if(down(arrow)) {
+    arrow.setAttribute("href", `${symbolPath}#arrowup`);
+  } else {
+    arrow.setAttribute("href", `${symbolPath}#arrowdown`);
+  }
+
+  // if(other) {
+  //   const otherArrow = other.querySelector(".toggle-icon use");
+  //   if(!down(otherArrow)) {
+  //     otherArrow.setAttribute("href", `${symbolPath}#arrowdown`);
+  //   }
+  // }
 };
+
+/**
+ * Toggles the `active` class on a display type button, removing it from the other if both are present.
+ *
+ * @param {HTMLDetailsElement} type - The details element whose display type button is being toggled.
+ * @param {HTMLDetailsElement|null} other - The other details element whose `active` class is removed if present. `null` if only one exists.
+ * @returns {void}
+ */
+export const toggleSelectedStyles = (type, other = null) => {
+  const typeBtn = type.querySelector('.display-type');
+  const otherBtn = other?.querySelector('.display-type');
+
+  if(!typeBtn.classList.contains("active")) {
+    typeBtn.classList.add("active");
+
+    if(other && otherBtn.classList.contains("active")) {
+      otherBtn.classList.remove("active");
+    }
+  } else {
+    typeBtn.classList.remove("active");
+  }
+}
+
+/**
+ * Resets the display type buttons' active states, open details, and arrow indicators on a full reset.
+ *
+ * @returns {void}
+ */
+export const handleDisplayTypeReset = () => {
+  const type1 = document.getElementById('type1');
+  const type1Btn = type1.querySelector('.display-type');
+  const primary = document.getElementById("details-primary");
+
+  if(state.mode === "defense") {
+    const type2 = document.getElementById('type2');
+    const type2Btn = type2 ? type2.querySelector('.display-type') : null;
+    const secondary = type2 ? document.getElementById("details-secondary") : null;
+    if(type2Btn.classList.contains("active")) {
+      toggleSelectedStyles(type2, type1);
+      toggleDetails(secondary, primary);
+      toggleArrow(type2, type1);
+    } else if(type1Btn.classList.contains("active")) {
+      toggleSelectedStyles(type1);
+      toggleDetails(primary, secondary);
+      toggleArrow(type1);
+    }
+  } else if(type1Btn.classList.contains("active")) {
+    toggleSelectedStyles(type1);
+    if(primary.hasAttribute("open")) {
+      toggleDetails(primary);
+    }
+    toggleArrow(type1);
+  }
+}
 
 // const renderResults = (results) => {
 //   const container = document.getElementById("search-results");
@@ -308,6 +431,11 @@ export const initToggleIcons = () => {
 //   container.classList.remove("hidden");
 // };
 
+/**
+ * Saves the open/closed state of all summary details elements to session storage.
+ *
+ * @returns {void}
+ */
 export const saveSummaryState = () => {
   const summaryState = {};
   document.querySelectorAll('.info-sections details').forEach(detail => {
@@ -316,6 +444,11 @@ export const saveSummaryState = () => {
   sessionStorage.setItem(state.summary, JSON.stringify(summaryState));
 };
 
+/**
+ * Restores the open/closed state and icons of all summary details elements from session storage.
+ *
+ * @returns {void}
+ */
 export const restoreSummaryState = () => {
   const stored = sessionStorage.getItem(state.summary);
   if (!stored) return;

@@ -30,10 +30,15 @@
 @media (min-width: 768px) {
   .offense {
     flex-direction: row;
-    gap: 1rem;
+    gap: 3rem;
     align-items: flex-start;
 
-    .selectable-o,
+    .selectable-o {
+      width: unset;
+      flex: 1 2 0;
+      min-width: 0;
+    }
+
     .effectiveness-results {
       width: unset;
       flex: 1 1 0;

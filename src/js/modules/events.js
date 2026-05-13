@@ -72,7 +72,7 @@ document.body.addEventListener('dragstart', function(e) {
  * @param {Event} e - The event object for the htmx swap event.
  * @returns {Promise<void>} Resolves after initializing the appropriate buttons.
  */
-document.addEventListener("htmx:afterSwap", async (e) => {
+document.addEventListener("htmx:afterSwap", async () => {
   await initCurrentMode();
   // console.log('[HTMX] afterSwap:', e.detail);
 });

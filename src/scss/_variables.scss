@@ -2,6 +2,20 @@
 @use "sass:color";
 @use "sass:map";
 
+$button-background-color: #333;
+$button-background-color-light1: color.adjust($button-background-color, $lightness: 10%);
+$button-background-color-dark1: color.adjust($button-background-color, $lightness: -10%);
+$button-background-color-light2: color.adjust($button-background-color, $lightness: 20%);
+$button-background-color-light3: color.adjust($button-background-color, $lightness: 30%);
+
+$button-text-color: #f0f0f0;
+$button-text-color-dark1: color.adjust($button-text-color, $lightness: -10%);
+$button-text-color-dark2: color.adjust($button-text-color, $lightness: -20%);
+$button-text-color-dark3: color.adjust($button-text-color, $lightness: -30%);
+
+$button-text-shadow: 0 1px 0 black, 0 0 1px rgba(0, 0, 0, 0.6), 0 0 2px rgba(0, 0, 0, 0.7), 0 0 3px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.9);
+$button-text-shadow-inverse: 0 1px 0 $button-text-color, 0 0 1px rgba(240, 240, 240, 0.6), 0 0 2px rgba(240, 240, 240, 0.7), 0 0 3px rgba(240, 240, 240, 0.8), 0 0 4px rgba(240, 240, 240, 0.9);
+
 $base-type-colors: (
   normal: #9FA19F,
   fire: #E62829,
@@ -23,21 +37,8 @@ $base-type-colors: (
   fairy: #EF70EF,
   stellar: #40B5A5,
   tera: #40B5A5,
+  empty: transparent,
 );
-
-$button-background-color: #333;
-$button-background-color-light1: color.adjust($button-background-color, $lightness: 10%);
-$button-background-color-dark1: color.adjust($button-background-color, $lightness: -10%);
-$button-background-color-light2: color.adjust($button-background-color, $lightness: 20%);
-$button-background-color-light3: color.adjust($button-background-color, $lightness: 30%);
-
-$button-text-color: #f0f0f0;
-$button-text-color-dark1: color.adjust($button-text-color, $lightness: -10%);
-$button-text-color-dark2: color.adjust($button-text-color, $lightness: -20%);
-$button-text-color-dark3: color.adjust($button-text-color, $lightness: -30%);
-
-$button-text-shadow: 0 1px 0 black, 0 0 1px rgba(0, 0, 0, 0.6), 0 0 2px rgba(0, 0, 0, 0.7), 0 0 3px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.9);
-$button-text-shadow-inverse: 0 1px 0 $button-text-color, 0 0 1px rgba(240, 240, 240, 0.6), 0 0 2px rgba(240, 240, 240, 0.7), 0 0 3px rgba(240, 240, 240, 0.8), 0 0 4px rgba(240, 240, 240, 0.9);
 
 $focus-light: color.scale(map.get($base-type-colors, water), $alpha: -30%);
 $focus-dark: color.scale(map.get($base-type-colors, ice), $alpha: -30%);

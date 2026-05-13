@@ -1,4 +1,4 @@
-/* ----- SEARCH CONTROL AND RENDER – Handle fuzzy search input and results for Pokemon names and Move names. ----- */
+/* ----- SEARCH CONTROL AND RENDER – Handle fuzzy search input and results for Pokémon names and Move names. ----- */
 import state from './globals.js';
 import {
   typeNames,
@@ -19,11 +19,24 @@ const genMaxNum = {
   "6+": Infinity
 };
 
-// helper functions to determine whether to use current or original typing for moves/pokemon
+/**
+ * Returns the correct move type for the given generation.
+ *
+ * @param {Object} move - The move object from search data.
+ * @param {number} gen - The numeric generation to check against.
+ * @returns {string} The move's original type if the generation predates the type change, otherwise its current type.
+ */
 const moveTypingByGen = (move, gen) => {
   return (move.tc && gen < move.tc) ? move.o[0] : move.t[0];
 };
 
+/**
+ * Returns the correct Pokémon type for the given generation.
+ *
+ * @param {Object} move - The Pokémon object from search data.
+ * @param {number} gen - The numeric generation to check against.
+ * @returns {string|Array} The Pokémon's original type if the generation predates the type change, otherwise its current typing.
+ */
 const monTypingByGen = (mon, gen) => {
   return (mon.tc && gen < mon.tc) ? mon.o : mon.t;
 };
@@ -41,7 +54,11 @@ const toggleTypeSelection = (enabled) => {
   secondaryContainer?.classList[action]('search-disabled');
 };
 
-// control searchbar state
+/**
+ * Controls searchbar state, including search index initialization, input handling, and routing selected results to the appropriate type selection logic.
+ *
+ * @namespace SearchController
+ */
 export const SearchController = (() => {
   let currFuse = null;
   let searchData = null;
@@ -238,7 +255,11 @@ export const SearchController = (() => {
   return { init, show, hide };
 })();
 
-// render search results
+/**
+ * Handles rendering and interaction for search results, including displaying move and Pokémon results, managing click/pointer events, and clearing the results container.
+ *
+ * @namespace SearchResultsRenderer
+ */
 const SearchResultsRenderer = (() => {
   const containerId = "search-results";
   let clickByMode = null;

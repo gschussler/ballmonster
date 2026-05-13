@@ -156,6 +156,28 @@ export class LinkedList {
   }
 };
 
+/**
+ * Global application state object for preserving in-memory state across JS modules.
+ * 
+ * @type {Object}
+ * @property {string} mode - The current calculation mode.
+ * @property {string|null} prevMode  - The previous calculation mode. Used to detect mode switches.
+ * @property {string} gen - The currently selected Pokémon generation (e.g. "6+").
+ * @property {boolean} genChange - Whether the generation has changed in page navigation.
+ * @property {boolean} clearCache - Whether cached type/matchup data should be invalidated on the next calculation.
+ * @property {Object|undefined} genJSON - The loaded JSON data for the current generation.
+ * @property {Object|undefined} exceptJSON - The loaded JSON data for generation-specific type exceptions.
+ * @property {HTMLElement|null} lastPrimarySelected - The last primary type selected by the user.
+ * @property {HTMLElement|null} lastSecondarySelected - The last secondary type selected by the user.
+ * @property {HTMLElement|null} lastMoveSelected - The last move selected by the user.
+ * @property {HTMLElement|null} lastSecondaryDisabled - The last secondary type button that was disabled.
+ * @property {HTMLElement|null} lastMoveDisabled - The last move that was disabled.
+ * @property {string} oAbility - The currently selected offensive ability.
+ * @property {string} dAbility - The currently selected defensive ability.
+ * @property {boolean} teraResult - Whether the current result reflects a Tera type calculation.
+ * @property {string} summary - Key used to track a summary dropdown's open/closed state.
+ * @property {LinkedList} multOrder - Ordered list tracking the sequence of multipliers applied in the current calculation.
+ */
 const state = {
   mode: document.getElementById('content').getAttribute("data-mode") || "offense",
   prevMode: null,

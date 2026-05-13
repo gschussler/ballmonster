@@ -6,6 +6,11 @@ import {
   typeByMove
 } from './globals.js'
 
+/**
+ * Reads window.__INIT_STATE__ and applies URL parameters to application state. Should be called before any calculations or UI initialization.
+ * 
+ * @returns {boolean} - True if URL state was applied, false otherwise.
+ */
 export const applyURLState = () => {
   const urlState = window.__INIT_STATE__;
 
@@ -27,7 +32,7 @@ export const applyURLState = () => {
   if(urlState.types) {
     selectedTypes.clear();
     urlState.types.forEach(type => {
-      if(typeMap.hasOwnProperty(type)) {
+      if(typeMap.hasOwnProperty(type)) { // eslint-disable-line no-prototype-builtins
         selectedTypes.add(type);
       }
     });
@@ -56,7 +61,7 @@ export const applyURLState = () => {
     }
 
     if(urlState.tera) {
-      if(typeMap.hasOwnProperty(urlState.tera)) {
+      if(typeMap.hasOwnProperty(urlState.tera)) { // eslint-disable-line no-prototype-builtins
         selectedTypes.clear();
         selectedTypes.add(urlState.tera);
         state.teraResult = true;

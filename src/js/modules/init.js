@@ -12,7 +12,6 @@ import {
   getTypeRelationship,
   selectType,
   initReset,
-  initCopyLink
 } from './core.js';
 import {
   revealInitialContent
@@ -28,18 +27,16 @@ import {
   saveSummaryState,
   restoreSummaryState,
   typeVisibility,
-  initToggleIcons
+  toggleDetails,
+  toggleArrow,
+  toggleSelectedStyles,
 } from './ui.js';
 import {
   SearchController
 } from './search.js';
-
-/**
- * Reads window.__INIT_STATE__ and applies URL parameters to application state. Should be called before any calculations or UI initialization.
- * 
- * @returns {boolean} - True if URL state was applied, false otherwise.
- */
-
+import {
+  copyURLToClipboard
+} from './url.js';
 
 /**
  * Initializes the current "mode", represented by the content swapped into `main`.
@@ -78,9 +75,9 @@ export const initInput = async () => {
   state.genJSON = await loadGenerationData(state.gen);
   state.exceptJSON = await loadExceptions();
 
-  const primaryContainer = document.querySelector(".primary-types");
+  const primaryContainer = document.getElementById("details-primary");
   // if(!primaryContainer) return; // ".type-buttons" doesn't exist in index.html on initial page load, so the first try for initializing always fails. skip it.
-  const secondaryContainer = document.querySelector(".secondary-types");
+  const secondaryContainer = document.getElementById("details-secondary");
 
   initTypeButtons(primaryContainer, secondaryContainer);
 
@@ -126,7 +123,8 @@ export const initInput = async () => {
   }
 
   initCopyLink();
-  initToggleIcons();
+  initDisplayTypeButtons();
+  // initDisplayTypeShadow(state.mode);
 
   // Currently 'normal' type is selected upon initialization, display relevant results
   // console.log(`Getting initial type relationships on ${mode} for gen ${gen}...`);
@@ -171,6 +169,13 @@ const initTypeButtons = (primaryContainer, secondaryContainer) => {
   });
 };
 
+/**
+ * Reinitializes the page's results from cached data by invoking the relevant recalculation and display methods.
+ *
+ * @param {HTMLElement} primaryContainer - The container element holding the primary type buttons.
+ * @param {HTMLElement|null} secondaryContainer - The container element holding the secondary type buttons, if present.
+ * @returns {void}
+ */
 const initCachedResults = async (primaryContainer, secondaryContainer = null) => {
   // Handle non-move exceptions first (applies to both offense and defense)
   if(exceptions.size > 0) {
@@ -288,7 +293,6 @@ const initCachedResults = async (primaryContainer, secondaryContainer = null) =>
  * 
  * @returns {void}
  */
-// CONSIDER: secondaryContainer never exists on offense page. How should updateSelections be defined because of this fact?
 const initOffenseExceptions = (primaryContainer) => {
   const moves = document.querySelector(".special-moves-o");
   const abilitySelect = document.getElementById("atk-ability-select");
@@ -367,6 +371,9 @@ const initDefenseExceptions = (primaryContainer, secondaryContainer) => {
 
 /**
  * Initializes the event listeners for generation selection.
+ * 
+ * @async
+ * @returns {Promise<void>}
  */
 export const initGenSelect = async () => {
   const genContainer = document.querySelector(".gen-selection");
@@ -404,6 +411,11 @@ export const initGenSelect = async () => {
   });
 };
 
+/**
+ * Initializes the open/closed state and toggle event listeners for summary details elements.
+ *
+ * @returns {void}
+ */
 export const initSummaryState = () => {
   document.querySelectorAll('.info-sections details').forEach(detail => {
     const icon = detail.querySelector('summary use');
@@ -422,4 +434,53 @@ export const initSummaryState = () => {
     updateIcon();
     detail.addEventListener('toggle', updateIcon);
   })
+};
+
+const initCopyLink = () => {
+  const copyButton = document.getElementById('copy-button');
+  if (!copyButton) return;
+
+  copyButton.addEventListener('click', async () => {
+    const success = await copyURLToClipboard();
+    // visual feedback based on result
+    if (success) {
+      console.log('successful copy');
+    } else {
+      console.log(`couldn't copy!`);
+    }
+  })
+};
+
+/**
+ * Initializes the event listeners for buttons displaying user type selections.
+ *
+ * @returns {void}
+ */
+const initDisplayTypeButtons = () => {
+  const type1 = document.getElementById('type1');
+  const primary = document.getElementById("details-primary");
+
+  const type2 = document.getElementById('type2');
+  const secondary = document.getElementById("details-secondary");
+
+  //! switch between arrow up and down based on state
+  if(state.mode === "defense") {
+    type1.addEventListener('click', () => {
+      toggleDetails(primary, secondary);
+      toggleArrow(type1, type2);
+      toggleSelectedStyles(type1, type2);
+    });
+
+    type2.addEventListener('click', () => {
+      toggleDetails(secondary, primary);
+      toggleArrow(type2, type1);
+      toggleSelectedStyles(type2, type1);
+    });
+  } else {
+    type1.addEventListener('click', () => {
+      toggleDetails(primary);
+      toggleArrow(type1);
+      toggleSelectedStyles(type1);
+    });
+  };
 };
