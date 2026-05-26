@@ -1,3 +1,6 @@
 User-agent: *
-Disallow: /
 Allow: /$
+Allow: /offense$
+Allow: /defense$
+Allow: /more$
+Disallow: /

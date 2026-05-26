@@ -43,9 +43,9 @@ $base-type-colors: (
 $focus-light: color.scale(map.get($base-type-colors, water), $alpha: -30%);
 $focus-dark: color.scale(map.get($base-type-colors, ice), $alpha: -30%);
 
-$reset-base: color.scale(map.get($base-type-colors, fire), $alpha: -30%);
-$reset-hover: color.scale(map.get($base-type-colors, fire), $alpha: -50%);
-$reset-active: color.scale(map.get($base-type-colors, fire), $alpha: -70%);
+$reset-base: color.scale(map.get($base-type-colors, fire), $alpha: -70%);
+$reset-hover: color.scale(map.get($base-type-colors, fire), $alpha: -30%);
+$reset-active: color.scale(map.get($base-type-colors, fire), $alpha: -50%);
 
 $copy-base: color.scale(map.get($base-type-colors, water), $alpha: -30%);
 $copy-hover: color.scale(map.get($base-type-colors, water), $alpha: -50%);

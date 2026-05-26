@@ -11,7 +11,6 @@ import {
 import {
   getTypeRelationship,
   selectType,
-  initReset,
 } from './core.js';
 import {
   revealInitialContent
@@ -30,6 +29,7 @@ import {
   toggleDetails,
   toggleArrow,
   toggleSelectedStyles,
+  handleDisplayTypeReset,
 } from './ui.js';
 import {
   SearchController
@@ -442,11 +442,11 @@ const initCopyLink = () => {
 
   copyButton.addEventListener('click', async () => {
     const success = await copyURLToClipboard();
-    // visual feedback based on result
+    // visual feedback rather than console logging
     if (success) {
-      console.log('successful copy');
+      // console.log('successful copy');
     } else {
-      console.log(`couldn't copy!`);
+      // console.log(`couldn't copy!`);
     }
   })
 };
@@ -463,13 +463,17 @@ const initDisplayTypeButtons = () => {
   const type2 = document.getElementById('type2');
   const secondary = document.getElementById("details-secondary");
 
-  //! switch between arrow up and down based on state
   if(state.mode === "defense") {
     type1.addEventListener('click', () => {
       toggleDetails(primary, secondary);
       toggleArrow(type1, type2);
       toggleSelectedStyles(type1, type2);
     });
+    
+    //? details initially open (requires redundant calls in current logic)
+    // toggleDetails(primary, secondary);
+    // toggleArrow(type1, type2);
+    // toggleSelectedStyles(type1, type2);
 
     type2.addEventListener('click', () => {
       toggleDetails(secondary, primary);
@@ -482,5 +486,74 @@ const initDisplayTypeButtons = () => {
       toggleArrow(type1);
       toggleSelectedStyles(type1);
     });
+
+    //? details initially open (requires redundant calls in current logic)
+    // toggleDetails(primary);
+    // toggleArrow(type1);
+    // toggleSelectedStyles(type1);
   };
+};
+
+// clear selected types and reset globals
+const initReset = (primaryContainer, secondaryContainer = null) => {
+  const resetButton = document.getElementById("reset-button");
+  if (!resetButton) return;
+  
+  let rotateTimeout;
+
+  resetButton.addEventListener("click", () => {
+    const icon = resetButton.querySelector('.icon');
+
+    if(rotateTimeout) clearTimeout(rotateTimeout);
+    icon.classList.remove('rotated'); // safety in case of multiple clicks
+
+    icon.classList.add('rotated');
+
+    window.scrollTo(0, 0);
+
+    selectedTypes.clear();
+    exceptions.clear();
+    
+    if(state.lastMoveSelected) {
+      state.lastMoveSelected.classList.remove("selected");
+    }
+
+    // document.querySelectorAll("button:disabled").forEach(btn => btn.disabled = false);
+
+    let abilitySelect;
+
+    if(secondaryContainer) {
+      const selectables = document.querySelector(".selectable-d");
+      selectables.querySelectorAll("button:disabled").forEach(btn => btn.disabled = false);
+      abilitySelect = document.getElementById("def-ability-select");
+      abilitySelect.value = "";
+      state.dAbility = "";
+
+      if(state.gen === "6+" && state.teraResult) {
+        const teraSelect = document.getElementById("tera-select");
+        teraSelect.value = "";
+        state.teraResult = null;
+      }
+      
+      if(state.lastSecondarySelected) {
+        state.lastSecondarySelected.classList.remove("selected");
+        state.lastSecondarySelected = null;
+      }
+    } else {
+      const selectables = document.querySelector(".selectable-o");
+      selectables.querySelectorAll("button:disabled").forEach(btn => btn.disabled = false);
+      abilitySelect = document.getElementById("atk-ability-select");
+      abilitySelect.value = "";
+      state.oAbility = "";
+    }
+    
+    const defaultBtn = primaryContainer.querySelector('button[data-type="normal"');
+    selectType("primary", defaultBtn, primaryContainer, secondaryContainer);
+    
+    handleDisplayTypeReset();
+
+    rotateTimeout = setTimeout(() => {
+      icon.classList.remove('rotated');
+    }, 300);
+  });
 };

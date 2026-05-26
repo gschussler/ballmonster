@@ -18,7 +18,6 @@ import {
   moveTypeDisable,
   moveTypeEnable,
   updateEffectiveness,
-  handleDisplayTypeReset,
 } from './ui.js';
 
 /**
@@ -684,55 +683,4 @@ export const selectType = (source, typeVar, primaryContainer, secondaryContainer
       return;
   };
   refreshTypeResults(primaryContainer, secondaryContainer);
-};
-
-// clear selected types and reset globals
-export const initReset = (primaryContainer, secondaryContainer = null) => {
-  const resetButton = document.getElementById("reset-button");
-  if (!resetButton) return;
-  
-  resetButton.addEventListener("click", () => {
-    window.scrollTo(0, 0);
-
-    selectedTypes.clear();
-    exceptions.clear();
-    
-    if(state.lastMoveSelected) {
-      state.lastMoveSelected.classList.remove("selected");
-    }
-
-    // document.querySelectorAll("button:disabled").forEach(btn => btn.disabled = false);
-
-    let abilitySelect;
-
-    if(secondaryContainer) {
-      const selectables = document.querySelector(".selectable-d");
-      selectables.querySelectorAll("button:disabled").forEach(btn => btn.disabled = false);
-      abilitySelect = document.getElementById("def-ability-select");
-      abilitySelect.value = "";
-      state.dAbility = "";
-
-      if(state.gen === "6+" && state.teraResult) {
-        const teraSelect = document.getElementById("tera-select");
-        teraSelect.value = "";
-        state.teraResult = null;
-      }
-      
-      if(state.lastSecondarySelected) {
-        state.lastSecondarySelected.classList.remove("selected");
-        state.lastSecondarySelected = null;
-      }
-    } else {
-      const selectables = document.querySelector(".selectable-o");
-      selectables.querySelectorAll("button:disabled").forEach(btn => btn.disabled = false);
-      abilitySelect = document.getElementById("atk-ability-select");
-      abilitySelect.value = "";
-      state.oAbility = "";
-    }
-    
-    const defaultBtn = primaryContainer.querySelector('button[data-type="normal"');
-    selectType("primary", defaultBtn, primaryContainer, secondaryContainer);
-    
-    handleDisplayTypeReset();
-  });
 };

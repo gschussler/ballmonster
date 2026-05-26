@@ -143,6 +143,28 @@ export const generateShareableURL = () => {
   return queryString ? `${baseURL}?${queryString}` : baseURL;
 };
 
+let swapTimeout = null;
+
+const swapCopyIcon = (id) => {
+  const copyBtn = document.getElementById("copy-button");
+  const icon = copyBtn.querySelector("svg");
+  const use = icon.querySelector("use");
+
+  if(swapTimeout) clearTimeout(swapTimeout);
+
+  use.setAttribute("href", `/svg/icons.svg#${id}`);
+  icon.classList.add(id);
+
+  copyBtn.childNodes[2].textContent = id === "check" ? "Copied!" : "Failed...";
+
+  swapTimeout = setTimeout(() => {
+    use.setAttribute("href", `/svg/icons.svg#copy`);
+    icon.classList.remove(id);
+    copyBtn.childNodes[2].textContent = "Copy Link"
+    swapTimeout = null;
+  }, 1000);
+};
+
 /**
  * Copies the current page URL to clipboard
  * Must be called from a user gesture (e.g., button click)
@@ -150,12 +172,14 @@ export const generateShareableURL = () => {
  */
 export const copyURLToClipboard = async () => {
   const url = generateShareableURL();
-  
+
   try {
     await navigator.clipboard.writeText(url);
+    swapCopyIcon("check");
     return true;
   } catch (err) {
     console.error('Failed to copy URL:', err);
+    swapCopyIcon("error");
     return false;
   }
 };

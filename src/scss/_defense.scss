@@ -3,6 +3,8 @@
   display: flex;
   flex-wrap: wrap;
   flex-direction: column;
+  gap: 20px;
+  margin-left: 1rem;
 
   .selectable-d,
   .effectiveness-results {
@@ -12,18 +14,40 @@
   }
 }
 
-// .exceptions-d {
-
-// }
-
-.select-container-d {
-  display: flex;
-  flex-direction: column;
+#diag {
+  // border: 1px solid white;
+  stroke: var(--text-color-dark3);
+  stroke-width: 4;
+  stroke-linecap: round;
+  width: 14px;
+  height: 38px;
+  position: relative;
+  margin-right: 10px;
 }
 
-// .special-moves-d {
-
+// #diag:after {
+//   content: "";
+//   position: absolute;
+//   border-top: 1px solid var(--text-color-dark3);
+//   width: 40px;
+//   transform: rotate(300deg);
+//   transform-origin: 60% 3900%;
 // }
+
+.exceptions-d {
+  display: grid;
+  margin-right: 1rem;
+}
+
+.select-container-d {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin-bottom: 2rem;
+  
+  select {
+    max-width: none;
+  }
+}
 
 // .tera-types {
 
@@ -32,7 +56,7 @@
 @media (min-width: 768px) {
   .defense {
     flex-direction: row;
-    gap: 1rem;
+    gap: 2rem;
     align-items: flex-start;
 
     .selectable-d,
@@ -44,6 +68,7 @@
   }
 
   .select-container-d {
-    flex-direction: row;
+    grid-template-columns: repeat(2, max-content);
+    gap: 1rem;
   }
 }

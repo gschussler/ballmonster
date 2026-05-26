@@ -110,6 +110,10 @@ h2 {
 
 .info-sections {
   details {
+    summary {
+      justify-content: space-between;
+    }
+
     &:after {
       content: "";
       display: block;

@@ -18,7 +18,7 @@
   background-color: var(--bg-color); /* Cover the entire viewport */
   margin: 0;
   padding: 0;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: stable both-edges;
   min-height: 100vh;
   --fade-duration: 200ms;
   --fade-in-ease: ease-out;
@@ -68,7 +68,7 @@ html:not(.preload) {
 /* Global styles */
 body {
   overflow-x: hidden;
-  margin: 0 0 0 6px; // slight right-shift to account for scrollbar-gutter
+  // margin: 0 0 0 6px; // slight right-shift to account for scrollbar-gutter
   // margin: 0;
   padding: 0;
   font-family: "DM Sans", "Lato", system-ui, sans-serif;
@@ -146,10 +146,9 @@ header p {
 
 nav {
   display: grid;
-  width: fit-content;
   justify-content: center;
   align-items: center;
-  margin: 2rem auto 1rem auto;
+  margin: 2rem 0 1rem 0;
   gap: 1rem;
   top: 0;
   z-index: 10;
@@ -230,14 +229,15 @@ nav a.active {
 
   &.fade-out {
       opacity: 0;
-      visibility: hidden;
+      // visibility: hidden;
+      display: none;
       pointer-events: none;
       // transition: opacity var(--fade-duration) var(--fade-out-ease), visibility var(--fade-duration) var(--fade-out-ease);
     }
 
   &.fade-in {
     opacity: 1;
-    visibility: visible;
+    // visibility: visible;
     pointer-events: auto;
     // transition: opacity var(--fade-duration) var(--fade-in-ease), visibility var(--fade-duration) var(--fade-in-ease);
   }
@@ -356,7 +356,7 @@ select {
 #content {
   // margin: 0 0 0 30px; // centering indentation to align with selectable-gutter
   // justify-self: center;
-  padding: 0 0.5em;
+  padding: 1.5em 0.5em 0 0.5em;
   width: 100%;
   margin: auto;
 
@@ -418,7 +418,7 @@ summary {
   position: relative;
   padding: 1rem 1rem;
   align-items: center;
-  justify-content: space-between;
+  // justify-content: space-between;
 
   &::-webkit-details-marker {
     display: none;
@@ -442,15 +442,15 @@ summary {
 }
 
 .type-panel {
-  padding: 0 0 0 1rem !important;
+  margin-bottom: 1.5rem !important;
 }
 
 .types-header {
   display: grid;
   grid-template-columns: min-content 1fr;
-  align-items: center;
-  padding: 0.5rem;
-  gap: 15px;
+  // align-items: center;
+  // padding: 0 0.5rem 0.5rem 0;
+  // gap: 15px;
   // align-items: center;
   // background-color: var(--bg-color-light1);
   // border: 2px inset var(--bg-color-dark1);
@@ -499,11 +499,11 @@ summary {
 
   .display-types {
     display: grid;
-    grid-template-columns: repeat(2, min-content);
+    grid-template-columns: repeat(3, min-content);
     grid-template-rows: 1fr min-content;
     align-content: center;
     justify-items: start;
-    column-gap: 10px;
+    // column-gap: 10px;
 
     span {
       display: grid;
@@ -585,6 +585,7 @@ summary {
 .panel-well {
   box-shadow: 0 0 25px var(--bg-color-dark1) inset;
   border-radius: 0 0 10px 10px;
+  margin-right: 1rem;
 }
 
 .type-dropdown > summary {
@@ -822,6 +823,10 @@ summary {
   }
 };
 
+// .selectable-extra {
+//   justify-content: center;
+// }
+
 .move-grid, .selectable-extra-buttons {
   display: flex;
   flex-flow: row wrap;
@@ -903,24 +908,35 @@ summary {
   padding-bottom: 2px;
 }
 
-// .special-effects, .tera-types {
+.special-effects, .tera-types {
+  display: grid;
+  grid-template-columns: 1fr;
+  text-wrap: nowrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem !important;
+}
 
-// }
+.selectable-extra-buttons {
+  button {
+    display: grid;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    width: fit-content;
+    padding: .5rem;
+    border-radius: 2px;
+    text-shadow: v.$button-text-shadow;
+    color: v.$button-text-color;
+    cursor: pointer;
+    font-weight: bold;
+  }
+}
 
 #reset-button {
-  display: block;
-  position: relative;
-  width: fit-content;
-  overflow: hidden;
-  align-items: center;
-  color: v.$button-text-color;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: background-color 200ms;
-  text-shadow: v.$button-text-shadow;
-  padding: .5rem;
-  background-color: v.$reset-base;
+  grid-template-columns: 1fr minmax(4em, auto);
+  grid-template-rows: 1fr min-content;
   border: 1px ridge v.$reset-base;
+  background-color: v.$reset-base;
 
   &:hover {
     background-color: v.$reset-hover;
@@ -929,22 +945,29 @@ summary {
   &:active {
     background-color: v.$reset-active;
   }
+
+  .icon {
+    fill: currentColor;
+    width: 15px;
+    height: 15px;
+    margin: 2.5px;
+    stroke: var(--bg-color);
+    stroke-width: 10px;
+    transition: transform 200ms ease-in-out;
+    transform-origin: center center;
+  }
+
+  .rotated {
+    transform: rotate(360deg);
+  }
 }
 
 #copy-button {
-  display: block;
-  position: relative;
-  width: fit-content;
-  overflow: hidden;
-  align-items: center;
-  color: v.$button-text-color;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: background-color 200ms;
-  text-shadow: v.$button-text-shadow;
-  padding: .5rem;
-  background-color: v.$button-background-color-light1;
+  grid-template-columns: 1fr minmax(5em, auto);
+  grid-template-rows: 1fr min-content;
+  column-gap: 5px;
   border: 1px ridge v.$button-background-color-light3;
+  background-color: v.$button-background-color-light1;
 
   &:hover {
     background-color: v.$button-background-color-light3;
@@ -952,6 +975,25 @@ summary {
 
   &:active {
     background-color: v.$button-background-color-light2;
+  }
+
+  .icon {
+    fill: currentColor;
+    width: 20px;
+    height: 20px;
+    stroke: var(--bg-color);
+  }
+
+  .check {
+    color: map.get(v.$base-type-colors, "grass");
+    stroke-width: 20px;
+  }
+
+  .error {
+    color: map.get(v.$base-type-colors, "fire");
+    stroke-width: 10px;
+    width: 15px;
+    margin: 0 2.5px;
   }
 }
 
@@ -969,11 +1011,12 @@ summary {
 
 // }
 
-.result-groups, .type-panel, .special-moves-o, .special-moves-d, .special-effects, .tera-types, .selectable-extra {
+.result-groups, .type-panel, .special-moves-o, .special-moves-d, .selectable-extra {
   display: grid;
   // grid-template-rows: auto 1fr;
-  padding: 1rem;
+  // padding: 1rem;
   gap: .5rem;
+  margin-bottom: 2rem;
   // border-radius: 4px;
   // box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
   h3 {
@@ -1055,6 +1098,11 @@ summary {
 }
 
 @media (min-width: 768px) {
+  nav {
+    width: fit-content;
+    margin: 2rem auto 1rem auto;
+  }
+
   main {
     max-width: 75em;
   }
@@ -1068,7 +1116,15 @@ summary {
     margin-right: 1rem;
   }
 
+  .panel-well {
+    margin-right: revert;
+  }
+
   // .types-header .types-label h3 {
   //   font-size: revert;
   // }
+
+  .special-effects, .tera-types {
+    grid-template-columns: max-content;
+  }
 }

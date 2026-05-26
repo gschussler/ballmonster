@@ -80,6 +80,12 @@ for (const file of htmlFiles) {
   await fsp.copyFile(path.join(CONFIG.SRC_DIR, file), outputPath);
 }
 
+//? viewable `robots.txt` while `/dist` is treated as root in dev environment
+await fsp.copyFile(
+  'robots.txt',
+  path.join(CONFIG.BUILD_DIR, 'robots.txt')
+);
+
 //* Write static dev manifest — no hashing in dev
 await fsp.copyFile('manifest.dev.json', path.join(CONFIG.BUILD_DIR, 'asset-manifest.json'));
 console.log('Copied dev manifest');
