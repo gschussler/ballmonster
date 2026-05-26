@@ -37,7 +37,7 @@ WORKDIR /usr/share/nginx/html
 COPY --from=site-builder /app/dist/ .
 COPY robots.txt .
 COPY /src/DMSans-Subset-Bold.woff2 .
-COPY /src/DMSans-Subset-Bold.woff2 .
+COPY /src/DMSans-Subset-Regular.woff2 .
 
 # copy the Go binary
 # COPY --from=go-builder /app/pseudonymize /usr/local/bin/pseudonymize
