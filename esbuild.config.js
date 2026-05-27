@@ -118,8 +118,6 @@ const pathMap = {
   'favicon.ico': '/',
   'icon.svg': '/',
   'apple-touch-icon.png': '/',
-  'DMSans-Subset-Regular.woff2': '/',
-  'DMSans-Subset-Bold.woff2': '/',
   'svg/ball.min.svg': '/svg/',
   'svg/ball_bm.min.svg': '/svg/',
   'svg/monster.min.svg': '/svg/',
