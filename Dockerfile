@@ -13,11 +13,17 @@ RUN npm run build
 # STAGE 2: build Go pseudonymizer
 FROM golang:alpine AS go-builder
 
-WORKDIR /app
+# build pseudonymizer
+WORKDIR /app/pseudonymize
+COPY server/pseudonymize/ .
+RUN go mod download
+RUN go build -o pseudonymize .
 
-COPY server/pseudonymize.go .
-
-RUN go build -o pseudonymize ./pseudonymize.go
+# build preprocessor
+WORKDIR /app/preprocess
+COPY server/preprocess/ .
+RUN go mod download
+RUN go build -o preprocess .
 
 # STAGE 3: final image with NGINX + pseudonymizer
 FROM nginx:alpine
@@ -30,11 +36,14 @@ WORKDIR /usr/share/nginx/html
 # copy built static site from site-builder
 COPY --from=site-builder /app/dist/ .
 COPY robots.txt .
+COPY /src/DMSans-Subset-Bold.woff2 .
+COPY /src/DMSans-Subset-Regular.woff2 .
 
 # copy the Go binary
 # COPY --from=go-builder /app/pseudonymize /usr/local/bin/pseudonymize
-COPY --from=go-builder /app/pseudonymize /pseudonymize
-RUN chmod +x /pseudonymize
+COPY --from=go-builder /app/pseudonymize/pseudonymize /pseudonymize
+COPY --from=go-builder /app/preprocess/preprocess /preprocess
+RUN chmod +x /pseudonymize /preprocess
 
 # custom NGINX config
 COPY server/prod/nginx-prod.conf /etc/nginx/nginx.conf

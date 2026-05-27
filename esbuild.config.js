@@ -176,7 +176,7 @@ for(const [relPath, hashedName] of Object.entries(assetMap)) {
   jsOutput = jsOutput.replace(regex, finalHashedPath);
 }
 // need to convert back to Buffer for JS case in writing hashed file
-const jsBuffer = Buffer.from(jsOutput);
+const jsBuffer = Buffer.from(jsOutput); //eslint-disable-line
 const jsName = await writeHashedFile('js/scripts.js', CONFIG.BUILD_DIR, jsBuffer, '.js');
 console.log(`Bundled JS to ${jsName}`);
 
