@@ -197,10 +197,12 @@ nav a.active {
 }
 
 #search-layer {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   touch-action: manipulation;
+  z-index: 20;
 }
 
 .search-backdrop {
@@ -283,6 +285,7 @@ nav a.active {
     text-shadow: var(--text-shadow);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 30;
+    touch-action: manipulation;
 
     &.hidden {
       display: none;
@@ -297,6 +300,7 @@ nav a.active {
       background-color: var(--bg-color);
       // transition: background-color 0.2s;
       z-index: 30;
+      touch-action: manipulation;
 
       h1 {
         font-size: 1.2rem;

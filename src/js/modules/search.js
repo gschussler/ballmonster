@@ -84,6 +84,13 @@ export const SearchController = (() => {
       const button = primaryContainer.querySelector(`button[data-type="${typeName}"]`);
       if(!button) return;
 
+      // remove special move if currently selected
+      if(state.lastMoveSelected !== null) {
+        if(state.mode === "offense") {
+          selectType("oException", state.lastMoveSelected, primaryContainer);
+        }
+      }
+
       selectType("primary", button, primaryContainer); // non-exception moves do not have more than one type
     }
   };
@@ -305,7 +312,7 @@ const SearchResultsRenderer = (() => {
     // console.log(`Clicked result: ${name}`);
     
     clickByMode(name);
-    clearResults();
+    setTimeout(() => clearResults(), 0); // patchwork setTimeout due to mobile browser constraints
     const input = document.getElementById("search");
     if (input) {
       input.value = "";
@@ -315,9 +322,9 @@ const SearchResultsRenderer = (() => {
     const backdrop = document.getElementById("search-backdrop");
     if (backdrop) {
       backdrop.classList.add("hidden");
-      setTimeout(() => { // patchwork setTimeout due to mobile browser constraints. big sad
+      setTimeout(() => { // patchwork setTimeout due to mobile browser constraints
         toggleTypeSelection(true);
-      }, 100);
+      }, 0);
     }
 
     resultClickInProgress = false;
@@ -386,6 +393,7 @@ const SearchResultsRenderer = (() => {
       let activeRes = null;
 
       container.addEventListener("pointerdown", (e) => {
+        e.preventDefault(); // prevent 300ms mobile tap delay
         const el = e.target.closest(".search-result");
         if(el) {
           activeRes = el;
@@ -413,6 +421,7 @@ const SearchResultsRenderer = (() => {
       });
 
       container.addEventListener("pointerup", (e) => {
+        e.preventDefault(); // prevent 300ms mobile tap delay
         if (activeRes) {
           activeRes.classList.remove("active");
           activeRes = null;
